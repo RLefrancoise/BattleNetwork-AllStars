@@ -19,6 +19,32 @@ float newDiag = sqrt(coter * coter + coter * coter);
 
 
 FieldMap::FieldMap()
+{	
+}
+
+FieldMap::~FieldMap()
+{
+	if(m_actor) delete m_actor;
+	if(m_bg) delete m_bg;
+
+	for(int i = 0 ; i < m_grid.xTilesNb ; ++i)
+		for(int j = 0 ; j < m_grid.yTilesNb ; ++j)
+		{
+			if( (*m_grid.objects)[i][j] ) delete (*m_grid.objects)[i][j];
+		}
+
+	vector<FieldMapElement*>::iterator it2 = m_displayables.begin();
+	for(it2 = m_displayables.begin() ; it2 != m_displayables.end() ; ++it2)
+		if(*it2) delete *it2;
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// INITIALIZE
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void FieldMap::Initialize()
 {
 	//=====================================
 	// MAPPING
@@ -72,21 +98,6 @@ FieldMap::FieldMap()
 	}
 
 	m_grid.tileset = NULL;
-	//m_grid.tileset = ImgManager::GetImage("Map/CentralArea/tileset.png");
-	//oslSetImageFrameSize(m_grid.tileset, m_grid.tileXSize, m_grid.tileYSize + 8);
-
-	//=====================================
-	// TEXT DISPLAY
-	//=====================================
-	/*m_fps.SetFont(FontManager::getFont("Files/Font/ArialBlack.ttf"));
-	m_fps.SetPosition(20, 20);
-	m_fps.SetColor(sf::Color(255, 0, 0));
-	m_fps.SetCharacterSize(20);
-
-	m_actorTileText.SetFont( FontManager::getFont("Files/Font/ArialBlack.ttf"));
-	m_actorTileText.SetPosition(800, 20);
-	m_actorTileText.SetColor(sf::Color(255, 0, 0));
-	m_actorTileText.SetCharacterSize(20);*/
 
 	//=====================================
 	// GRAPHICS
@@ -114,25 +125,6 @@ FieldMap::FieldMap()
 
 	Actor* protoman = Actor::Load("Protoman");
 	AddElement(protoman, 11, 10, true, "Protoman");
-
-	
-}
-
-FieldMap::~FieldMap()
-{
-	if(m_actor) delete m_actor;
-	if(m_bg) delete m_bg;
-
-	for(int i = 0 ; i < m_grid.xTilesNb ; ++i)
-		for(int j = 0 ; j < m_grid.yTilesNb ; ++j)
-		{
-			if( (*m_grid.objects)[i][j] ) delete (*m_grid.objects)[i][j];
-		}
-
-	vector<FieldMapElement*>::iterator it2 = m_displayables.begin();
-	for(it2 = m_displayables.begin() ; it2 != m_displayables.end() ; ++it2)
-		if(*it2) delete *it2;
-
 }
 
 //////////////////////////////////////////////////////////////

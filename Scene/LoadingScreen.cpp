@@ -9,6 +9,7 @@ using namespace std;
 #define DEFAULT_THREAD_PRIORITY   32
 #define DEFAULT_THREAD_STACK_KB_SIZE   256
 
+ScreenPtr LoadingScreen::m_screen_to_load;
 bool LoadingScreen::m_loading_done = false;
 
 LoadingScreen::LoadingScreen()

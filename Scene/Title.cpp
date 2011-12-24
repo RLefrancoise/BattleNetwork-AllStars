@@ -18,45 +18,6 @@ using namespace std;
 //////////////////////////////////////////////////////////////
 Title::Title()
 {
-
-	m_currentAlpha = 0;
-
-	m_bg = ImgManager::GetImage("Title/title.png");
-	m_bg->x = 0;
-	m_bg->y = 0;
-
-	int random = Random::RandomInt(1,3);
-	if(random == 1)
-		m_char = ImgManager::GetImage("Title/character.png");
-	else
-		m_char = ImgManager::GetImage("Title/character2.png");
-
-	//m_char.SetColor(sf::Color(255,255,255,m_currentAlpha));
-	m_char->x = 480 - m_char->stretchX;
-	m_char->y = 0;
-	//m_charAlpha = currentAlpha
-
-	m_newGame = ImgManager::GetImage("Title/new_game.png");
-	m_newGame->x = 25;
-	m_newGame->y = 272 - 2 * m_newGame->stretchY - 10;
-	//newGame alpha = 220;
-	//m_newGame.SetPosition(25, 640 - 2 * m_newGame.GetSubRect().Height - 10);
-	//m_newGame.SetColor(sf::Color(255,255,255,220));
-
-	m_loadGame = ImgManager::GetImage("Title/load_game.png");
-	m_loadGame->x = 25;
-	m_loadGame->y = 272 - m_loadGame->stretchY - 10;
-	//loadGame alpha = 220
-	//m_loadGame.SetPosition(25, 640 -  m_loadGame.GetSubRect().Height - 10);
-	//m_loadGame.SetColor(sf::Color(255,255,255,220));
-
-	m_cursor = ImgManager::GetImage("Title/cursor.png");
-	m_cursor->x = 27;
-	m_cursor->y = 272 - 2 * m_newGame->stretchY - 6;
-	//m_cursor.SetPosition(29, 640 - 2 * m_newGame.GetSubRect().Height - 3);
-
-	m_menu = NEW_GAME;
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -69,7 +30,46 @@ Title::~Title()
 {
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// INITIALIZE
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void Title::Initialize()
+{
+	m_currentAlpha = 0;
 
+	m_bg = ImgManager::GetImage("Title/title.png");
+	m_bg->x = 0;
+	m_bg->y = 0;
+
+	int random = Random::RandomInt(1,3);
+	if(random == 1)
+		m_char = ImgManager::GetImage("Title/character.png");
+	else
+		m_char = ImgManager::GetImage("Title/character2.png");
+
+	
+	m_char->x = 480 - m_char->stretchX;
+	m_char->y = 0;
+	
+
+	m_newGame = ImgManager::GetImage("Title/new_game.png");
+	m_newGame->x = 25;
+	m_newGame->y = 272 - 2 * m_newGame->stretchY - 10;
+	
+
+	m_loadGame = ImgManager::GetImage("Title/load_game.png");
+	m_loadGame->x = 25;
+	m_loadGame->y = 272 - m_loadGame->stretchY - 10;
+	
+
+	m_cursor = ImgManager::GetImage("Title/cursor.png");
+	m_cursor->x = 27;
+	m_cursor->y = 272 - 2 * m_newGame->stretchY - 6;
+
+	m_menu = NEW_GAME;
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

@@ -15,6 +15,23 @@
 
 using namespace std;
 
+int shutdownCallback(int arg1, int arg2, void* common)
+{
+	ImgManager::Reset();
+	SndManager::Reset();
+	FontManager::Reset();
+
+	SceneManager::getInstance()->kill();
+	
+#ifdef _DEBUG
+	LOG("========================================")
+	LOG("============== Shut down ===============")
+	LOG("========================================")
+#endif
+	
+	return 0;
+}
+ 
 //The callbacks
 PSP_MODULE_INFO("KH PSP", 0, 1, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
@@ -43,6 +60,8 @@ int main()
 	//Enable the no-fail feature
 	oslSetQuitOnLoadFailure(1);
 
+	oslSetExitCallback(shutdownCallback);
+	
 	srand(time(NULL));
 
 	//-------------------------------------------------
@@ -147,21 +166,13 @@ int main()
 
 	}
 
-	ImgManager::Reset();
-	SndManager::Reset();
-	FontManager::Reset();
-
-	SceneManager::getInstance()->kill();
+	
 
 	oslEndGfx();
 	oslQuit();
 	sceKernelSleepThread();
 
-#ifdef _DEBUG
-	LOG("========================================")
-	LOG("============== Shut down ===============")
-	LOG("========================================")
-#endif
+
 
 	return 0;
 }

@@ -1,7 +1,8 @@
 TARGET = KH_PSP
-SRC = $(wildcard Game/*.cpp) $(wildcard Scene/*.cpp) $(wildcard Utils/*.cpp) $(wildcard PRX/*.cpp) $(wildcard PRX/*.S) $(wildcard *.cpp)
-#OBJS = main.o BattleMap.o Title.o FieldMap.o
-OBJS = $(SRC:.cpp=.o)
+SRC = $(wildcard Game/*.cpp) $(wildcard Scene/*.cpp) $(wildcard Utils/*.cpp) $(wildcard PRX/*.cpp) $(wildcard *.cpp)
+PRX = $(wildcard PRX/*.S)
+PRX_OBJS = $(PRX:.S=.o)
+OBJS = $(SRC:.cpp=.o) $(PRX_OBJS)
 
 CURRENTDIR = C:\Users\Renaud\Documents\programmation\C++\SVN\KHBN\khbn-code-0
 

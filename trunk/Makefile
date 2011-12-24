@@ -3,7 +3,7 @@ SRC = $(wildcard Game/*.cpp) $(wildcard Scene/*.cpp) $(wildcard Utils/*.cpp) $(w
 #OBJS = main.o BattleMap.o Title.o FieldMap.o
 OBJS = $(SRC:.cpp=.o) PRX/ThreadingFunc.o
 
-CURRENTDIR = C:/Users/Renaud/Documents/programmation/PSP/KH_PSP/KH_PSP/KH_PSP
+CURRENTDIR = C:\Users\Renaud\Documents\programmation\C++\SVN\KHBN\khbn-code-0
 
 INCDIR = $(CURRENTDIR)/Game $(CURRENTDIR)/Scene $(CURRENTDIR)/Utils $(CURRENTDIR)/PRX C:\Users\Renaud\Documents\programmation\C++\CMake\KH\thirdParty\boost\include
 CFLAGS = -D_DEBUG -G4 -Wall -O3

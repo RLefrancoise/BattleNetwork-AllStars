@@ -4,34 +4,38 @@
 
 using namespace std;
 
-//std::map<std::string, sf::Font> FontManager::m_fontMap;
+std::map<std::string, MMBNFont*> FontManager::m_fontMap;
 
 void FontManager::Reset()
 {
-	//m_fontMap.clear();
+	map<string, MMBNFont*>::iterator it;
+	for(it = m_fontMap.begin() ; it != m_fontMap.end() ;++it)
+		if(it->second) delete it->second;
+		
+	m_fontMap.clear();
 	return;
 }
 
-/*sf::Font& FontManager::getFont(std::string name)
+MMBNFont* FontManager::GetFont(std::string name)
 {
 
 	//police déjà chargée ?
-	map<string, sf::Font>::iterator it;
+	map<string, MMBNFont*>::iterator it;
 	it = m_fontMap.find(name);
 
 	//si non
 	if(it == m_fontMap.end())
 	{
 		//on charge la police
-		sf::Font font;
-		if(!font.LoadFromFile(name)) //si le chargement échoue on log et on quitte
+		MMBNFont* font = MMBNFont::Load(name);
+		if(!font) //si le chargement échoue on log et on quitte
 		{
 			LOG("Can't load font : " + name);
 			exit(EXIT_FAILURE);
 		}
 		else //si le chargement a réussi on stocke dans la map
 		{
-			pair<string, sf::Font> p;
+			pair<string, MMBNFont*> p;
 			p.first = name;
 			p.second = font;
 			m_fontMap.insert(p);
@@ -43,4 +47,3 @@ void FontManager::Reset()
 	return m_fontMap[name];
 }
 
-*/

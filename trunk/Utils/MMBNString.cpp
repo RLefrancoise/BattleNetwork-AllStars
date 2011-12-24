@@ -89,3 +89,26 @@ void MMBNString::operator=(const string &str)
 			m_chars.push_back(str[i]);
 		
 }
+
+void MMBNString::operator=(const char &c)
+{
+	m_chars.clear();
+	
+	if(m_font->ContainsChar(c))
+		m_chars.push_back(c);
+}
+
+void MMBNString::operator=(const int &i)
+{
+	ostringstream oss(ostringstream::out);
+	oss << i;
+	string str = oss.str();
+	
+	m_chars.clear();
+
+	for(unsigned int i = 0 ; i < str.size() ; i++)
+		if(m_font->ContainsChar(str[i]))
+			m_chars.push_back(str[i]);
+	
+	
+}

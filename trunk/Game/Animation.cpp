@@ -69,6 +69,17 @@ ExtendedSprite& Animation::GetCurrentSprite()
 	return m_sprites[m_currentFrame];
 }
 
+void Animation::SetPosition(float x, float y)
+{
+	for(unsigned int i = 0 ; i < m_sprites.size() ; i++)
+		m_sprites[i].SetPosition(x, y);
+}
+
+void Animation::Display(float offX, float offY)
+{
+	m_sprites[m_currentFrame].Display(offX, offY);
+}
+		
 void Animation::Start()
 {
 	if(m_running) return;
@@ -109,4 +120,65 @@ void Animation::Stop()
 bool Animation::IsRunning()
 {
 	return m_running;
+}
+
+Animation* Animation::Load(std::string spritesPath, bool reverse, bool loop)
+{
+	vector<int> delays;
+	InitDelaysOfAnim(spritesPath, delays);
+	return new Animation(spritesPath, delays, reverse, loop);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// INIT DELAYS OF ANIM
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void Animation::InitDelaysOfAnim(string path, vector<int> &delays)
+{
+	int spritesNb = 0, delay = 0;
+	ifstream in_anim( (path + string("/anim.txt")).c_str() , ifstream::in);
+
+	if(!in_anim.good())
+	{
+		LOG("Impossible de trouver le fichier anim.txt pour " + path);
+		oslQuit();
+	}
+
+	string line;
+	while(getline(in_anim, line))
+	{
+		if(line.find("sprites=") == 0)
+		{
+			int equalsIndex = line.find_first_of("=");
+			line = line.substr(equalsIndex + 1);
+			istringstream iss(line);
+			iss >> spritesNb;
+		}
+		else if(line.find("delays=") == 0)
+		{
+			int equalsIndex = line.find_first_of("=");
+			line = line.substr(equalsIndex + 1);
+			int commaIndex = -1;
+
+			for(int i = 0 ; i < spritesNb ; i++)
+			{
+				commaIndex = line.find_first_of(",");
+
+				string delay_s;
+				if(commaIndex != -1) delay_s = line.substr(0, commaIndex);
+				else delay_s = line;
+
+				istringstream iss(delay_s);
+				iss >> delay;
+				delays.push_back(delay);
+
+				line = line.substr(commaIndex + 1);
+			}
+			
+		}
+	}
+
+	in_anim.close();
 }

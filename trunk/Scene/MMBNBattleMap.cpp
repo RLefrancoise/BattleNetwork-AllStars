@@ -346,27 +346,6 @@ MMBNBattleActor* MMBNLifeBar::GetActor()
 
 MMBNBattleMap::MMBNBattleMap()
 {
-
-	m_bg = new Animation("Map/Background", std::vector<int>(7,150), false, true);
-
-	m_grid = new MMBNPanelGrid();
-
-
-	m_lifeBar = new MMBNLifeBar(m_grid->GetActor());
-	m_lifeBar->SetPosition(10, 5);
-	m_lifeBar->SetSize(66, 24);
-
-	m_emotion = new MMBNEmotionDisplay(m_grid->GetActor());
-	m_emotion->SetPosition(10, m_lifeBar->GetPosition().y + m_lifeBar->GetSize().y + 5);
-
-	m_enemies_font = MMBNFont::Load("MMBNBattleFont");
-
-
-	m_enemy_display_edge = ImgManager::GetImage("Battle/enemy_display_edge.png");
-
-
-	m_display_debug_info = true;
-
 }
 
 MMBNBattleMap::~MMBNBattleMap()
@@ -379,7 +358,6 @@ MMBNBattleMap::~MMBNBattleMap()
 
 	if(m_emotion) delete m_emotion;
 
-	if(m_enemies_font) delete m_enemies_font;
 }
 
 //////////////////////////////////////////////////////////////
@@ -394,6 +372,31 @@ int MMBNBattleMap::Run()
 	if(screen == SCREEN_BATTLEMAP) Display();
 
 	return screen;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// INITIALIZE
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void MMBNBattleMap::Initialize()
+{
+	m_bg = new Animation("Map/Background", std::vector<int>(7,150), false, true);
+
+	m_grid = new MMBNPanelGrid();
+
+
+	m_lifeBar = new MMBNLifeBar(m_grid->GetActor());
+	m_lifeBar->SetPosition(10, 5);
+	m_lifeBar->SetSize(66, 24);
+
+	m_emotion = new MMBNEmotionDisplay(m_grid->GetActor());
+	m_emotion->SetPosition(10, m_lifeBar->GetPosition().y + m_lifeBar->GetSize().y + 5);
+
+	m_enemy_display_edge = ImgManager::GetImage("Battle/enemy_display_edge.png");
+
+
+	m_display_debug_info = true;
 }
 
 //////////////////////////////////////////////////////////////
@@ -434,7 +437,9 @@ void MMBNBattleMap::Display()
 	for(unsigned int i = 0 ; i < vect.size() ; i++)
 	{
 		MMBNString s;
-		s.SetFont(m_enemies_font);
+		MMBNFont* f = GameSystem::GetBattleEnemyNameFont();
+		
+		s.SetFont(f);
 		s = vect[i]->GetName();
 		s.SetPosition(475 - s.GetStringWidth(), 5 + inc);
 		
@@ -442,7 +447,7 @@ void MMBNBattleMap::Display()
 		s.Display();
 		oslDrawImageXY(m_enemy_display_edge, 475 - s.GetStringWidth() - m_enemy_display_edge->sizeX, 5 + inc);
 
-		inc += m_enemies_font->GetCharHeight();
+		inc += f->GetCharHeight();
 	}
 
 	//+++++++++++++++++++++++++++++++++++++

@@ -1,11 +1,5 @@
 #include "ThreadingPRX.h"
 
-/*SceUID ThreadingPRX::createThread(const char* name, SceKernelThreadEntry entry, int priority, int stacksize, SceUInt attr, SceKernelThreadOptParam* option);
-int ThreadingPRX::deleteThread(SceUID thid);
-int ThreadingPRX::startThread(SceUID thid, SceSize arglen, void* argp);
-int ThreadingPRX::getThreadInfo(SceUID thid, SceKernelThreadInfo* info);
-void* ThreadingPRX::getModuleInfo(void);
-
 void ThreadingPRX::displayPrxInfo(SceUID prxid)
 {
 	SceModule *mod;
@@ -27,9 +21,9 @@ void ThreadingPRX::displayPrxInfo(SceUID prxid)
 			oslPrintf("Segment[%d] %08X %08X\n", i, mod->segmentaddr[i], mod->segmentsize[i]);
 		}
 	}
-}*/
+}
 
-void displayPrxInfo(SceUID prxid)
+/*void displayPrxInfo(SceUID prxid)
 {
 	SceModule *mod;
 	int i;
@@ -50,4 +44,4 @@ void displayPrxInfo(SceUID prxid)
 			oslPrintf("Segment[%d] %08X %08X\n", i, mod->segmentaddr[i], mod->segmentsize[i]);
 		}
 	}
-}
+}*/

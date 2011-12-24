@@ -1,7 +1,7 @@
 TARGET = KH_PSP
-SRC = $(wildcard Game/*.cpp) $(wildcard Scene/*.cpp) $(wildcard Utils/*.cpp) $(wildcard PRX/*.cpp) $(wildcard *.cpp)
+SRC = $(wildcard Game/*.cpp) $(wildcard Scene/*.cpp) $(wildcard Utils/*.cpp) $(wildcard PRX/*.cpp) $(wildcard PRX/*.S) $(wildcard *.cpp)
 #OBJS = main.o BattleMap.o Title.o FieldMap.o
-OBJS = PRX/ThreadingFunc.o $(SRC:.cpp=.o)
+OBJS = $(SRC:.cpp=.o)
 
 CURRENTDIR = C:\Users\Renaud\Documents\programmation\C++\SVN\KHBN\khbn-code-0
 
@@ -36,7 +36,4 @@ PSP_LARGE_MEMORY = 1
 
 PSPSDK=$(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak
-
-ThreadingFunc.S: C:\Users\Renaud\Documents\programmation\PSP\ThreadingPRX\exports.exp
-	$(PSPSDK)/bin/psp-build-exports --build-stubs $<
 	

@@ -10,7 +10,6 @@ using namespace std;
 #define DEFAULT_THREAD_STACK_KB_SIZE   256
 
 ScreenPtr LoadingScreen::m_screen_to_load;
-bool LoadingScreen::m_loading_done = false;
 
 LoadingScreen::LoadingScreen()
 {
@@ -19,6 +18,7 @@ LoadingScreen::LoadingScreen()
 	m_loading_string = "Loading...";
 
 	m_thread_created = false;
+	m_thread_started = false;
 	m_loading_done = false;
 
 }
@@ -30,6 +30,7 @@ LoadingScreen::LoadingScreen(ScreenPtr& ptr)
 	m_loading_string = "Loading...";
 
 	m_thread_created = false;
+	m_thread_started = false;
 	m_loading_done = false;
 
 	SetScreenToLoad(ptr);
@@ -61,26 +62,26 @@ int	LoadingScreen::Update()
 	//=============================
 	if( m_thread_created )
 	{
-		//get the status of the loading thread
-		SceKernelThreadInfo info;
-		info.size = sizeof(SceKernelThreadInfo);
-
-		//acting according to the thread status
-		int error = sceKernelReferThreadStatus(m_thread, &info);
-		//int error = pspSdkReferThreadStatusByName("loading_thread", &m_thread, &info);
-
-		if( error == 0 )
+		if(!m_thread_started)
 		{
-			if(info.status == PSP_THREAD_READY)
+			sceKernelStartThread(m_thread, m_args_size, m_argp);
+			m_thread_started = true;
+		}
+		else
+		{
+			//get the status of the loading thread
+			SceKernelThreadInfo info;
+			info.size = sizeof(SceKernelThreadInfo);
+
+			//acting according to the thread status
+			int error = sceKernelReferThreadStatus(m_thread, &info);
+
+			if( info.waitType > 1 )
 			{
-				LOG("Start Loading Thread")
-				sceKernelStartThread(m_thread, m_args_size, m_argp);
+					m_loading_done = true;
+					SceneManager::getInstance()->setScreen(m_screen_to_load);
 			}
-			else if( (info.status == PSP_THREAD_KILLED) || (info.status == PSP_THREAD_STOPPED) )
-			{
-				m_loading_done = true;
-				SceneManager::getInstance()->setScreen(m_screen_to_load);
-			}
+			
 		}
 	}
 
@@ -127,6 +128,8 @@ void LoadingScreen::SetScreenToLoad(ScreenPtr& s)
 	//m_thread = ThreadingPRX::createThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
 	m_thread = sceKernelCreateThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
 	(m_thread >= 0) ? m_thread_created = true : m_thread_created = false;
+	
+	m_thread_started = false;
 
 #ifdef _DEBUG
 

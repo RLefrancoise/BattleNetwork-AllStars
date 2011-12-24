@@ -37,6 +37,10 @@ Title::~Title()
 //////////////////////////////////////////////////////////////
 void Title::Initialize()
 {
+#ifdef _DEBUG
+	LOG("Initialize Title")
+#endif
+	
 	m_currentAlpha = 0;
 
 	m_bg = ImgManager::GetImage("Title/title.png");

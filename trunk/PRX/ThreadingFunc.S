@@ -2,7 +2,7 @@
 
 #include "pspstub.s"
 
-	STUB_START "ThreadingPRX",0x00090000,0x00050005
+	STUB_START "ThreadingFunc",0x40090000,0x00050005
 	STUB_FUNC  0x712871DF,createThread
 	STUB_FUNC  0xF7B5B929,deleteThread
 	STUB_FUNC  0x83D2B550,startThread

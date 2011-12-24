@@ -124,8 +124,8 @@ void LoadingScreen::SetScreenToLoad(ScreenPtr& s)
 
 	m_screen_to_load = s;
 	
-	m_thread = ThreadingPRX::createThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
-	//m_thread = sceKernelCreateThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
+	//m_thread = ThreadingPRX::createThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
+	m_thread = sceKernelCreateThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
 	(m_thread >= 0) ? m_thread_created = true : m_thread_created = false;
 
 #ifdef _DEBUG

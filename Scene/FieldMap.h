@@ -68,7 +68,8 @@ class FieldMap : public Screen
 		//Démarre la carte
 		virtual int	Run()		;
 		void	Initialize()										;
-
+		void	Destroy();
+		
 		void Load(std::string file);
 		void AddElement(FieldMapElement* e, float x, float y, bool catchToGrid = true, std::string id = "");
 

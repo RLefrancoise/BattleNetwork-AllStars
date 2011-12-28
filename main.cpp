@@ -13,7 +13,41 @@
 
 #include "LoadingScreen.h"
 
+#define DEFAULT_THREAD_PRIORITY   32
+#define DEFAULT_THREAD_STACK_KB_SIZE   256
+
 using namespace std;
+
+//The callbacks
+PSP_MODULE_INFO("KH PSP", 0, 1, 1);
+PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
+
+//Création des écrans de jeu
+std::map< int, Screen* > screens;
+int screen = SCREEN_TITLE;
+int previousScreen = screen;
+	
+SceUID loadingThread;
+bool screenLoaded = false;
+bool loadingThreadCreated = false;
+
+int Loading(SceSize size, void* argp)
+{
+	LOG("Enter loading function")
+	//Screen *s = *((Screen **) argp);
+	//Screen* s = (Screen*) argp;
+	
+	LOG("Initialize screen")
+	screens[screen]->Initialize();
+	//s->Initialize();
+	//s->LoadRessources();
+	
+	LOG("Initialize done")
+	screenLoaded = true;
+	loadingThreadCreated = false;
+	LOG("Exit loading function")
+	return 0;
+}
 
 int shutdownCallback(int arg1, int arg2, void* common)
 {
@@ -32,10 +66,6 @@ int shutdownCallback(int arg1, int arg2, void* common)
 	return 0;
 }
  
-//The callbacks
-PSP_MODULE_INFO("KH PSP", 0, 1, 1);
-PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
-
 int main()
 {
 #ifdef _DEBUG
@@ -68,30 +98,21 @@ int main()
 
 	GameSystem::Initialize();
 	MMBNBattleChip::LoadMaps();
-
-	//Création des écrans de jeu
-	/*std::map< int, Screen* > screens;
-	int screen = SCREEN_TITLE;
-
+		
+	LoadingScreen loadingScreen;
+	
 	//Création de l'écran titre
 	Title title;
 	//Création de la battle map
 	//BattleMap battleMap;
 	MMBNBattleMap battleMap;
 	//Création de la field map
-	//FieldMap fieldMap;
-	//fieldMap.Load("CentralArea");
+	FieldMap fieldMap;
 
 	screens[SCREEN_TITLE] = &title;
 	screens[SCREEN_BATTLEMAP] = &battleMap;
-	//screens[SCREEN_FIELDMAP] = &fieldMap;*/
-
-	ScreenPtr t(new Title());
-	LoadingScreen* ls = new LoadingScreen(t);
-	ScreenPtr screen(ls);
-
-	SceneManager::getInstance()->pushScreen(screen);
-	screen = SceneManager::getInstance()->getCurrentScreen();
+	screens[SCREEN_LOADING] = &loadingScreen;
+	screens[SCREEN_FIELDMAP] = &fieldMap;
 
 	//--------------------------------------------
 
@@ -112,7 +133,7 @@ int main()
 	//-------------------------------------------
 
 	//boucle principale
-	while (!osl_quit && screen.get())
+	while (!osl_quit && screen != SCREEN_EXIT)
 	{
 		sceRtcGetCurrentTick(&temps);
 		frames++;
@@ -126,10 +147,44 @@ int main()
 			//efface l'écran
 			oslClearScreen(RGB(0,0,0));
 
-			//Run de l'écran en cours
-			//screen = screens[screen]->Run();
-			screen = SceneManager::getInstance()->getCurrentScreen();
-			if(screen.get()) screen.get()->Run();
+			//----------------DEBUG----------------------
+			ostringstream oss(ostringstream::out);
+			oss << "Screen Loaded: " << screenLoaded << " Loading Thread Created: " << loadingThreadCreated << " Screen: " << screen << " PScreen: " << previousScreen;
+			oslPrintf_xy(5, 15, oss.str().c_str());
+			
+			
+			//Run de l'écran en cours si le chargement est fini
+			if(screenLoaded)
+			{	
+				previousScreen = screen;
+				screen = screens[screen]->Run();
+			}
+			
+			//sinon on charge
+			else
+			{
+				//si le thread de chargement n'est pas encore créé, on le crée
+				if(!loadingThreadCreated)
+				{
+					screens[previousScreen]->Destroy();
+					
+					loadingThread = sceKernelCreateThread("loading_thread", Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
+					loadingThreadCreated = true;
+					LOG("Loading Thread Created")
+					if(loadingThread >= 0) sceKernelStartThread(loadingThread, 0, NULL);
+					LOG("Loading Thread Started")
+				}
+						
+				//on affiche l'écran de chargement
+				screens[SCREEN_LOADING]->Run();
+			}
+				
+			//l'écran a changé ?
+			if(screen != previousScreen)
+			{
+				screenLoaded = false;
+				
+			}
         }
  
 		//-----------------FPS----------------------
@@ -155,7 +210,7 @@ int main()
 			oslPrintf_xy(5,5,s.c_str());
 		}
 		//-------------------------------------------
-
+		
 		//We have now finished with drawing
         oslEndDrawing();
 
@@ -166,13 +221,21 @@ int main()
 
 	}
 
+	/*ImgManager::Reset();
+	SndManager::Reset();
+	FontManager::Reset();
+
+	SceneManager::getInstance()->kill();
 	
+#ifdef _DEBUG
+	LOG("========================================")
+	LOG("============== Shut down ===============")
+	LOG("========================================")
+#endif*/
 
 	oslEndGfx();
 	oslQuit();
 	sceKernelSleepThread();
-
-
 
 	return 0;
 }

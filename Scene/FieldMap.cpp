@@ -24,19 +24,6 @@ FieldMap::FieldMap()
 
 FieldMap::~FieldMap()
 {
-	if(m_actor) delete m_actor;
-	if(m_bg) delete m_bg;
-
-	for(int i = 0 ; i < m_grid.xTilesNb ; ++i)
-		for(int j = 0 ; j < m_grid.yTilesNb ; ++j)
-		{
-			if( (*m_grid.objects)[i][j] ) delete (*m_grid.objects)[i][j];
-		}
-
-	vector<FieldMapElement*>::iterator it2 = m_displayables.begin();
-	for(it2 = m_displayables.begin() ; it2 != m_displayables.end() ; ++it2)
-		if(*it2) delete *it2;
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -125,6 +112,27 @@ void FieldMap::Initialize()
 
 	Actor* protoman = Actor::Load("Protoman");
 	AddElement(protoman, 11, 10, true, "Protoman");
+	
+	
+	
+	Load("CentralArea");
+	
+}
+
+void FieldMap::Destroy()
+{
+	if(m_actor) delete m_actor;
+	if(m_bg) delete m_bg;
+
+	for(int i = 0 ; i < m_grid.xTilesNb ; ++i)
+		for(int j = 0 ; j < m_grid.yTilesNb ; ++j)
+		{
+			if( (*m_grid.objects)[i][j] ) delete (*m_grid.objects)[i][j];
+		}
+
+	vector<FieldMapElement*>::iterator it2 = m_displayables.begin();
+	for(it2 = m_displayables.begin() ; it2 != m_displayables.end() ; ++it2)
+		if(*it2) delete *it2;
 }
 
 //////////////////////////////////////////////////////////////

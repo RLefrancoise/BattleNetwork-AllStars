@@ -39,7 +39,7 @@ LoadingScreen::LoadingScreen(ScreenPtr& ptr)
 LoadingScreen::~LoadingScreen()
 {
 	if(m_anim) delete m_anim;
-	if(m_thread_created) sceKernelTerminateDeleteThread(m_thread);
+	if(m_thread_created) sceKernelExitDeleteThread(m_thread);
 }
 
 int LoadingScreen::Run()
@@ -50,7 +50,19 @@ int LoadingScreen::Run()
 	return screen;
 }
 
+
+
 void LoadingScreen::Initialize()
+{
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// DESTROY
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+void LoadingScreen::Destroy()
 {
 
 }
@@ -60,7 +72,7 @@ int	LoadingScreen::Update()
 	//=============================
 	// GESTION CHARGEMENT
 	//=============================
-	if( m_thread_created )
+	/*if( m_thread_created )
 	{
 		if(!m_thread_started)
 		{
@@ -75,15 +87,15 @@ int	LoadingScreen::Update()
 
 			//acting according to the thread status
 			int error = sceKernelReferThreadStatus(m_thread, &info);
-
-			if( info.waitType > 1 )
+			
+			if( (error == 0) && (info.waitType < 1) )
 			{
 					m_loading_done = true;
 					SceneManager::getInstance()->setScreen(m_screen_to_load);
 			}
 			
 		}
-	}
+	}*/
 
 	//=============================
 	// GESTION AFFICHAGE
@@ -126,7 +138,7 @@ void LoadingScreen::SetScreenToLoad(ScreenPtr& s)
 	m_screen_to_load = s;
 	
 	//m_thread = ThreadingPRX::createThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
-	m_thread = sceKernelCreateThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
+	m_thread = sceKernelCreateThread("loading_thread", LoadingScreen::Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, 0, NULL);
 	(m_thread >= 0) ? m_thread_created = true : m_thread_created = false;
 	
 	m_thread_started = false;

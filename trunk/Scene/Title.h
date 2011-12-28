@@ -5,6 +5,7 @@
 #include "Timer.h"
 
 #include <oslib/oslib.h>
+#include <pspthreadman.h>
 
 enum TitleMenu
 {
@@ -22,14 +23,15 @@ class Title : public Screen
 		~Title()							;
 		virtual int	Run()					;
 		void	Initialize()				;
-
+		void	Destroy()					;
+		
 	private:
-
+		
 		//Mise à jour de la scène (appelée par Run)
 		virtual int	Update()	;
 		//Affichage de la scène (appelée par Run)
 		virtual void Display()	;
-
+		
 		//background
 		OSL_IMAGE* m_bg;						;
 		OSL_IMAGE* m_char						;

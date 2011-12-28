@@ -291,6 +291,7 @@ class MMBNBattleMap : public Screen
 
 		int		Run()						;
 		void	Initialize()				;
+		void	Destroy()					;
 };
 
 class MMBNBattleIA

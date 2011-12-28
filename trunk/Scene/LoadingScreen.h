@@ -29,8 +29,8 @@ class LoadingScreen : public Screen
 
 		int		Update()											;
 		void	Display()											;
-
-		static int		Loading(SceSize size, void* argp)			;
+		
+		bool	InitializeDone()									;
 
 	public:
 		LoadingScreen()												;
@@ -39,7 +39,11 @@ class LoadingScreen : public Screen
 
 		int		Run()												;
 		void	Initialize()										;
+		void	Destroy()											;
 
+		static int		Loading(SceSize size, void* argp)			;
+		bool	LoadingDone() 				;
+		
 		void	SetScreenToLoad(ScreenPtr& s)						;
 		ScreenPtr& GetScreenToLoad()								;
 

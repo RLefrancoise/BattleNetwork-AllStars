@@ -19,7 +19,7 @@
 using namespace std;
 
 //The callbacks
-PSP_MODULE_INFO("KH PSP", 0, 1, 1);
+PSP_MODULE_INFO("KH PSP", 0x800, 1, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
 
 //Création des écrans de jeu
@@ -30,6 +30,33 @@ int previousScreen = screen;
 SceUID loadingThread;
 bool screenLoaded = false;
 bool loadingThreadCreated = false;
+
+void ChangeScreen()
+{
+	if(screens[previousScreen])
+	{
+		LOG("Destroy Current Screen")
+		screens[previousScreen]->Destroy();
+		delete screens[previousScreen];
+		screens[previousScreen] = NULL;
+	}
+	
+	switch(screen)
+	{
+		case SCREEN_TITLE:
+			screens[screen] = new Title();
+			break;
+		case SCREEN_BATTLEMAP:
+			screens[screen] = new MMBNBattleMap();
+			break;
+		case SCREEN_FIELDMAP:
+			screens[screen] = new FieldMap();
+			break;
+		default:
+			break;
+	}
+	
+}
 
 int Loading(SceSize size, void* argp)
 {
@@ -100,9 +127,15 @@ int main()
 	MMBNBattleChip::LoadMaps();
 		
 	LoadingScreen loadingScreen;
+	screens[SCREEN_LOADING] 	= &loadingScreen	;
+	screens[SCREEN_TITLE] 		= NULL				;
+	screens[SCREEN_BATTLEMAP]	= NULL				;
+	screens[SCREEN_FIELDMAP] 	= NULL				;
+	
+	ChangeScreen();
 	
 	//Création de l'écran titre
-	Title title;
+	/*Title title;
 	//Création de la battle map
 	//BattleMap battleMap;
 	MMBNBattleMap battleMap;
@@ -112,7 +145,7 @@ int main()
 	screens[SCREEN_TITLE] = &title;
 	screens[SCREEN_BATTLEMAP] = &battleMap;
 	screens[SCREEN_LOADING] = &loadingScreen;
-	screens[SCREEN_FIELDMAP] = &fieldMap;
+	screens[SCREEN_FIELDMAP] = &fieldMap;*/
 
 	//--------------------------------------------
 
@@ -156,8 +189,17 @@ int main()
 			//Run de l'écran en cours si le chargement est fini
 			if(screenLoaded)
 			{	
-				previousScreen = screen;
+				
 				screen = screens[screen]->Run();
+				//l'écran a changé ?
+				if(screen != previousScreen)
+				{
+					ChangeScreen();
+					//screens[previousScreen]->Destroy();
+					screenLoaded = false;
+				}
+				
+				previousScreen = screen;
 			}
 			
 			//sinon on charge
@@ -166,9 +208,7 @@ int main()
 				//si le thread de chargement n'est pas encore créé, on le crée
 				if(!loadingThreadCreated)
 				{
-					screens[previousScreen]->Destroy();
-					
-					loadingThread = sceKernelCreateThread("loading_thread", Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER, NULL);
+					loadingThread = sceKernelCreateThread("loading_thread", Loading, DEFAULT_THREAD_PRIORITY, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER | THREAD_ATTR_VFPU, NULL);
 					loadingThreadCreated = true;
 					LOG("Loading Thread Created")
 					if(loadingThread >= 0) sceKernelStartThread(loadingThread, 0, NULL);
@@ -179,12 +219,7 @@ int main()
 				screens[SCREEN_LOADING]->Run();
 			}
 				
-			//l'écran a changé ?
-			if(screen != previousScreen)
-			{
-				screenLoaded = false;
-				
-			}
+			
         }
  
 		//-----------------FPS----------------------

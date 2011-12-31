@@ -35,25 +35,45 @@ MMBNPanelGrid::MMBNPanelGrid()
 		for(unsigned int j = 0 ; j < m_height ; j++)
 			(*m_panels_team)[i][j] = ENEMY;
 		
-	//load the pictures for each type of panels
-	m_panel_pictures[PLAYER] = ImgManager::GetImage("Battle/player_panel.png");
-	m_panel_pictures[ENEMY]  = ImgManager::GetImage("Battle/enemy_panel.png");
-	m_panel_pictures[EMPTY]	 = NULL;
-	m_panel_pictures[BROKEN] = NULL;
-
+	//all the panels are normal
+	for(unsigned int i = 0 ; i < m_width ; i++)
+		for(unsigned int j = 0 ; j < m_height ; j++)
+			(*m_panels)[i][j] = NORMAL;
+			
+	//load the pictures for each team
+	m_panel_pictures[PLAYER] = ImgManager::GetImage("System/Animation/Battle/Panels/player_panel.png");
+	m_panel_pictures[ENEMY]  = ImgManager::GetImage("System/Animation/Battle/Panels/enemy_panel.png");
+	
+	//load the animations for each type of panels
+	m_panel_animations[NORMAL] 	= Animation::Load("System/Animation/Battle/Panels/Normal", false, true);
+	m_panel_animations[EMPTY] 	= NULL;
+	m_panel_animations[BROKEN] 	= NULL;
+	m_panel_animations[CRACKED] = NULL;
+	m_panel_animations[FIRE] 	= NULL;
+	m_panel_animations[ICE] 	= NULL;
+	m_panel_animations[GRASS] 	= NULL;
+	m_panel_animations[POISON] 	= NULL;
+	m_panel_animations[WATER] 	= NULL;
+	
 	//actor and enemies
-	m_actor = MMBNBattleActor::Load("DarkRoxas");
+	m_actor = MMBNBattleActor::Load("Roxas");
 	PutActorOnPanel(m_actor, 2, 2);
 
 	m_enemies.push_back( MMBNBattleActor::Load("Riku") );
-	PutActorOnPanel(m_enemies[0], 7, 2);
+	PutActorOnPanel(m_enemies[0], 5, 0);
 
 	m_enemies.push_back( MMBNBattleActor::Load("Sora") );
-	PutActorOnPanel(m_enemies[1], 8, 1);
+	PutActorOnPanel(m_enemies[1], 5, 1);
 	
-	m_enemies.push_back( MMBNBattleActor::Load("DualWieldRoxas") );
-	PutActorOnPanel(m_enemies[2], 8, 3);
+	m_enemies.push_back( MMBNBattleActor::Load("DarkRoxas") );
+	PutActorOnPanel(m_enemies[2], 5, 2);
+	
+	m_enemies.push_back( MMBNBattleActor::Load("Megaman") );
+	PutActorOnPanel(m_enemies[3], 5, 3);
 
+	m_enemies.push_back( MMBNBattleActor::Load("Protoman") );
+	PutActorOnPanel(m_enemies[4], 5, 4);
+	
 	vector<MMBNBattleActor*>::iterator it;
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 	{
@@ -73,7 +93,11 @@ MMBNPanelGrid::~MMBNPanelGrid()
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 		delete (*it);
 
-	if(m_life_font) delete m_life_font;
+	//if(m_life_font) delete m_life_font;
+	
+	for(unsigned int i = 0 ; i < PANEL_TYPES_NB ; i++)
+		if(m_panel_animations[i]) delete m_panel_animations[i];
+		
 }
 
 void MMBNPanelGrid::Display()
@@ -82,23 +106,26 @@ void MMBNPanelGrid::Display()
 	//======================================
 	// PANELS
 	//======================================
+	
 	for(unsigned int i = 0 ; i < m_width ; i++)
 		for(unsigned int j = 0 ; j < m_height ; j++)
 		{
 			int x = (i * m_x_inc) + m_x_map;
 			int y = (j * m_y_inc) + m_y_map;
 
-			if( (*m_panels)[i][j] == PLAYER )
-				if( m_panel_pictures[PLAYER] != NULL ) oslDrawImageXY( m_panel_pictures[PLAYER], x, y );
+			//--------------------------------------
+			// TEAM
+			//--------------------------------------
+			if( m_panel_pictures[(*m_panels_team)[i][j]] )
+				oslDrawImageXY( m_panel_pictures[(*m_panels_team)[i][j]], x, y );
 
-			if( (*m_panels)[i][j] == ENEMY )
-				if( m_panel_pictures[ENEMY] != NULL ) oslDrawImageXY( m_panel_pictures[ENEMY], x, y );
-
-			if( (*m_panels)[i][j] == EMPTY )
-				if( m_panel_pictures[EMPTY] != NULL ) oslDrawImageXY( m_panel_pictures[EMPTY], x, y );
-
-			if( (*m_panels)[i][j] == BROKEN )
-				if( m_panel_pictures[BROKEN] != NULL ) oslDrawImageXY( m_panel_pictures[BROKEN], x, y );
+			if( m_panel_animations[(*m_panels)[i][j]] )
+			{
+				m_panel_animations[(*m_panels)[i][j]]->Update();
+				m_panel_animations[(*m_panels)[i][j]]->SetPosition(x, y);
+				m_panel_animations[(*m_panels)[i][j]]->Display();
+			}
+			
 			
 		}
 
@@ -106,12 +133,21 @@ void MMBNPanelGrid::Display()
 	//======================================
 	// ACTORS
 	//======================================
-	m_actor->Display();
-
 	vector<MMBNBattleActor*>::iterator it;
-	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
-		(*it)->Display();
-
+	
+	for(unsigned int i = 0 ; i < m_width ; i++)
+		for(unsigned int j = 0 ; j < m_height ; j++)
+		{
+			Vector2i v = GetActorPanel(m_actor);
+			if(v.x == i && v.y == j) m_actor->Display();
+			
+			for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
+			{
+				v = GetActorPanel(*it);
+				if(v.x == i && v.y == j) (*it)->Display();
+			}
+		}
+		
 	//display life of enemies
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 	{
@@ -153,6 +189,11 @@ MMBNPanelGrid::PanelType MMBNPanelGrid::GetPanelType(unsigned int x, unsigned in
 	return (*m_panels)[x][y];
 }
 
+MMBNPanelGrid::PanelTeam MMBNPanelGrid::GetPanelTeam(unsigned int x, unsigned int y)
+{
+	return (*m_panels_team)[x][y];
+}
+
 bool MMBNPanelGrid::IsInsideGrid(int x, int y)
 {
 	if( (x >= 0) && (x < m_width) && (y >= 0) && (y < m_height) ) return true;
@@ -184,9 +225,14 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 	else if(k->pressed.down)
 		v.y = v.y + 1;
 	
-	if( IsInsideGrid(v.x, v.y) && ( GetPanelType(v.x, v.y) == PLAYER ) )
+	if( IsInsideGrid(v.x, v.y) && ( GetPanelTeam(v.x, v.y) == PLAYER ) )
 		PutActorOnPanel(m_actor, v.x, v.y);
 	
+}
+
+void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
+{
+	ActorHandle(k);
 }
 
 ///////////////////////////////////////////////////////
@@ -346,10 +392,12 @@ MMBNBattleActor* MMBNLifeBar::GetActor()
 
 MMBNBattleMap::MMBNBattleMap()
 {
+	LOG("Create BattleMap")
 }
 
 MMBNBattleMap::~MMBNBattleMap()
 {
+	LOG("Destroy BattleMap")
 }
 
 //////////////////////////////////////////////////////////////
@@ -405,6 +453,8 @@ void MMBNBattleMap::Destroy()
 	if(m_lifeBar) delete m_lifeBar;
 
 	if(m_emotion) delete m_emotion;
+	
+	SndManager::StopBGM(0);
 }
 
 //////////////////////////////////////////////////////////////
@@ -519,6 +569,8 @@ int MMBNBattleMap::Update()
 	if(k->pressed.R) m_display_debug_info = !m_display_debug_info;
 	
 
+	m_grid->Update(k);
+	
 	//gestion du héros
 	ActorHandle(k);
 
@@ -544,7 +596,5 @@ void MMBNBattleMap::ActorHandle(OSL_CONTROLLER* k)
 
 	if( m_grid->IsInsideGrid(v.x, v.y) && ( m_grid->GetPanelType(v.x, v.y) == MMBNPanelGrid::PLAYER ) )
 		m_grid->PutActorOnPanel(m_actor, v.x, v.y);*/
-
-	m_grid->ActorHandle(k);
 	
 }

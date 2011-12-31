@@ -129,10 +129,14 @@ void FieldMap::Destroy()
 		{
 			if( (*m_grid.objects)[i][j] ) delete (*m_grid.objects)[i][j];
 		}
-
+	
 	vector<FieldMapElement*>::iterator it2 = m_displayables.begin();
 	for(it2 = m_displayables.begin() ; it2 != m_displayables.end() ; ++it2)
 		if(*it2) delete *it2;
+		
+	m_displayables.clear();
+	
+	SndManager::StopBGM(0);
 }
 
 //////////////////////////////////////////////////////////////
@@ -361,6 +365,7 @@ void FieldMap::Load(string file)
 
 	//reshape the grid with new size
 	boost::array<int, 2> shape = {{ m_grid.xTilesNb, m_grid.yTilesNb }};
+	
 	MappingPtr pfm( new Mapping(shape) );
 	m_grid.firstMapping.swap(pfm);
 

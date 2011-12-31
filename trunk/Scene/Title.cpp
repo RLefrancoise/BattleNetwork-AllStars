@@ -18,6 +18,7 @@ using namespace std;
 //////////////////////////////////////////////////////////////
 Title::Title()
 {
+	LOG("Create Title Screen")
 }
 
 //////////////////////////////////////////////////////////////
@@ -28,6 +29,7 @@ Title::Title()
 
 Title::~Title()
 {
+	LOG("Destroy Title Screen")
 }
 
 //////////////////////////////////////////////////////////////
@@ -82,7 +84,7 @@ void Title::Initialize()
 //////////////////////////////////////////////////////////////
 void Title::Destroy()
 {
-
+	SndManager::StopBGM(0);
 }
 
 //////////////////////////////////////////////////////////////
@@ -165,15 +167,11 @@ int Title::Update()
 	if(k->pressed.cross)
 	{
 		if(m_menu == NEW_GAME)
-		{
-			SndManager::StopBGM(0);
 			return SCREEN_FIELDMAP;
-		}
+		
 		else if(m_menu == LOAD_GAME)
-		{
-			SndManager::StopBGM(0);
 			return SCREEN_BATTLEMAP;
-		}
+		
 	}
 
 	//=============================

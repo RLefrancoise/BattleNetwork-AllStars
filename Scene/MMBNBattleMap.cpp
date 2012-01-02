@@ -56,7 +56,7 @@ MMBNPanelGrid::MMBNPanelGrid()
 	m_panel_animations[WATER] 	= NULL;
 	
 	//actor and enemies
-	m_actor = MMBNBattleActor::Load("Roxas");
+	m_actor = MMBNBattleActor::Load("Roxas", false);
 	PutActorOnPanel(m_actor, 2, 2);
 
 	m_enemies.push_back( MMBNBattleActor::Load("Riku") );

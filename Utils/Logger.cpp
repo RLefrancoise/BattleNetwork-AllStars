@@ -4,24 +4,49 @@
 
 using namespace std;
 
+SceUID Logger::m_log_sema = -1;
+bool Logger::m_initialized = false;
+
+void Logger::Initialize()
+{
+	m_log_sema = sceKernelCreateSema("logger_sem", 0, 1, 1, NULL);
+	if(m_log_sema < 0) oslQuit();
+	
+	m_initialized = true;
+}
+
+void Logger::LockSema()
+{
+	int ret = sceKernelWaitSema(m_log_sema, 1, 0);
+	if (ret < 0) printf("sceKernelWaitSema(%08x) failed with %08x\n", m_log_sema, ret);
+}
+
+void Logger::UnlockSema()
+{
+	int ret = sceKernelSignalSema(m_log_sema, 1);
+	if (ret < 0) printf("sceKernelSignalSema(%08x) failed with %08x\n", m_log_sema, ret);
+}
+
 void Logger::Write(string msg)
 {
-    struct tm Today;
-	time_t now;
-	//timeval tv;
-	//timezone tz;
+	if(!m_initialized) Initialize();
 	
-	//sceKernelLibcTime(&now);
-	time(&now);
-	Today = *localtime(&now);
-	//sceKernelLibcGettimeofday(&tv, &tz);
-	//Today = *localtime(&(tv.tv_sec));
-
-    ostringstream oss;
-	oss << "[" << Today.tm_year + 1900 << "/" << Today.tm_mon + 1 << "/" << Today.tm_mday << " " << (Today.tm_hour +2) << ":" << Today.tm_min << ":" << Today.tm_sec << "]" << msg.c_str() << "\r\n";
-
-	ofstream out("Log.txt", ofstream::app);
-	if(out.good()) out << oss.str().c_str();
-	else fprintf(stderr, "can't open Log.txt");
-	out.close();
+	LockSema();
+	
+	pspTime t;
+	sceRtcGetCurrentClockLocalTime(&t);
+	
+	SceUID log = sceIoOpen("Log.txt", PSP_O_WRONLY|PSP_O_CREAT|PSP_O_APPEND, 0777);
+	
+	if(log < 0)  oslQuit();
+	
+	ostringstream oss(ostringstream::out);
+	oss << "[" << t.year << "/" << t.month << "/" << t.day << " " << t.hour << ":" << t.minutes << ":" << t.seconds << "]" << msg << "\r\n";
+	
+	string s(oss.str());
+	sceIoWrite(log, s.c_str(), sizeof(char) * s.size());
+	
+	sceIoClose(log);
+	
+	UnlockSema();
 }

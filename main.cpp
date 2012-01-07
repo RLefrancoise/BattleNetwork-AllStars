@@ -23,7 +23,7 @@ PSP_MODULE_INFO("KH PSP", 0, 1, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
 
 //Création des écrans de jeu
-std::map< int, Screen* > screens;
+std::map< int, ScreenPtr > screens;
 int screen = SCREEN_TITLE;
 int previousScreen = screen;
 	
@@ -33,24 +33,38 @@ bool loadingThreadCreated = false;
 
 void ChangeScreen()
 {
-	if(screens[previousScreen])
+	if(screens[previousScreen].get())
 	{
-		LOG("Destroy Current Screen")
+		#ifdef _DEBUG
+			LOG("Destroy Current Screen")
+		#endif
+		
 		screens[previousScreen]->Destroy();
-		delete screens[previousScreen];
-		screens[previousScreen] = NULL;
+		screens.erase(previousScreen);
+		//delete screens[previousScreen];
+		//screens[previousScreen] = NULL;
+		
 	}
 	
 	switch(screen)
 	{
 		case SCREEN_TITLE:
-			screens[screen] = new Title();
+			{
+				ScreenPtr title(new Title());
+				screens[screen] = title;
+			}
 			break;
 		case SCREEN_BATTLEMAP:
-			screens[screen] = new MMBNBattleMap();
+			{
+				ScreenPtr battle(new MMBNBattleMap());
+				screens[screen] = battle;
+			}
 			break;
 		case SCREEN_FIELDMAP:
-			screens[screen] = new FieldMap();
+			{
+				ScreenPtr field(new FieldMap());
+				screens[screen] = field;
+			}
 			break;
 		default:
 			break;
@@ -62,36 +76,28 @@ int Loading(SceSize size, void* argp)
 {
 	if( sceIoChdir("ms0:/PSP/GAME/KH") < 0)
 		LOG("Can't change directory")
-		
-	LOG("Enter loading function")
-	//Screen *s = *((Screen **) argp);
-	//Screen* s = (Screen*) argp;
 	
-	LOG("Initialize screen")
-	screens[screen]->Initialize();
-	//s->Initialize();
-	//s->LoadRessources();
+	#ifdef _DEBUG
+		LOG("Enter loading function")
+		LOG("Initialize screen")
+	#endif
 	
-	LOG("Initialize done")
+	screens[screen].get()->Initialize();
+	
 	screenLoaded = true;
 	loadingThreadCreated = false;
-	LOG("Exit loading function")
+	
+	#ifdef _DEBUG
+		LOG("Initialize done")
+		LOG("Exit loading function")
+	#endif
+	
 	return 0;
 }
 
 int shutdownCallback(int arg1, int arg2, void* common)
 {
-	ImgManager::Reset();
-	SndManager::Reset();
-	FontManager::Reset();
-
-	//SceneManager::getInstance()->kill();
-	
-#ifdef _DEBUG
-	LOG("========================================")
-	LOG("============== Shut down ===============")
-	LOG("========================================")
-#endif
+	screen = SCREEN_EXIT;
 	
 	return 0;
 }
@@ -130,18 +136,15 @@ int main()
 	MMBNBattleChip::LoadMaps();
 	SndManager::Initialize();
 	
-	LoadingScreen loadingScreen;
-	/*screens[SCREEN_LOADING] 	= &loadingScreen	;
-	screens[SCREEN_TITLE] 		= NULL				;
-	screens[SCREEN_BATTLEMAP]	= NULL				;
-	screens[SCREEN_FIELDMAP] 	= NULL				;
+	ScreenPtr loading(new LoadingScreen())			;
+	screens[SCREEN_LOADING] 	= loading			;
 	
-	ChangeScreen();*/
+	ChangeScreen();
 	
+	/*
 	//Création de l'écran titre
 	Title title;
 	//Création de la battle map
-	//BattleMap battleMap;
 	MMBNBattleMap battleMap;
 	//Création de la field map
 	FieldMap fieldMap;
@@ -149,7 +152,7 @@ int main()
 	screens[SCREEN_TITLE] = &title;
 	screens[SCREEN_BATTLEMAP] = &battleMap;
 	screens[SCREEN_LOADING] = &loadingScreen;
-	screens[SCREEN_FIELDMAP] = &fieldMap;
+	screens[SCREEN_FIELDMAP] = &fieldMap;*/
 
 	//--------------------------------------------
 
@@ -185,22 +188,25 @@ int main()
 			oslClearScreen(RGB(0,0,0));
 
 			//----------------DEBUG----------------------
-			ostringstream oss(ostringstream::out);
-			oss << "Screen Loaded: " << screenLoaded << " Loading Thread Created: " << loadingThreadCreated << " Screen: " << screen << " PScreen: " << previousScreen;
-			oslPrintf_xy(5, 15, oss.str().c_str());
-			
+			#ifdef _DEBUG
+				ostringstream oss(ostringstream::out);
+				oss << "Screen Loaded: " << screenLoaded << " Loading Thread Created: " << loadingThreadCreated << " Screen: " << screen << " PScreen: " << previousScreen;
+				oslPrintf_xy(5, 15, oss.str().c_str());
+			#endif
 			
 			//Run de l'écran en cours si le chargement est fini
 			if(screenLoaded)
 			{	
 				
-				screen = screens[screen]->Run();
+				screen = screens[screen].get()->Run();
 				//l'écran a changé ?
 				if(screen != previousScreen)
 				{
-					//ChangeScreen();
-					screens[previousScreen]->Destroy();
-					LOG("Destroy Current Screen")
+					ChangeScreen();
+					/*screens[previousScreen]->Destroy();
+					#ifdef _DEBUG
+						LOG("Destroy Current Screen")
+					#endif*/
 					screenLoaded = false;
 				}
 				
@@ -218,9 +224,13 @@ int main()
 					loadingThreadCreated = true;
 					if(loadingThread >= 0)
 					{
-						LOG("Loading Thread Created")
+						#ifdef _DEBUG
+							LOG("Loading Thread Created")
+						#endif
 						sceKernelStartThread(loadingThread, 0, NULL);
-						LOG("Loading Thread Started")
+						#ifdef _DEBUG
+							LOG("Loading Thread Started")
+						#endif
 					}
 					else
 					{
@@ -232,7 +242,7 @@ int main()
 				}
 						
 				//on affiche l'écran de chargement
-				screens[SCREEN_LOADING]->Run();
+				screens[SCREEN_LOADING].get()->Run();
 			}
 				
 			
@@ -251,14 +261,16 @@ int main()
 
 			sceRtcGetCurrentTick(&tempsDebut);
 
-			ostringstream oss(ostringstream::out);
-			oss << Variables::GetFPS();
-			string s = "[FPS : " + oss.str() + "]";
+			#ifdef _DEBUG
+				ostringstream oss(ostringstream::out);
+				oss << Variables::GetFPS();
+				string s = "[FPS : " + oss.str() + "]";
 
-			oslSetTextColor(RGBA(255,0,0,255));
-			oslSetBkColor(RGBA(0,0,0,0));
-			oslSetScreenClipping(0, 0, 480, 272);
-			oslPrintf_xy(5,5,s.c_str());
+				oslSetTextColor(RGBA(255,0,0,255));
+				oslSetBkColor(RGBA(0,0,0,0));
+				oslSetScreenClipping(0, 0, 480, 272);
+				oslPrintf_xy(5,5,s.c_str());
+			#endif
 		}
 		//-------------------------------------------
 		
@@ -272,17 +284,17 @@ int main()
 
 	}
 
-	/*ImgManager::Reset();
+	ImgManager::Reset();
 	SndManager::Reset();
 	FontManager::Reset();
 
-	SceneManager::getInstance()->kill();
+	//SceneManager::getInstance()->kill();
 	
 #ifdef _DEBUG
 	LOG("========================================")
 	LOG("============== Shut down ===============")
 	LOG("========================================")
-#endif*/
+#endif
 
 	oslEndGfx();
 	oslQuit();

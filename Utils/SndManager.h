@@ -24,6 +24,13 @@ class SndManager
 		virtual ~SndManager() = 0;
 
 		static int loopCallback(OSL_SOUND* s, int voice);
+		
+		static SceUID m_snd_sema		;
+		static bool	m_initialized		;
+		
+		static void Init()		;
+		static void LockSema()			;
+		static void UnlockSema()		;
 };
 
 #endif

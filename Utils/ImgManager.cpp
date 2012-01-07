@@ -6,13 +6,46 @@
 
 using namespace std;
 
+SceUID ImgManager::m_img_sema = -1;
+bool ImgManager::m_initialized = false;
+
+void ImgManager::Initialize()
+{
+	m_img_sema = sceKernelCreateSema("img_manager_sem", 0, 1, 1, NULL);
+	if(m_img_sema < 0) oslQuit();
+	
+	m_initialized = true;
+}
+
+void ImgManager::LockSema()
+{
+	int ret = sceKernelWaitSema(m_img_sema, 1, 0);
+	if (ret < 0) printf("sceKernelWaitSema(%08x) failed with %08x\n", m_img_sema, ret);
+}
+
+void ImgManager::UnlockSema()
+{
+	int ret = sceKernelSignalSema(m_img_sema, 1);
+	if (ret < 0) printf("sceKernelSignalSema(%08x) failed with %08x\n", m_img_sema, ret);
+}
+
+
+
+
 void ImgManager::Reset()
 {
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
 	map<string, OSL_IMAGE*>::iterator it;
 	for(it = m_imageMap.begin() ; it != m_imageMap.end() ; ++it)
 		if(it->second != NULL) oslDeleteImage(it->second);
 
 	m_imageMap.clear();
+	
+	UnlockSema();
+	
 	return;
 }
 
@@ -23,7 +56,13 @@ void ImgManager::Reset()
 //////////////////////////////////////////////////////////////
 void ImgManager::CopyImage(OSL_IMAGE* img, OSL_IMAGE* dest)
 {
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
 	(*dest) = (*img);
+	
+	UnlockSema();
 }
 
 //////////////////////////////////////////////////////////////
@@ -76,6 +115,10 @@ std::map<std::string, OSL_IMAGE*> ImgManager::m_imageMap;
 //////////////////////////////////////////////////////////////
 void  ImgManager::AddImage(string name, OSL_IMAGE* Image)
 {
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
 	//image déjà présente ?
 	map<string, OSL_IMAGE*>::iterator it;
 	it = m_imageMap.find(name);
@@ -86,8 +129,13 @@ void  ImgManager::AddImage(string name, OSL_IMAGE* Image)
 		p.first = name;
 		p.second = Image;
 		m_imageMap.insert(p);
-		LOG("Add picture : " + name);
+		
+		#ifdef _DEBUG
+			LOG("Add picture : " + name);
+		#endif
 	}
+	
+	UnlockSema();
 
 }
 
@@ -98,9 +146,15 @@ void  ImgManager::AddImage(string name, OSL_IMAGE* Image)
 //////////////////////////////////////////////////////////////
 bool ImgManager::Exists(string name)
 {
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
 	map<string, OSL_IMAGE*>::iterator it;
 	it = m_imageMap.find(name);
 
+	UnlockSema();
+	
 	return (it != m_imageMap.end());
 }
 
@@ -111,7 +165,10 @@ bool ImgManager::Exists(string name)
 //////////////////////////////////////////////////////////////
 OSL_IMAGE* ImgManager::GetImage(string name)
 {
-
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
 	//image déjà chargée ?
 	map<string, OSL_IMAGE*>::iterator it;
 	it = m_imageMap.find(name);
@@ -136,10 +193,14 @@ OSL_IMAGE* ImgManager::GetImage(string name)
 			p.first = name;
 			p.second = img;
 			m_imageMap.insert(p);
+		#ifdef _DEBUG
 			LOG("Load picture : " + name);
+		#endif
 		}
 	}
 
+	UnlockSema();
+	
 	//finalement, on retourne l'image
 	return m_imageMap[name];
 }

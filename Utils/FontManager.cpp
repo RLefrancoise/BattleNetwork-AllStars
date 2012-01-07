@@ -6,19 +6,54 @@ using namespace std;
 
 std::map<std::string, MMBNFont*> FontManager::m_fontMap;
 
+SceUID FontManager::m_font_sema = -1;
+bool FontManager::m_initialized = false;
+
+void FontManager::Initialize()
+{
+	m_font_sema = sceKernelCreateSema("font_manager_sem", 0, 1, 1, NULL);
+	if(m_font_sema < 0) oslQuit();
+	
+	m_initialized = true;
+}
+
+void FontManager::LockSema()
+{
+	int ret = sceKernelWaitSema(m_font_sema, 1, 0);
+	if (ret < 0) printf("sceKernelWaitSema(%08x) failed with %08x\n", m_font_sema, ret);
+}
+
+void FontManager::UnlockSema()
+{
+	int ret = sceKernelSignalSema(m_font_sema, 1);
+	if (ret < 0) printf("sceKernelSignalSema(%08x) failed with %08x\n", m_font_sema, ret);
+}
+
+
+
 void FontManager::Reset()
 {
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
 	map<string, MMBNFont*>::iterator it;
 	for(it = m_fontMap.begin() ; it != m_fontMap.end() ;++it)
 		if(it->second) delete it->second;
 		
 	m_fontMap.clear();
+	
+	UnlockSema();
+	
 	return;
 }
 
 MMBNFont* FontManager::GetFont(std::string name)
 {
-
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
 	//police déjà chargée ?
 	map<string, MMBNFont*>::iterator it;
 	it = m_fontMap.find(name);
@@ -39,10 +74,14 @@ MMBNFont* FontManager::GetFont(std::string name)
 			p.first = name;
 			p.second = font;
 			m_fontMap.insert(p);
-			LOG("Load font : " + name);
+			#ifdef _DEBUG
+				LOG("Load font : " + name);
+			#endif 
 		}
 	}
 
+	UnlockSema();
+	
 	//finalement, on retourne la police
 	return m_fontMap[name];
 }

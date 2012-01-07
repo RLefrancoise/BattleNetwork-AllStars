@@ -62,7 +62,7 @@ MMBNPanelGrid::MMBNPanelGrid()
 	m_enemies.push_back( MMBNBattleActor::Load("Riku") );
 	PutActorOnPanel(m_enemies[0], 5, 0);
 	
-	m_enemies.push_back( MMBNBattleActor::Load("Sora") );
+	/*m_enemies.push_back( MMBNBattleActor::Load("Sora") );
 	PutActorOnPanel(m_enemies[1], 5, 1);
 	
 	m_enemies.push_back( MMBNBattleActor::Load("DarkRoxas") );
@@ -72,7 +72,7 @@ MMBNPanelGrid::MMBNPanelGrid()
 	PutActorOnPanel(m_enemies[3], 5, 3);
 
 	m_enemies.push_back( MMBNBattleActor::Load("Protoman") );
-	PutActorOnPanel(m_enemies[4], 5, 4);
+	PutActorOnPanel(m_enemies[4], 5, 4);*/
 	
 	vector<MMBNBattleActor*>::iterator it;
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
@@ -83,10 +83,10 @@ MMBNPanelGrid::MMBNPanelGrid()
 
 	//ia
 	m_ia.push_back(new MMBNBattleIA(this, m_enemies[0], ENEMY));
-	m_ia.push_back(new MMBNBattleIA(this, m_enemies[1], ENEMY));
+	/*m_ia.push_back(new MMBNBattleIA(this, m_enemies[1], ENEMY));
 	m_ia.push_back(new MMBNBattleIA(this, m_enemies[2], ENEMY));
 	m_ia.push_back(new MMBNBattleIA(this, m_enemies[3], ENEMY));
-	m_ia.push_back(new MMBNBattleIA(this, m_enemies[4], ENEMY));
+	m_ia.push_back(new MMBNBattleIA(this, m_enemies[4], ENEMY));*/
 
 }
 
@@ -563,7 +563,7 @@ void MMBNBattleIA::Update()
 
 void MMBNBattleIA::Move()
 {
-	int max_x(0), max_y(0), min_x(m_map->GetWidth()-1), min_y(m_map->GetHeight() - 1);
+	unsigned int max_x(0), max_y(0), min_x(m_map->GetWidth()-1), min_y(m_map->GetHeight() - 1);
 	
 	for(unsigned int i(0) ; i < m_map->GetWidth() ; ++i)
 		for(unsigned int j(0) ; j < m_map->GetHeight() ; ++j)
@@ -590,8 +590,106 @@ void MMBNBattleIA::Move()
 
 
 
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+// CUSTOM JAUGE
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+MMBNCustomGauge::MMBNCustomGauge()
+{
+	
 
+	m_empty				= ImgManager::GetImage("System/Animation/Battle/CustomGauge/empty.png")		;
+	m_gauge				= ImgManager::GetImage("System/Animation/Battle/CustomGauge/gauge.png")		;
+	m_full				= Animation::Load("System/Animation/Battle/CustomGauge/full")				;
 
+	m_time_limit 		= 10000.0f																	;
+	m_per		 		= 0.0f																		;
+
+	m_state				= RISING																	;
+	
+	m_size.x 			= m_empty->sizeX															;
+	m_size.y 			= m_empty->sizeY															;
+}
+
+MMBNCustomGauge::~MMBNCustomGauge()
+{
+	if(m_full) delete m_full;
+}
+
+void MMBNCustomGauge::Display(float offX, float offY)
+{
+	if(m_state == FULL)
+	{
+		m_full->Update();
+		m_full->Display(offX, offY);
+	}
+	else
+	{
+		oslDrawImageXY(m_empty, m_position.x + offX, m_position.y + offY);
+		oslSetImageTile(m_gauge, 8, 0, (m_gauge->sizeX * m_per) - 8, m_gauge->sizeY);
+		oslDrawImageXY(m_gauge, m_position.x + 8 + offX, m_position.y + offY);
+	}
+}
+
+void MMBNCustomGauge::Move(float x, float y)
+{
+	SetPosition(m_position.x + x, m_position.y + y);
+}
+
+void MMBNCustomGauge::SetPosition(float x, float y)
+{
+	m_full->SetPosition(x, y)	;
+	m_position.x = x;
+	m_position.y = y;
+}
+
+Vector2f& MMBNCustomGauge::GetPosition()
+{
+	return m_position;
+}
+
+void MMBNCustomGauge::Update()
+{
+	if(!m_timer.is_started()) m_timer.start();
+	
+	m_per = m_timer.get_ticks() / m_time_limit;
+	if(m_per > 1.0f) { m_per = 1.0f; m_state = FULL; }
+	else m_state = RISING;
+}
+
+void MMBNCustomGauge::Reset()
+{
+	m_per = 0.0f;
+	m_state = RISING;
+	m_timer.stop();
+	//m_timer.start();
+}
+
+void MMBNCustomGauge::Pause()
+{
+	m_timer.pause();
+}
+
+void MMBNCustomGauge::Unpause()
+{
+	m_timer.unpause();
+}
+
+void MMBNCustomGauge::SetFillingDuration(float time)
+{
+	m_time_limit = time;
+}
+
+Vector2f& MMBNCustomGauge::GetSize()
+{
+	return m_size;
+}
+
+bool MMBNCustomGauge::IsFull()
+{
+	return (m_state == FULL);
+}
 
 
 
@@ -633,7 +731,8 @@ int MMBNBattleMap::Run()
 //////////////////////////////////////////////////////////////
 void MMBNBattleMap::Initialize()
 {
-	m_bg = new Animation("Map/Background", std::vector<int>(7,150), false, true);
+	m_bg = Animation::Load("Map/Background");
+	//m_bg = new Animation("Map/Background", std::vector<int>(7,150), false, true);
 
 	m_grid = new MMBNPanelGrid();
 
@@ -647,11 +746,14 @@ void MMBNBattleMap::Initialize()
 
 	m_enemy_display_edge = ImgManager::GetImage("Battle/enemy_display_edge.png");
 
-
+	m_enemy_deleted = Animation::Load("System/Animation/Battle/EnemyDeleted", false, false);
+	
 	m_display_debug_info = true;
 	
 	m_battle_time_string.SetFont(GameSystem::GetBattleFont());
 	m_battle_time_string = "00:00:00";
+	
+	m_custom_gauge = new MMBNCustomGauge();
 }
 
 //////////////////////////////////////////////////////////////
@@ -669,7 +771,13 @@ void MMBNBattleMap::Destroy()
 
 	if(m_emotion) delete m_emotion;
 	
+	if(m_enemy_deleted) delete m_enemy_deleted;
+	
+	if(m_custom_gauge) delete m_custom_gauge;
+	
 	SndManager::StopBGM(0);
+	
+	m_battle_timer.stop();
 }
 
 //////////////////////////////////////////////////////////////
@@ -680,6 +788,7 @@ void MMBNBattleMap::Destroy()
 void MMBNBattleMap::Display()
 {
 
+	
 	//+++++++++++++++++++++++++++++++++++++
 	// GRAPHICS
 	//+++++++++++++++++++++++++++++++++++++
@@ -709,6 +818,9 @@ void MMBNBattleMap::Display()
 	unsigned int inc = 0;
 	for(unsigned int i = 0 ; i < vect.size() ; i++)
 	{
+		//if enemy dead, don't display life
+		if(vect[i]->IsDead()) continue;
+		
 		MMBNString s;
 		MMBNFont* f = GameSystem::GetBattleEnemyNameFont();
 		
@@ -724,18 +836,43 @@ void MMBNBattleMap::Display()
 	}
 
 	//+++++++++++++++++++++++++++++++++++++
-	// SOUND
+	// CUSTOM GAUGE
 	//+++++++++++++++++++++++++++++++++++++
-	//======================================
-	// BGM
-	//======================================
-	SndManager::PlayBGM("Battle_Field.bgm", 0, true);
-
-
+	m_custom_gauge->SetPosition(240 - m_custom_gauge->GetSize().x / 2, 5);
+	m_custom_gauge->Display();
+	
 	//+++++++++++++++++++++++++++++++++++++
 	// BATTLE TIME
 	//+++++++++++++++++++++++++++++++++++++
-	DisplayBattleTime(240 - m_battle_time_string.GetStringWidth() / 2, 5);
+	DisplayBattleTime(240 - m_battle_time_string.GetStringWidth() / 2, 5 + m_custom_gauge->GetSize().y);
+		
+		
+	//battle over ?
+	if(m_grid->BattleIsOver())
+	{
+		m_enemy_deleted->Update();
+		m_enemy_deleted->SetPosition(240, 161);
+		m_enemy_deleted->Display();
+		
+		//+++++++++++++++++++++++++++++++++++++
+		// SOUND
+		//+++++++++++++++++++++++++++++++++++++
+		//======================================
+		// BGM
+		//======================================
+		SndManager::PlayBGM("Enemy_Deleted.bgm", 0, true);
+	}
+	else
+	{
+		//+++++++++++++++++++++++++++++++++++++
+		// SOUND
+		//+++++++++++++++++++++++++++++++++++++
+		//======================================
+		// BGM
+		//======================================
+		SndManager::PlayBGM("Battle_Field.bgm", 0, true);
+	}
+	
 	
 	//+++++++++++++++++++++++++++++++++++++
 	// AFFICHAGE INFO
@@ -792,10 +929,19 @@ int MMBNBattleMap::Update()
 	if(k->pressed.select) m_display_debug_info = !m_display_debug_info;
 	
 	if(!m_grid->BattleIsOver())
+	{
+		if( (k->pressed.R || k->pressed.L) && m_custom_gauge->IsFull() ) m_custom_gauge->Reset();
+		
 		m_grid->Update(k);
-	
-	//gestion du héros
-	ActorHandle(k);
+		m_custom_gauge->Update();
+		
+		//gestion du héros
+		ActorHandle(k);
+	}
+	else
+	{
+		if(m_enemy_deleted->IsOver() && k->pressed.cross) return SCREEN_TITLE;
+	}
 
 	//par défaut, on reste sur le même écran
 	return SCREEN_BATTLEMAP;

@@ -22,6 +22,13 @@ class ImgManager
 		static std::map<std::string, OSL_IMAGE*> m_imageMap;
 		ImgManager();
 		virtual ~ImgManager() = 0;
+		
+		static SceUID m_img_sema		;
+		static bool	m_initialized		;
+		
+		static void Initialize()		;
+		static void LockSema()			;
+		static void UnlockSema()		;
 };
 
 #endif

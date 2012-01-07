@@ -20,10 +20,12 @@ float newDiag = sqrt(coter * coter + coter * coter);
 
 FieldMap::FieldMap()
 {	
+	LOG("Create FieldMap")
 }
 
 FieldMap::~FieldMap()
 {
+	LOG("Destroy FieldMap")
 }
 
 //////////////////////////////////////////////////////////////
@@ -102,7 +104,7 @@ void FieldMap::Initialize()
 	m_view.SetSize(480,272);
 	m_view.SetCenter(160,260);
 
-	m_bg = new Animation("Map/Background", std::vector<int>(7,150), false, true);
+	m_bg = Animation::Load("Map/Background");
 
 	bool properties[Actor::PROPERTIES_NB] = {false, false};
 	Actor* welcome = Actor::Load("Welcome", properties);

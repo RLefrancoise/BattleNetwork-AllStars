@@ -12,7 +12,7 @@ OBJS = $(SRC:.cpp=.o)
 CURRENTDIR = C:\Users\Renaud\Documents\programmation\C++\SVN\KHBN\khbn-code-0
 
 INCDIR = $(CURRENTDIR)/Game $(CURRENTDIR)/Scene $(CURRENTDIR)/Utils $(CURRENTDIR)/PRX C:\Users\Renaud\Documents\programmation\C++\CMake\KH\thirdParty\boost\include
-CFLAGS = -D_DEBUG -G4 -Wall -O3
+CFLAGS = -G4 -Wall -O3
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS)
 

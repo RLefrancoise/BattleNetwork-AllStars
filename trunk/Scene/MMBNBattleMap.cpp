@@ -61,7 +61,7 @@ MMBNPanelGrid::MMBNPanelGrid()
 
 	m_enemies.push_back( MMBNBattleActor::Load("Riku") );
 	PutActorOnPanel(m_enemies[0], 5, 0);
-
+	
 	m_enemies.push_back( MMBNBattleActor::Load("Sora") );
 	PutActorOnPanel(m_enemies[1], 5, 1);
 	
@@ -81,22 +81,33 @@ MMBNPanelGrid::MMBNPanelGrid()
 		(*it)->SetState(MMBNBattleActor::BATTLE_STANDING);
 	}
 
-	m_life_font = MMBNFont::Load("MMBNBattleFont");
+	//ia
+	m_ia.push_back(new MMBNBattleIA(this, m_enemies[0], ENEMY));
+	m_ia.push_back(new MMBNBattleIA(this, m_enemies[1], ENEMY));
+	m_ia.push_back(new MMBNBattleIA(this, m_enemies[2], ENEMY));
+	m_ia.push_back(new MMBNBattleIA(this, m_enemies[3], ENEMY));
+	m_ia.push_back(new MMBNBattleIA(this, m_enemies[4], ENEMY));
 
 }
 
 MMBNPanelGrid::~MMBNPanelGrid()
 {
+	//actor
 	if(m_actor) delete m_actor;
 
+	//enemies
 	vector<MMBNBattleActor*>::iterator it;
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 		delete (*it);
 
-	//if(m_life_font) delete m_life_font;
-	
+	//panel animations
 	for(unsigned int i = 0 ; i < PANEL_TYPES_NB ; i++)
 		if(m_panel_animations[i]) delete m_panel_animations[i];
+			
+	//ia
+	vector<MMBNBattleIA*>::iterator it_ia;
+	for(it_ia = m_ia.begin() ; it_ia != m_ia.end() ; it_ia++)
+		if(*it_ia) delete (*it_ia);
 		
 }
 
@@ -152,7 +163,7 @@ void MMBNPanelGrid::Display()
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 	{
 		MMBNString life_s;
-		life_s.SetFont(m_life_font);
+		life_s.SetFont(GameSystem::GetEnemyLifeFont());
 
 		ostringstream life_oss(ostringstream::out);
 		life_oss << (*it)->GetHP();
@@ -184,29 +195,51 @@ void MMBNPanelGrid::MoveActor(MMBNBattleActor* actor, int offX, int offY)
 	PutActorOnPanel(actor, GetActorPanel(actor).x + offX, GetActorPanel(actor).y + offY);
 }
 
-MMBNPanelGrid::PanelType MMBNPanelGrid::GetPanelType(unsigned int x, unsigned int y)
+inline MMBNPanelGrid::PanelType MMBNPanelGrid::GetPanelType(unsigned int x, unsigned int y)
 {
 	return (*m_panels)[x][y];
 }
 
-MMBNPanelGrid::PanelTeam MMBNPanelGrid::GetPanelTeam(unsigned int x, unsigned int y)
+inline MMBNPanelGrid::PanelTeam MMBNPanelGrid::GetPanelTeam(unsigned int x, unsigned int y)
 {
 	return (*m_panels_team)[x][y];
 }
 
-bool MMBNPanelGrid::IsInsideGrid(int x, int y)
+inline bool MMBNPanelGrid::IsInsideGrid(int x, int y)
 {
 	if( (x >= 0) && (x < m_width) && (y >= 0) && (y < m_height) ) return true;
 
 	return false;
 }
 
-MMBNBattleActor* MMBNPanelGrid::GetActor()
+bool MMBNPanelGrid::IsWalkable(unsigned int x, unsigned int y)
+{
+	bool walkable = true;
+	
+	if(!IsInsideGrid(x,y)) return false;
+	
+	Vector2i v = GetActorPanel(m_actor);
+	
+	if( (v.x == x) && (v.y == y) ) return false;
+	
+	vector<MMBNBattleActor*>::iterator it;
+	for(it = m_enemies.begin() ; walkable && it != m_enemies.end() ; it++)
+	{
+		v = GetActorPanel(*it);
+		if( (v.x == x) && (v.y == y) ) walkable = false;
+		
+	}
+	
+	return walkable;
+	
+}
+
+inline MMBNBattleActor* MMBNPanelGrid::GetActor()
 {
 	return m_actor;
 }
 
-vector<MMBNBattleActor*>& MMBNPanelGrid::GetEnemies()
+inline vector<MMBNBattleActor*>& MMBNPanelGrid::GetEnemies()
 {
 	return m_enemies;
 }
@@ -216,25 +249,137 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 
 	Vector2i v = GetActorPanel(m_actor);
 
-	if(k->pressed.left)
-		v.x = v.x - 1;
-	else if(k->pressed.right)
-		v.x = v.x + 1;
-	else if(k->pressed.up)
-		v.y = v.y - 1;
-	else if(k->pressed.down)
-		v.y = v.y + 1;
+	//MOVING
+	if(m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) //move only if in standing phase
+	{
+		if(k->pressed.left)
+			v.x = v.x - 1;
+		else if(k->pressed.right)
+			v.x = v.x + 1;
+		else if(k->pressed.up)
+			v.y = v.y - 1;
+		else if(k->pressed.down)
+			v.y = v.y + 1;
+		
+		if( IsInsideGrid(v.x, v.y) && ( GetPanelTeam(v.x, v.y) == PLAYER ) )
+			PutActorOnPanel(m_actor, v.x, v.y);
+	}
 	
-	if( IsInsideGrid(v.x, v.y) && ( GetPanelTeam(v.x, v.y) == PLAYER ) )
-		PutActorOnPanel(m_actor, v.x, v.y);
+	//ATTACKING
+	if( k->pressed.cross )
+	{
+		//play attack anim
+		if(m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) //attack only if in standing phase
+			m_actor->SetState(MMBNBattleActor::BATTLE_ATTACK);
+			
+		Vector2i pos;
+		
+		vector<MMBNBattleActor*>::iterator it;
+		for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
+		{
+			pos = GetActorPanel(*it);
+			if(pos.x == (v.x + 1) && (pos.y == v.y))
+			{
+				if((*it)->GetState() == MMBNBattleActor::BATTLE_STANDING)
+					(*it)->SetState(MMBNBattleActor::BATTLE_DAMAGED);
+					
+				m_actor->Attack(*it);
+			}
+		}		
+	}
 	
 }
 
 void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 {
+	//Update IA
+	vector<MMBNBattleIA*>::iterator it;
+	
+	for(it = m_ia.begin() ; it != m_ia.end() ; it++)
+		(*it)->Update();
+		
 	ActorHandle(k);
+	
+	
+	//state management
+	
+	//actor
+	{
+		//dead ?
+		if(m_actor->IsDead()) m_actor->SetState(MMBNBattleActor::BATTLE_DEAD);
+		
+		switch(m_actor->GetState())
+		{
+			case MMBNBattleActor::BATTLE_ATTACK:
+			case MMBNBattleActor::BATTLE_DAMAGED:
+				if(m_actor->GetCurrentAnim()->IsOver()) m_actor->SetState(MMBNBattleActor::BATTLE_STANDING);
+				break;
+				
+			case MMBNBattleActor::BATTLE_DEAD:
+				if(m_actor->GetCurrentAnim()->IsOver()) m_actor_is_dead = true;
+				break;
+				
+			case MMBNBattleActor::BATTLE_STANDING:
+			default:
+				break;
+			
+		}
+	}
+	
+	//---enemies---
+	for(unsigned int i(0) ; i < m_enemies.size() ; i++)
+	{
+		//dead ?
+		if(m_enemies[i]->IsDead()) m_enemies[i]->SetState(MMBNBattleActor::BATTLE_DEAD);
+		
+		switch(m_enemies[i]->GetState())
+		{
+			case MMBNBattleActor::BATTLE_ATTACK:
+			case MMBNBattleActor::BATTLE_DAMAGED:
+				if(m_enemies[i]->GetCurrentAnim()->IsOver()) m_enemies[i]->SetState(MMBNBattleActor::BATTLE_STANDING);
+				break;
+				
+			case MMBNBattleActor::BATTLE_DEAD:
+				if(m_enemies[i]->GetCurrentAnim()->IsOver())
+				{
+					m_enemies.erase(m_enemies.begin() + i);
+					i--;
+				}
+				break;
+				
+			case MMBNBattleActor::BATTLE_STANDING:
+			default:
+				break;
+			
+		}
+	}
 }
 
+inline bool MMBNPanelGrid::BattleIsOver()
+{
+	return m_enemies.size() == 0;
+}
+
+inline bool MMBNPanelGrid::ActorIsDead()
+{
+	return m_actor_is_dead;
+}
+
+inline unsigned int MMBNPanelGrid::GetWidth() const
+{
+	return m_width;
+}
+
+inline unsigned int MMBNPanelGrid::GetHeight() const
+{
+	return m_height;
+}
+
+
+
+
+
+		
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 // MMBNEmotionDisplay
@@ -375,6 +520,73 @@ MMBNBattleActor* MMBNLifeBar::GetActor()
 
 
 
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+// BATTLE IA
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+MMBNBattleIA::MMBNBattleIA()
+{
+	m_map			= NULL	;
+	m_actor			= NULL	;
+	m_actor_team	= MMBNPanelGrid::ENEMY	;
+}
+
+MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, MMBNPanelGrid::PanelTeam t)
+{
+	m_map			= m	;
+	m_actor			= a	;
+	m_actor_team	= t	;
+}
+
+MMBNBattleIA::~MMBNBattleIA()
+{
+
+}
+
+void MMBNBattleIA::Update()
+{
+	//-----MOVING-----
+	if(!m_moving_timer.is_started())
+		m_moving_timer.start();
+
+	MMBNBattleActor::IAConfig* iac = m_actor->GetIAConfig();
+
+	//move actor ?
+	if( (m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) && (m_moving_timer.get_ticks() > iac->moving_time) )
+	{
+		Move();
+		m_moving_timer.stop();
+		m_moving_timer.start();
+	}
+}
+
+void MMBNBattleIA::Move()
+{
+	int max_x(0), max_y(0), min_x(m_map->GetWidth()-1), min_y(m_map->GetHeight() - 1);
+	
+	for(unsigned int i(0) ; i < m_map->GetWidth() ; ++i)
+		for(unsigned int j(0) ; j < m_map->GetHeight() ; ++j)
+		{
+			if(m_map->GetPanelTeam(i, j) == m_actor_team)
+			{
+				if(i > max_x) max_x = i;
+				if(i < min_x) min_x = i;
+				if(j > max_y) max_y = j;
+				if(j < min_y) min_y = j;
+			}
+		}
+
+	int rand_x(0), rand_y(0);
+
+	do
+	{
+		rand_x = Random::RandomInt(min_x, max_x);
+		rand_y = Random::RandomInt(min_y, max_y);
+	}while(!m_map->IsWalkable(rand_x, rand_y));
+
+	m_map->PutActorOnPanel(m_actor, rand_x, rand_y);
+}
 
 
 
@@ -437,6 +649,9 @@ void MMBNBattleMap::Initialize()
 
 
 	m_display_debug_info = true;
+	
+	m_battle_time_string.SetFont(GameSystem::GetBattleFont());
+	m_battle_time_string = "00:00:00";
 }
 
 //////////////////////////////////////////////////////////////
@@ -518,6 +733,11 @@ void MMBNBattleMap::Display()
 
 
 	//+++++++++++++++++++++++++++++++++++++
+	// BATTLE TIME
+	//+++++++++++++++++++++++++++++++++++++
+	DisplayBattleTime(240 - m_battle_time_string.GetStringWidth() / 2, 5);
+	
+	//+++++++++++++++++++++++++++++++++++++
 	// AFFICHAGE INFO
 	//+++++++++++++++++++++++++++++++++++++
 	if(!m_display_debug_info) return;
@@ -552,6 +772,9 @@ void MMBNBattleMap::Display()
 int MMBNBattleMap::Update()
 {
 
+	if(!m_battle_timer.is_started())
+		m_battle_timer.start();
+		
 	//si on ne doit pas gérer les évènements, on vide la pile et on sort
 	/*if(!m_eventsEnabled)
 	{
@@ -566,10 +789,10 @@ int MMBNBattleMap::Update()
 	OSL_CONTROLLER* k = oslReadKeys();
 
 	if(k->pressed.triangle) return SCREEN_TITLE;
-	if(k->pressed.R) m_display_debug_info = !m_display_debug_info;
+	if(k->pressed.select) m_display_debug_info = !m_display_debug_info;
 	
-
-	m_grid->Update(k);
+	if(!m_grid->BattleIsOver())
+		m_grid->Update(k);
 	
 	//gestion du héros
 	ActorHandle(k);
@@ -596,5 +819,37 @@ void MMBNBattleMap::ActorHandle(OSL_CONTROLLER* k)
 
 	if( m_grid->IsInsideGrid(v.x, v.y) && ( m_grid->GetPanelType(v.x, v.y) == MMBNPanelGrid::PLAYER ) )
 		m_grid->PutActorOnPanel(m_actor, v.x, v.y);*/
+	
+}
+
+void MMBNBattleMap::DisplayBattleTime(int x, int y)
+{
+	unsigned int min, sec, centi;
+	GetBattleTime(&min, &sec, &centi);
+	
+	ostringstream oss(ostringstream::out);
+	oss.width(2);
+	oss.fill('0');
+	oss << min << ":";
+	oss.width(2);
+	oss.fill('0');
+	oss << sec << ":";
+	oss.width(2);
+	oss.fill('0');
+	oss << centi;
+	
+	m_battle_time_string = oss.str();
+	m_battle_time_string.SetPosition(x,y);
+	m_battle_time_string.Display();
+	
+}
+
+void MMBNBattleMap::GetBattleTime(unsigned int* min, unsigned int* sec, unsigned int* centi)
+{
+	float time = m_battle_timer.get_ticks();
+	*sec = time / 1000.0f;
+	*centi = (time - ( (*sec) * 1000.0f)) / 10.0f;
+	*min = *sec / 60;
+	*sec = *sec % 60;
 	
 }

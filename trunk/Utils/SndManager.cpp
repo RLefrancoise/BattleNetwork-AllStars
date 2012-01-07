@@ -7,6 +7,13 @@ using namespace std;
 OSL_SOUND* SndManager::m_bgmTab[8];
 std::string SndManager::m_bgmNameTab[8];
 
+void SndManager::Initialize()
+{
+	for(unsigned int i = 0 ; i < 8 ; i++)
+		m_bgmTab[i] = NULL;
+	
+}
+
 void SndManager::Reset()
 {
 	for(unsigned int i = 0 ; i < 8 ; i++)

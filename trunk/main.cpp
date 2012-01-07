@@ -85,7 +85,7 @@ int shutdownCallback(int arg1, int arg2, void* common)
 	SndManager::Reset();
 	FontManager::Reset();
 
-	SceneManager::getInstance()->kill();
+	//SceneManager::getInstance()->kill();
 	
 #ifdef _DEBUG
 	LOG("========================================")
@@ -128,7 +128,8 @@ int main()
 
 	GameSystem::Initialize();
 	MMBNBattleChip::LoadMaps();
-		
+	SndManager::Initialize();
+	
 	LoadingScreen loadingScreen;
 	/*screens[SCREEN_LOADING] 	= &loadingScreen	;
 	screens[SCREEN_TITLE] 		= NULL				;

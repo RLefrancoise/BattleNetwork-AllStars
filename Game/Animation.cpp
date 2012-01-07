@@ -51,6 +51,7 @@ Animation::Animation(string spritesPath, std::vector<int> delays, bool reverse, 
 	m_delays = delays;
 
 	m_running = false;
+	m_isOver = false;
 	m_loop = loop;
 	m_currentFrame = 0;
 	m_currentTime = 0;
@@ -61,7 +62,7 @@ Animation::Animation(string spritesPath, std::vector<int> delays, bool reverse, 
 
 Animation::~Animation()
 {
-
+	
 }
 
 ExtendedSprite& Animation::GetCurrentSprite()
@@ -106,7 +107,7 @@ void Animation::Update()
 		if(m_currentFrame >= m_sprites.size())
 		{
 			if(m_loop) m_currentFrame = 0; //loop animation
-			else m_currentFrame = m_sprites.size() - 1;
+			else { m_currentFrame = m_sprites.size() - 1; m_isOver = true; }
 		}
 	}
 }
@@ -114,12 +115,18 @@ void Animation::Update()
 void Animation::Stop()
 {
 	m_running = false;
+	m_isOver = false;
 	m_currentFrame = 0;
 }
 
 bool Animation::IsRunning()
 {
 	return m_running;
+}
+
+bool Animation::IsOver()
+{
+	return m_isOver;
 }
 
 Animation* Animation::Load(std::string spritesPath, bool reverse, bool loop)

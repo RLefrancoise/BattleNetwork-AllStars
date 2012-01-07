@@ -54,11 +54,13 @@ class GameSystem
 		static OSL_IMAGE* GetChipImage(ChipType type);
 		static OSL_IMAGE* GetElementImage(ChipElement element);
 
+		static MMBNFont* GetBattleFont();
 		static MMBNFont* GetActorLifeFont();
 		static MMBNFont* GetBattleChipNameFont();
 		static MMBNFont* GetBattleChipPowerFont();
 		static MMBNFont* GetBattleChipLetterFont();
 		static MMBNFont* GetBattleEnemyNameFont();
+		static MMBNFont* GetEnemyLifeFont();
 		static MMBNFont* GetCustomWindowLetterFont();
 
 	private:
@@ -76,6 +78,7 @@ class GameSystem
 		static MMBNFont* m_battle_chip_power_font;
 		static MMBNFont* m_battle_chip_letter_font;
 		static MMBNFont* m_battle_enemy_name_font;
+		static MMBNFont* m_enemy_life_font;
 		static MMBNFont* m_custom_window_letter_font;
 };
 

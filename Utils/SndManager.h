@@ -10,6 +10,7 @@ class SndManager
 {
 
 	public:
+		static void Initialize();
 		static void PlayBGM(std::string name, int voice , bool loop);
 		static void StopBGM(int voice);
 		static void Reset();

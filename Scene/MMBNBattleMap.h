@@ -65,6 +65,7 @@ class MMBNPanelGrid
 		void	ActorHandle(OSL_CONTROLLER* k);
 
 		bool	BattleIsOver();
+		bool	ActorIsDead();
 
 		unsigned int GetWidth() const;
 		unsigned int GetHeight() const;
@@ -93,10 +94,9 @@ class MMBNPanelGrid
 
 		MMBNBattleActor* m_actor				;
 		std::vector<MMBNBattleActor*> m_enemies	;
-
 		std::vector<MMBNBattleIA*> m_ia			;
-
-		MMBNFont* m_life_font;
+		
+		bool	m_actor_is_dead				;
 
 		MMBNBattleActor* GetEnemyOnPanel(unsigned int x, unsigned int y);
 

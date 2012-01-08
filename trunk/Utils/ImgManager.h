@@ -16,6 +16,7 @@ class ImgManager
 		static bool Exists(std::string name);
 		static void AddImage(std::string name, OSL_IMAGE* Image);
 		static OSL_IMAGE* GetImage(std::string name);
+		static void RemoveImage(std::string name);
 
 	private:
 		

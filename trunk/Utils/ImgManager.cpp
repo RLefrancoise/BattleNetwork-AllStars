@@ -60,7 +60,8 @@ void ImgManager::CopyImage(OSL_IMAGE* img, OSL_IMAGE* dest)
 	
 	LockSema();
 	
-	(*dest) = (*img);
+	//(*dest) = (*img);
+	oslCopyImageTo(dest, img);
 	
 	UnlockSema();
 }
@@ -179,7 +180,7 @@ OSL_IMAGE* ImgManager::GetImage(string name)
 		//on charge l'image
 		char n[name.size() + 1];
 		StringUtils::StringToChar(name, n);
-		OSL_IMAGE* img = oslLoadImageFilePNG(n, OSL_IN_RAM, OSL_PF_5551);
+		OSL_IMAGE* img = oslLoadImageFilePNG(n, OSL_IN_RAM | OSL_SWIZZLED, OSL_PF_5551);
 
 		if(!img) //si le chargement échoue on log et on quitte
 		{
@@ -203,4 +204,27 @@ OSL_IMAGE* ImgManager::GetImage(string name)
 	
 	//finalement, on retourne l'image
 	return m_imageMap[name];
+}
+
+void ImgManager::RemoveImage(string name)
+{
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
+	//image déjà chargée ?
+	map<string, OSL_IMAGE*>::iterator it;
+	it = m_imageMap.find(name);
+	
+	//si oui
+	if(it != m_imageMap.end())
+	{
+		if(it->second) oslDeleteImage(it->second);
+	#ifdef _DEBUG
+		LOG("Remove picture : " + name);
+	#endif
+		
+	}
+	
+	UnlockSema();
 }

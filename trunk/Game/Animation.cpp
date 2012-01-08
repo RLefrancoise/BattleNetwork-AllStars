@@ -36,6 +36,8 @@ Animation::Animation(string spritesPath, std::vector<int> delays, bool reverse, 
 			
 			sprite.SetImage(ImgManager::GetImage(string(spritesPath + "/" + oss->str() + "_r.png")));
 			sprite.ReverseCollisionsBoxes();
+			
+			ImgManager::RemoveImage(path);
 
 		}
 		else sprite.SetImage(Image);

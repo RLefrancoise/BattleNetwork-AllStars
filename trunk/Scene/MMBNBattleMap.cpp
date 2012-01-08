@@ -56,10 +56,10 @@ MMBNPanelGrid::MMBNPanelGrid()
 	m_panel_animations[WATER] 	= NULL;
 	
 	//actor and enemies
-	m_actor = MMBNBattleActor::Load("Roxas", false);
+	m_actor = MMBNBattleActor::Load("Roxas", false, true, false);
 	PutActorOnPanel(m_actor, 2, 2);
 
-	m_enemies.push_back( MMBNBattleActor::Load("Riku") );
+	m_enemies.push_back( MMBNBattleActor::Load("Killua", true, false, true) );
 	PutActorOnPanel(m_enemies[0], 5, 0);
 	
 	/*m_enemies.push_back( MMBNBattleActor::Load("Sora") );
@@ -627,7 +627,7 @@ void MMBNCustomGauge::Display(float offX, float offY)
 	else
 	{
 		oslDrawImageXY(m_empty, m_position.x + offX, m_position.y + offY);
-		oslSetImageTile(m_gauge, 8, 0, (m_gauge->sizeX * m_per) - 8, m_gauge->sizeY);
+		oslSetImageTile(m_gauge, 8, 0, (m_gauge->sizeX - 8) * m_per, m_gauge->sizeY);
 		oslDrawImageXY(m_gauge, m_position.x + 8 + offX, m_position.y + offY);
 	}
 }
@@ -656,6 +656,8 @@ void MMBNCustomGauge::Update()
 	m_per = m_timer.get_ticks() / m_time_limit;
 	if(m_per > 1.0f) { m_per = 1.0f; m_state = FULL; }
 	else m_state = RISING;
+	
+	if(m_per < 0.0f) m_per = 0.0f;
 }
 
 void MMBNCustomGauge::Reset()

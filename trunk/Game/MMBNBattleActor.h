@@ -29,9 +29,12 @@ class MMBNBattleActor : public Displayable
 			BATTLE_DEAD
 		};
 
+		
+		static void Initialize();
+		
 		virtual ~MMBNBattleActor()									;
 		
-		static MMBNBattleActor* Load(std::string name, bool ia = true);
+		static MMBNBattleActor* Load(std::string name, bool ia = true, bool loadNormalSprites = true, bool loadReverseSprites = true);
 		void Display(float offX = 0, float offY = 0)		;
 
 		void Move(float x, float y)								;
@@ -69,14 +72,17 @@ class MMBNBattleActor : public Displayable
 		// CONSTRUCTEUR
 		//===============================
 		MMBNBattleActor()								;
-		MMBNBattleActor(std::string)					;
+		MMBNBattleActor(std::string, bool loadNormalSprites = true, bool loadReverseSprites = true)					;
 
 		//===============================
 		// FONCTIONS PRIVEES
 		//===============================
-		void InitDelaysOfAnim(std::string path, std::vector<int> &delays);
+		//void InitDelaysOfAnim(std::string path, std::vector<int> &delays);
 		void LoadStateAnim(ActorState state);
 
+		static std::map<ActorState, std::string> 	FOLDER_NAMES_OF_STATES	;
+		static std::map<ActorState, bool>			LOOP_OF_STATES			;
+		
 		void InitializeIA();
 
 		//===============================
@@ -110,6 +116,9 @@ class MMBNBattleActor : public Displayable
 		int m_spd							;
 
 		IAConfig m_ia_config				;
+		
+		bool m_load_normal_sprites			;
+		bool m_load_reversed_sprites		;
 
 };
 

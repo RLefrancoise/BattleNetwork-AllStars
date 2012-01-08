@@ -9,6 +9,24 @@
 
 using namespace std;
 
+map<MMBNBattleActor::ActorState, string> MMBNBattleActor::FOLDER_NAMES_OF_STATES		;
+map<MMBNBattleActor::ActorState, bool>	MMBNBattleActor::LOOP_OF_STATES				;
+
+void MMBNBattleActor::Initialize()
+{
+	FOLDER_NAMES_OF_STATES[BATTLE_STANDING] 	= "/Battle/battle_standing"		;
+	FOLDER_NAMES_OF_STATES[BATTLE_DAMAGED] 		= "/Battle/battle_damaged"		;
+	FOLDER_NAMES_OF_STATES[BATTLE_DEAD] 		= "/Battle/battle_dead"			;
+	FOLDER_NAMES_OF_STATES[BATTLE_ATTACK] 		= "/Battle/battle_attack"		;
+	
+	LOOP_OF_STATES[BATTLE_STANDING]				= true							;
+	LOOP_OF_STATES[BATTLE_DAMAGED]				= false							;
+	LOOP_OF_STATES[BATTLE_DEAD]					= false							;
+	LOOP_OF_STATES[BATTLE_ATTACK]				= false							;
+}
+
+
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // CONSTRUCTEUR
@@ -22,10 +40,12 @@ MMBNBattleActor::MMBNBattleActor()
 	m_offY = 0;
 }
 
-MMBNBattleActor::MMBNBattleActor(string name)
+MMBNBattleActor::MMBNBattleActor(string name, bool loadNormalSprites, bool loadReverseSprites)
 {
 	m_name = name; // /!\ à mettre au début car les autres fonctions en ont besoin
-
+	m_load_normal_sprites = loadNormalSprites;
+	m_load_reversed_sprites = loadReverseSprites;
+	
 	//===============================
 	// ANIMATIONS
 	//===============================
@@ -78,9 +98,9 @@ MMBNBattleActor::~MMBNBattleActor()
 // LOAD
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-MMBNBattleActor* MMBNBattleActor::Load(std::string name, bool ia)
+MMBNBattleActor* MMBNBattleActor::Load(std::string name, bool ia, bool loadNormalSprites, bool loadReverseSprites)
 {
-	MMBNBattleActor* a = new MMBNBattleActor(name);
+	MMBNBattleActor* a = new MMBNBattleActor(name, loadNormalSprites, loadReverseSprites);
 
 	if(ia) a->InitializeIA();
 
@@ -121,7 +141,7 @@ void MMBNBattleActor::InitializeIA()
 // INIT DELAYS OF ANIM
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-void MMBNBattleActor::InitDelaysOfAnim(string name, vector<int> &delays)
+/*void MMBNBattleActor::InitDelaysOfAnim(string name, vector<int> &delays)
 {
 	int spritesNb = 0, delay = 0;
 	ifstream in_anim( (string("Actors/") + m_name + string("/") + name + string("/anim.txt")).c_str() , ifstream::in);
@@ -167,7 +187,7 @@ void MMBNBattleActor::InitDelaysOfAnim(string name, vector<int> &delays)
 	}
 
 	in_anim.close();
-}
+}*/
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -177,54 +197,18 @@ void MMBNBattleActor::InitDelaysOfAnim(string name, vector<int> &delays)
 void MMBNBattleActor::LoadStateAnim(ActorState state)
 {
 	Animation *anim = NULL, *rAnim = NULL;
-	std::vector<int> delays;
-
-	switch(state)
+	
+	if(m_load_normal_sprites)
 	{
-		//===============================
-		// BATTLE
-		//===============================
-		case BATTLE_STANDING:
-			InitDelaysOfAnim("Battle/battle_standing", delays);
-			
-			anim = new Animation(string("Actors/") + m_name + string("/Battle/battle_standing"), delays, false);
-			rAnim = new Animation(string("Actors/") + m_name + string("/Battle/battle_standing"), delays, true);
-
-			m_animMap.insert(pair<ActorState, Animation*>(BATTLE_STANDING, anim));
-			m_reversedAnimMap.insert(pair<ActorState, Animation*>(BATTLE_STANDING, rAnim));
-			break;
-
-		case BATTLE_ATTACK:
-			InitDelaysOfAnim("Battle/battle_attack", delays);
-			
-			anim = new Animation(string("Actors/") + m_name + string("/Battle/battle_attack"), delays, false, false);
-			rAnim = new Animation(string("Actors/") + m_name + string("/Battle/battle_attack"), delays, true, false);
-
-			m_animMap.insert(pair<ActorState, Animation*>(BATTLE_ATTACK, anim));
-			m_reversedAnimMap.insert(pair<ActorState, Animation*>(BATTLE_ATTACK, rAnim));
-			break;
-
-		case BATTLE_DAMAGED:
-			InitDelaysOfAnim("Battle/battle_damaged", delays);
-			
-			anim = new Animation(string("Actors/") + m_name + string("/Battle/battle_damaged"), delays, false, false);
-			rAnim = new Animation(string("Actors/") + m_name + string("/Battle/battle_damaged"), delays, true, false);
-
-			m_animMap.insert(pair<ActorState, Animation*>(BATTLE_DAMAGED, anim));
-			m_reversedAnimMap.insert(pair<ActorState, Animation*>(BATTLE_DAMAGED, rAnim));
-			break;
-
-		case BATTLE_DEAD:
-			InitDelaysOfAnim("Battle/battle_dead", delays);
-			
-			anim = new Animation(string("Actors/") + m_name + string("/Battle/battle_dead"), delays, false, false);
-			rAnim = new Animation(string("Actors/") + m_name + string("/Battle/battle_dead"), delays, true, false);
-
-			m_animMap.insert(pair<ActorState, Animation*>(BATTLE_DEAD, anim));
-			m_reversedAnimMap.insert(pair<ActorState, Animation*>(BATTLE_DEAD, rAnim));
-			break;
-
+		anim = Animation::Load(string("Actors/") + m_name + FOLDER_NAMES_OF_STATES[state], false, LOOP_OF_STATES[state]);
+		m_animMap.insert(pair<ActorState, Animation*>(state, anim));
 	}
+	if(m_load_reversed_sprites)
+	{
+		rAnim = Animation::Load(string("Actors/") + m_name + FOLDER_NAMES_OF_STATES[state], true, LOOP_OF_STATES[state]);
+		m_reversedAnimMap.insert(pair<ActorState, Animation*>(state, rAnim));
+	}
+	
 }
 
 //////////////////////////////////////////////////////////////
@@ -238,23 +222,48 @@ void MMBNBattleActor::Display(float offX, float offY)
 	m_offX = offX;
 	m_offY = offY;
 
-	if(m_direction == RIGHT)
+	//if only the normal sprites have been loaded, we don't care about direction
+	if(m_load_normal_sprites && !m_load_reversed_sprites)
 	{
 		m_animMap[m_state]->Update();
 		m_animMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
 		m_animMap[m_state]->GetCurrentSprite().Display();
-		//#ifdef _DEBUG
+		#ifdef _DEBUG
 			m_animMap[m_state]->GetCurrentSprite().DisplayExtension();
-		//#endif
+		#endif
 	}
-	else
+	//if only the reversed sprites have been loaded, we don't care about direction
+	else if(!m_load_normal_sprites && m_load_reversed_sprites)
 	{
 		m_reversedAnimMap[m_state]->Update();
 		m_reversedAnimMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
 		m_reversedAnimMap[m_state]->GetCurrentSprite().Display();
-		//#ifdef _DEBUG
+		#ifdef _DEBUG
 			m_reversedAnimMap[m_state]->GetCurrentSprite().DisplayExtension();
-		//#endif
+		#endif
+	}
+	//if both normal and reversed sprites have been loaded, look the direction to choose the correct sprite to display
+	else
+	{
+		if(m_direction == RIGHT)
+		{
+			m_animMap[m_state]->Update();
+			m_animMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+			m_animMap[m_state]->GetCurrentSprite().Display();
+			#ifdef _DEBUG
+				m_animMap[m_state]->GetCurrentSprite().DisplayExtension();
+			#endif
+		}
+		else
+		{
+			m_reversedAnimMap[m_state]->Update();
+			m_reversedAnimMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+			m_reversedAnimMap[m_state]->GetCurrentSprite().Display();
+			#ifdef _DEBUG
+				m_reversedAnimMap[m_state]->GetCurrentSprite().DisplayExtension();
+			#endif
+		}
+
 	}
 
 }
@@ -283,9 +292,10 @@ void MMBNBattleActor::SetState(ActorState state)
 	else if(state == BATTLE_ATTACK) m_state = BATTLE_ATTACK;
 	else if(state == BATTLE_DAMAGED) m_state = BATTLE_DAMAGED;
 	else if(state == BATTLE_DEAD) m_state = BATTLE_DEAD;
-
-	m_animMap[m_state]->Stop();
-	m_reversedAnimMap[m_state]->Stop();
+	
+	//stop current anim
+	if(m_load_normal_sprites) m_animMap[m_state]->Stop();
+	if(m_load_reversed_sprites) m_reversedAnimMap[m_state]->Stop();
 
 	//===================================
 	// ON STOPPE TOUTES LES ANIMATIONS SAUF CELLE DE L'ETAT COURANT

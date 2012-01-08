@@ -135,6 +135,7 @@ int main()
 	GameSystem::Initialize();
 	MMBNBattleChip::LoadMaps();
 	SndManager::Initialize();
+	MMBNBattleActor::Initialize();
 	
 	ScreenPtr loading(new LoadingScreen())			;
 	screens[SCREEN_LOADING] 	= loading			;

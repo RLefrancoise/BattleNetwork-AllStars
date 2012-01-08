@@ -25,11 +25,12 @@ PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
 //Création des écrans de jeu
 std::map< int, ScreenPtr > screens;
 int screen = SCREEN_TITLE;
-int previousScreen = screen;
+int previousScreen = SCREEN_TITLE;
 	
-SceUID loadingThread;
 bool screenLoaded = false;
 bool loadingThreadCreated = false;
+
+LoadingScreen* loadingScreen;
 
 void ChangeScreen()
 {
@@ -41,9 +42,6 @@ void ChangeScreen()
 		
 		screens[previousScreen]->Destroy();
 		screens.erase(previousScreen);
-		//delete screens[previousScreen];
-		//screens[previousScreen] = NULL;
-		
 	}
 	
 	switch(screen)
@@ -72,27 +70,37 @@ void ChangeScreen()
 	
 }
 
-int Loading(SceSize size, void* argp)
+void LoadScreen()
 {
-	if( sceIoChdir("ms0:/PSP/GAME/KH") < 0)
-		LOG("Can't change directory")
+	loadingThreadCreated = true;
 	
 	#ifdef _DEBUG
 		LOG("Enter loading function")
+		LOG("Initialize loading screen")
+	#endif
+	
+	loadingScreen = new LoadingScreen();
+	
+	#ifdef _DEBUG
 		LOG("Initialize screen")
 	#endif
 	
 	screens[screen].get()->Initialize();
 	
-	screenLoaded = true;
-	loadingThreadCreated = false;
-	
 	#ifdef _DEBUG
 		LOG("Initialize done")
+		LOG("Destroy loading screen")
+	#endif
+	
+	loadingScreen->KillLoadingScreen();
+	delete (loadingScreen);
+	
+	#ifdef _DEBUG
 		LOG("Exit loading function")
 	#endif
 	
-	return 0;
+	screenLoaded = true;
+	loadingThreadCreated = false;
 }
 
 int shutdownCallback(int arg1, int arg2, void* common)
@@ -129,7 +137,7 @@ int main()
 	oslSetExitCallback(shutdownCallback);
 	
 	srand(time(NULL));
-
+	
 	//-------------------------------------------------
 
 	GameSystem::Initialize();
@@ -137,23 +145,9 @@ int main()
 	SndManager::Initialize();
 	MMBNBattleActor::Initialize();
 	
-	ScreenPtr loading(new LoadingScreen())			;
-	screens[SCREEN_LOADING] 	= loading			;
+	loadingScreen = NULL;
 	
 	ChangeScreen();
-	
-	/*
-	//Création de l'écran titre
-	Title title;
-	//Création de la battle map
-	MMBNBattleMap battleMap;
-	//Création de la field map
-	FieldMap fieldMap;
-
-	screens[SCREEN_TITLE] = &title;
-	screens[SCREEN_BATTLEMAP] = &battleMap;
-	screens[SCREEN_LOADING] = &loadingScreen;
-	screens[SCREEN_FIELDMAP] = &fieldMap;*/
 
 	//--------------------------------------------
 
@@ -189,11 +183,11 @@ int main()
 			oslClearScreen(RGB(0,0,0));
 
 			//----------------DEBUG----------------------
-			#ifdef _DEBUG
+			/*#ifdef _DEBUG
 				ostringstream oss(ostringstream::out);
 				oss << "Screen Loaded: " << screenLoaded << " Loading Thread Created: " << loadingThreadCreated << " Screen: " << screen << " PScreen: " << previousScreen;
 				oslPrintf_xy(5, 15, oss.str().c_str());
-			#endif
+			#endif*/
 			
 			//Run de l'écran en cours si le chargement est fini
 			if(screenLoaded)
@@ -204,10 +198,6 @@ int main()
 				if(screen != previousScreen)
 				{
 					ChangeScreen();
-					/*screens[previousScreen]->Destroy();
-					#ifdef _DEBUG
-						LOG("Destroy Current Screen")
-					#endif*/
 					screenLoaded = false;
 				}
 				
@@ -220,33 +210,11 @@ int main()
 				//si le thread de chargement n'est pas encore créé, on le crée
 				if(!loadingThreadCreated)
 				{
-					loadingThread = sceKernelCreateThread("loading_thread", Loading, 0x18, DEFAULT_THREAD_STACK_KB_SIZE, 0, NULL);
-					//loadingThread = sceKernelCreateThread("loading_thread", Loading, 0x18, DEFAULT_THREAD_STACK_KB_SIZE, PSP_THREAD_ATTR_USER | THREAD_ATTR_VFPU, NULL);
-					loadingThreadCreated = true;
-					if(loadingThread >= 0)
-					{
-						#ifdef _DEBUG
-							LOG("Loading Thread Created")
-						#endif
-						sceKernelStartThread(loadingThread, 0, NULL);
-						#ifdef _DEBUG
-							LOG("Loading Thread Started")
-						#endif
-					}
-					else
-					{
-						ostringstream oss(ostringstream::out);
-						oss << "[Create Thread Error] " << loadingThread; 
-						LOG(oss.str())
-					}
-					
+					LoadScreen();
 				}
 						
-				//on affiche l'écran de chargement
-				screens[SCREEN_LOADING].get()->Run();
 			}
 				
-			
         }
  
 		//-----------------FPS----------------------

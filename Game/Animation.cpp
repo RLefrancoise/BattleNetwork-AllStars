@@ -32,13 +32,12 @@ Animation::Animation(string spritesPath, std::vector<int> delays, bool reverse, 
 				oslMirrorImageH(rImage);
 				ImgManager::AddImage(string(spritesPath + "/" + oss->str() + "_r.png"), rImage);
 				
+				ImgManager::RemoveImage(path);
 			}
 			
 			sprite.SetImage(ImgManager::GetImage(string(spritesPath + "/" + oss->str() + "_r.png")));
 			sprite.ReverseCollisionsBoxes();
 			
-			ImgManager::RemoveImage(path);
-
 		}
 		else sprite.SetImage(Image);
 		m_sprites.push_back(sprite);

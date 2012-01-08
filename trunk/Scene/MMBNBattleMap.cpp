@@ -9,6 +9,10 @@ using namespace std;
 ///////////////////////////////////////////////////////
 MMBNPanelGrid::MMBNPanelGrid()
 {
+	#ifdef _DEBUG
+		LOG("Create PanelGrid")
+	#endif
+	
 	m_width = 10;
 	m_height = 5;
 	m_x_inc = 40;
@@ -92,6 +96,10 @@ MMBNPanelGrid::MMBNPanelGrid()
 
 MMBNPanelGrid::~MMBNPanelGrid()
 {
+	#ifdef _DEBUG
+		LOG("Destory PanelGrid")
+	#endif
+	
 	//actor
 	if(m_actor) delete m_actor;
 
@@ -162,6 +170,10 @@ void MMBNPanelGrid::Display()
 	//display life of enemies
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 	{
+	
+		//if enemy dead, don't display life
+		if((*it)->IsDead()) continue;
+		
 		MMBNString life_s;
 		life_s.SetFont(GameSystem::GetEnemyLifeFont());
 
@@ -388,6 +400,10 @@ inline unsigned int MMBNPanelGrid::GetHeight() const
 
 MMBNEmotionDisplay::MMBNEmotionDisplay()
 {
+	#ifdef _DEBUG
+		LOG("Create EmotionDisplay")
+	#endif
+	
 	for(unsigned int i = 0 ; i < EMOTIONS_NB ; i++)
 		m_emotions[i] = NULL;
 
@@ -396,6 +412,10 @@ MMBNEmotionDisplay::MMBNEmotionDisplay()
 
 MMBNEmotionDisplay::MMBNEmotionDisplay(MMBNBattleActor* mmbnba)
 {
+	#ifdef _DEBUG
+		LOG("Create EmotionDisplay")
+	#endif
+	
 	string name = mmbnba->GetName();
 
 	m_emotions[NORMAL] = ImgManager::GetImage("Actors/" + name + "/Emotions/normal.png");
@@ -405,7 +425,9 @@ MMBNEmotionDisplay::MMBNEmotionDisplay(MMBNBattleActor* mmbnba)
 
 MMBNEmotionDisplay::~MMBNEmotionDisplay()
 {
-
+	#ifdef _DEBUG
+		LOG("Destroy EmotionDisplay")
+	#endif
 }
 
 void MMBNEmotionDisplay::Display(float offX, float offY)
@@ -444,18 +466,30 @@ Vector2f& MMBNEmotionDisplay::GetPosition()
 ///////////////////////////////////////////////////////
 MMBNLifeBar::MMBNLifeBar()
 {
+	#ifdef _DEBUG
+		LOG("Create LifeBar")
+	#endif
+	
 	m_actor = NULL;
 	m_life_font = MMBNFont::Load("MMBNActorLifeFont");
 }
 
 MMBNLifeBar::MMBNLifeBar(MMBNBattleActor* mmbnba)
 {
+	#ifdef _DEBUG
+		LOG("Create LifeBar")
+	#endif
+	
 	m_actor = mmbnba;
 	m_life_font = MMBNFont::Load("MMBNActorLifeFont");
 }
 
 MMBNLifeBar::~MMBNLifeBar()
 {
+	#ifdef _DEBUG
+		LOG("Destroy LifeBar")
+	#endif
+	
 	if(m_life_font) delete m_life_font;
 }
 
@@ -527,6 +561,10 @@ MMBNBattleActor* MMBNLifeBar::GetActor()
 //////////////////////////////////////////////////////////
 MMBNBattleIA::MMBNBattleIA()
 {
+	#ifdef _DEBUG
+		LOG("Create BattleIA")
+	#endif
+	
 	m_map			= NULL	;
 	m_actor			= NULL	;
 	m_actor_team	= MMBNPanelGrid::ENEMY	;
@@ -534,6 +572,10 @@ MMBNBattleIA::MMBNBattleIA()
 
 MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, MMBNPanelGrid::PanelTeam t)
 {
+	#ifdef _DEBUG
+		LOG("Create BattleIA")
+	#endif
+	
 	m_map			= m	;
 	m_actor			= a	;
 	m_actor_team	= t	;
@@ -541,7 +583,9 @@ MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, MMBNPanelGrid::
 
 MMBNBattleIA::~MMBNBattleIA()
 {
-
+	#ifdef _DEBUG
+		LOG("Destroy BattleIA")
+	#endif
 }
 
 void MMBNBattleIA::Update()
@@ -597,7 +641,9 @@ void MMBNBattleIA::Move()
 //////////////////////////////////////////////////////////
 MMBNCustomGauge::MMBNCustomGauge()
 {
-	
+	#ifdef _DEBUG
+		LOG("Create CustomGauge")
+	#endif
 
 	m_empty				= ImgManager::GetImage("System/Animation/Battle/CustomGauge/empty.png")		;
 	m_gauge				= ImgManager::GetImage("System/Animation/Battle/CustomGauge/gauge.png")		;
@@ -614,6 +660,10 @@ MMBNCustomGauge::MMBNCustomGauge()
 
 MMBNCustomGauge::~MMBNCustomGauge()
 {
+	#ifdef _DEBUG
+		LOG("Destroy CustomGauge")
+	#endif
+	
 	if(m_full) delete m_full;
 }
 
@@ -820,8 +870,6 @@ void MMBNBattleMap::Display()
 	unsigned int inc = 0;
 	for(unsigned int i = 0 ; i < vect.size() ; i++)
 	{
-		//if enemy dead, don't display life
-		if(vect[i]->IsDead()) continue;
 		
 		MMBNString s;
 		MMBNFont* f = GameSystem::GetBattleEnemyNameFont();

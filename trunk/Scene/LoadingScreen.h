@@ -26,10 +26,6 @@ class LoadingScreen
 	public:
 		LoadingScreen()														;
 		~LoadingScreen()													;
-
-		//int		Run()												;
-		//void	Initialize()										;
-		//void	Destroy()											;
 		
 		void 					KillLoadingScreen()							;
 		

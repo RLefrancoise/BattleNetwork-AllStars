@@ -174,6 +174,10 @@ int Title::Update()
 		
 	}
 
+	// triangle
+	if(k->pressed.triangle)
+		return SCREEN_EXIT;
+		
 	//=============================
 	// MISE A JOUR DE L'AFFICHAGE
 	//=============================

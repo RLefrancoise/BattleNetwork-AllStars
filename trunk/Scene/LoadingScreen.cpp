@@ -1,5 +1,6 @@
 #include "LoadingScreen.h"
 #include "Variables.h"
+#include "GameSystem.h"
 
 #include <sstream>
 
@@ -9,14 +10,15 @@ Animation*		LoadingScreen::m_anim										;
 unsigned int	LoadingScreen::m_current_char								;
 std::string		LoadingScreen::m_loading_string								;
 Timer			LoadingScreen::m_timer										;
-		
+
 LoadingScreen::LoadingScreen()
 {
 	#ifdef _DEBUG
 		LOG("Create Loading Screen")
 	#endif
 	
-	m_anim = Animation::Load("System/Animation/Loading/1");
+	m_anim = GameSystem::GetLoadingAnimation();
+	
 	m_current_char = 0;
 	m_loading_string = "Loading...";
 	
@@ -34,38 +36,15 @@ LoadingScreen::~LoadingScreen()
 	#endif
 }
 
-/*int LoadingScreen::Run()
-{	
-	int screen = Update();
-	if( screen == SCREEN_LOADING ) Display();
-
-	return screen;
-}*/
-
-
-
-/*void LoadingScreen::Initialize()
-{
-
-}*/
 
 void LoadingScreen::KillLoadingScreen()
 {
 	// shut down the loading screen again.
 	sceKernelTerminateDeleteThread(thid_);
 	
-	if(m_anim) delete m_anim;
+	//if(m_anim) delete m_anim;
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-// DESTROY
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-/*void LoadingScreen::Destroy()
-{
-	
-}*/
 
 void LoadingScreen::Update()
 {
@@ -86,7 +65,7 @@ void LoadingScreen::Update()
 void LoadingScreen::Display()
 {
 	m_anim->Update();
-	m_anim->SetPosition(470 - m_anim->GetCurrentSprite().GetHotPoint().x, 260);
+	m_anim->SetPosition(450, 260);
 	m_anim->Display();
 
 	oslSetTextColor(RGBA(255,255,255,255));

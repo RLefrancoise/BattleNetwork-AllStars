@@ -50,20 +50,20 @@ MMBNPanelGrid::MMBNPanelGrid()
 	
 	//load the animations for each type of panels
 	m_panel_animations[NORMAL] 	= Animation::Load("System/Animation/Battle/Panels/Normal", false, true);
-	m_panel_animations[EMPTY] 	= NULL;
+	/*m_panel_animations[EMPTY] 	= NULL;
 	m_panel_animations[BROKEN] 	= NULL;
 	m_panel_animations[CRACKED] = NULL;
 	m_panel_animations[FIRE] 	= NULL;
 	m_panel_animations[ICE] 	= NULL;
 	m_panel_animations[GRASS] 	= NULL;
 	m_panel_animations[POISON] 	= NULL;
-	m_panel_animations[WATER] 	= NULL;
+	m_panel_animations[WATER] 	= NULL;*/
 	
 	//actor and enemies
 	m_actor = MMBNBattleActor::Load("Killua", false, true, false);
 	PutActorOnPanel(m_actor, 2, 2);
 
-	m_enemies.push_back( MMBNBattleActor::Load("Sora", true, false, true) );
+	m_enemies.push_back( MMBNBattleActor::Load("Gon", true, false, true) );
 	PutActorOnPanel(m_enemies[0], 5, 1);
 	
 	m_enemies.push_back( MMBNBattleActor::Load("Roxas", true, false, true) );
@@ -106,8 +106,8 @@ MMBNPanelGrid::~MMBNPanelGrid()
 		delete (*it);
 
 	//panel animations
-	for(unsigned int i = 0 ; i < PANEL_TYPES_NB ; i++)
-		if(m_panel_animations[i]) delete m_panel_animations[i];
+	//for(unsigned int i = 0 ; i < PANEL_TYPES_NB ; i++)
+	//	if(m_panel_animations[i]) delete m_panel_animations[i];
 			
 	//ia
 	vector<MMBNBattleIA*>::iterator it_ia;
@@ -659,7 +659,7 @@ MMBNCustomGauge::~MMBNCustomGauge()
 		LOG("Destroy CustomGauge")
 	#endif
 	
-	if(m_full) delete m_full;
+	//if(m_full) delete m_full;
 }
 
 void MMBNCustomGauge::Display(float offX, float offY)
@@ -821,9 +821,9 @@ MMBNBattleChipSelector::~MMBNBattleChipSelector()
 		LOG("Destroy BattleChip Selector")
 	#endif
 	
-	if(m_cursor) delete m_cursor;
-	if(m_cursor2) delete m_cursor2;
-	if(m_cursor3) delete m_cursor3;
+	//if(m_cursor) delete m_cursor;
+	//if(m_cursor2) delete m_cursor2;
+	//if(m_cursor3) delete m_cursor3;
 	
 	vector<MMBNBattleChip*>::iterator it;
 	for(it = m_current_chips.begin() ; it != m_current_chips.end() ; ++it)
@@ -1018,7 +1018,9 @@ void MMBNBattleMap::Initialize()
 
 	m_enemy_deleted = Animation::Load("System/Animation/Battle/EnemyDeleted", false, false);
 	
+	#ifdef _DEBUG
 	m_display_debug_info = true;
+	#endif
 	
 	m_battle_time_string.SetFont(GameSystem::GetBattleFont());
 	m_battle_time_string = "00:00:00";
@@ -1036,7 +1038,7 @@ void MMBNBattleMap::Initialize()
 //////////////////////////////////////////////////////////////
 void MMBNBattleMap::Destroy()
 {
-	if(m_bg) delete m_bg;
+	//if(m_bg) delete m_bg;
 
 	if(m_grid) delete m_grid;
 
@@ -1044,7 +1046,7 @@ void MMBNBattleMap::Destroy()
 
 	if(m_emotion) delete m_emotion;
 	
-	if(m_enemy_deleted) delete m_enemy_deleted;
+	//if(m_enemy_deleted) delete m_enemy_deleted;
 	
 	if(m_custom_gauge) delete m_custom_gauge;
 	

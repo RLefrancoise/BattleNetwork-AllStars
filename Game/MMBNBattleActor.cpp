@@ -84,12 +84,12 @@ MMBNBattleActor::~MMBNBattleActor()
 	//=========================================
 	// SUPPRESSION DES ANIMATIONS
 	//=========================================
-	std::map<ActorState,Animation*>::iterator it;
+	/*std::map<ActorState,Animation*>::iterator it;
 	for(it = m_animMap.begin() ; it != m_animMap.end() ; ++it)
 		if( (*it).second ) delete (*it).second;
 
 	for(it = m_reversedAnimMap.begin() ; it != m_reversedAnimMap.end() ; ++it)
-		if( (*it).second ) delete (*it).second;
+		if( (*it).second ) delete (*it).second;*/
 
 }
 
@@ -196,17 +196,17 @@ void MMBNBattleActor::InitializeIA()
 //////////////////////////////////////////////////////////////
 void MMBNBattleActor::LoadStateAnim(ActorState state)
 {
-	Animation *anim = NULL, *rAnim = NULL;
+	//Animation *anim = NULL, *rAnim = NULL;
 	
 	if(m_load_normal_sprites)
 	{
-		anim = Animation::Load(string("Actors/") + m_name + FOLDER_NAMES_OF_STATES[state], false, LOOP_OF_STATES[state]);
-		m_animMap.insert(pair<ActorState, Animation*>(state, anim));
+		AnimationPtr anim = Animation::Load(string("Actors/") + m_name + FOLDER_NAMES_OF_STATES[state], false, LOOP_OF_STATES[state]);
+		m_animMap.insert(pair<ActorState, AnimationPtr>(state, anim));
 	}
 	if(m_load_reversed_sprites)
 	{
-		rAnim = Animation::Load(string("Actors/") + m_name + FOLDER_NAMES_OF_STATES[state], true, LOOP_OF_STATES[state]);
-		m_reversedAnimMap.insert(pair<ActorState, Animation*>(state, rAnim));
+		AnimationPtr rAnim = Animation::Load(string("Actors/") + m_name + FOLDER_NAMES_OF_STATES[state], true, LOOP_OF_STATES[state]);
+		m_reversedAnimMap.insert(pair<ActorState, AnimationPtr>(state, rAnim));
 	}
 	
 }
@@ -330,7 +330,7 @@ string MMBNBattleActor::GetName() const
 	return m_name;
 }
 
-Animation* MMBNBattleActor::GetCurrentAnim()
+AnimationPtr MMBNBattleActor::GetCurrentAnim()
 {
 	if(m_direction == RIGHT)
 		return m_animMap[m_state];

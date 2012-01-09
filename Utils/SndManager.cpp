@@ -60,6 +60,10 @@ void SndManager::Reset()
 
 	UnlockSema();
 	
+	#ifdef _DEBUG
+	LOG("Reset SndManager")
+	#endif
+	
 	return;
 }
 

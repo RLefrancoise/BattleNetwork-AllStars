@@ -7,6 +7,10 @@
 #include <vector>
 #include <string>
 #include <oslib/oslib.h>
+#include <boost/shared_ptr.hpp>
+class Animation;
+
+typedef boost::shared_ptr<Animation> AnimationPtr		;
 
 class Animation
 {
@@ -14,7 +18,7 @@ class Animation
 
 		Animation(std::string spritesPath, std::vector<int> delays, bool reverse, bool loop = true);
 		~Animation();
-		static Animation* Load(std::string spritesPath, bool reverse = false, bool loop = true);
+		static AnimationPtr Load(std::string spritesPath, bool reverse = false, bool loop = true);
 		ExtendedSprite& GetCurrentSprite();
 		void SetPosition(float x, float y);
 		void Display(float offX = 0, float offY = 0);

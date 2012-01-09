@@ -75,7 +75,7 @@ class GameSystem
 		//========================
 		// ANIMATIONS
 		//========================
-		static Animation* GetLoadingAnimation();
+		static AnimationPtr GetLoadingAnimation();
 		
 	private:
 		
@@ -101,7 +101,7 @@ class GameSystem
 		//========================
 		// ANIMATIONS
 		//========================
-		static std::vector<Animation*> LOADING_ANIMATIONS;
+		static std::vector<AnimationPtr> LOADING_ANIMATIONS;
 };
 
 #endif

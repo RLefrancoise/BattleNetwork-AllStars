@@ -6,7 +6,7 @@
 
 using namespace std;
 
-Animation*		LoadingScreen::m_anim										;
+AnimationPtr		LoadingScreen::m_anim									;
 unsigned int	LoadingScreen::m_current_char								;
 std::string		LoadingScreen::m_loading_string								;
 Timer			LoadingScreen::m_timer										;
@@ -23,7 +23,7 @@ LoadingScreen::LoadingScreen()
 	m_loading_string = "Loading...";
 	
 	// the loadingscreen is loaded as a thread
-	thid_ = sceKernelCreateThread("LoadingThread", RunLoadingScreen, 0x18, 0x10000, 0, NULL);
+	thid_ = sceKernelCreateThread("LoadingThread", RunLoadingScreen, 0x20, 0x10000, 0, NULL);
 	// start the thread
 	sceKernelStartThread(thid_, 0, 0);
 	
@@ -41,8 +41,6 @@ void LoadingScreen::KillLoadingScreen()
 {
 	// shut down the loading screen again.
 	sceKernelTerminateDeleteThread(thid_);
-	
-	//if(m_anim) delete m_anim;
 }
 
 

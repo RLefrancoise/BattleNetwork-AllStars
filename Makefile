@@ -12,12 +12,12 @@ OBJS = $(SRC:.cpp=.o)
 CURRENTDIR = C:\Users\Renaud\Documents\programmation\C++\SVN\KHBN\khbn-code-0
 
 INCDIR = $(CURRENTDIR)/Game $(CURRENTDIR)/Scene $(CURRENTDIR)/Utils $(CURRENTDIR)/PRX C:\Users\Renaud\Documents\programmation\C++\CMake\KH\thirdParty\boost\include
-CFLAGS = -D_DEBUG -G4 -Wall -O2
-CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
+CFLAGS =  -D_DEBUG -G0 -Wall -O2 -g
+CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -g
 ASFLAGS = $(CFLAGS)
 
 LIBDIR =
-LDFLAGS = -G1
+LDFLAGS = 
 STDLIBS= -losl -lpng -ljpeg -lz \
          -lpsphprm -lpspsdk -lpspctrl -lpspumd -lpsprtc -lpsppower -lpspgu -lpspgum  -lpspaudiolib -lpspaudio -lpsphttp -lpspssl -lpspwlan \
          -lpspnet_adhocmatching -lpspnet_adhoc -lpspnet_adhocctl -lm -lstdc++ -lsupc++ -lgcc

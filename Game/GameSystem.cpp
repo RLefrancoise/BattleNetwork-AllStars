@@ -16,7 +16,7 @@ MMBNFont* GameSystem::m_battle_enemy_name_font;
 MMBNFont* GameSystem::m_enemy_life_font;
 MMBNFont* GameSystem::m_custom_window_letter_font;
 
-vector<Animation*> GameSystem::LOADING_ANIMATIONS;
+vector<AnimationPtr> GameSystem::LOADING_ANIMATIONS;
 
 
 void GameSystem::Initialize()
@@ -49,9 +49,7 @@ void GameSystem::Initialize()
 
 void GameSystem::Destroy()
 {
-	//ANIMATIONS
-	for(unsigned int i(0) ; i < LOADING_ANIMATIONS.size() ; ++i)
-		if(LOADING_ANIMATIONS[i]) delete LOADING_ANIMATIONS[i];
+	
 }
 
 OSL_IMAGE* GameSystem::GetChipImage(ChipType type)
@@ -105,7 +103,7 @@ MMBNFont* GameSystem::GetCustomWindowLetterFont()
 }
 		
 		
-Animation* GameSystem::GetLoadingAnimation()
+AnimationPtr GameSystem::GetLoadingAnimation()
 {
 	return LOADING_ANIMATIONS[Random::RandomInt(0, LOADING_ANIMATIONS.size() - 1)];
 }

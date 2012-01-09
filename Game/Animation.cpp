@@ -130,11 +130,11 @@ bool Animation::IsOver()
 	return m_isOver;
 }
 
-Animation* Animation::Load(std::string spritesPath, bool reverse, bool loop)
+AnimationPtr Animation::Load(std::string spritesPath, bool reverse, bool loop)
 {
 	vector<int> delays;
 	InitDelaysOfAnim(spritesPath, delays);
-	return new Animation(spritesPath, delays, reverse, loop);
+	return AnimationPtr(new Animation(spritesPath, delays, reverse, loop));
 }
 
 

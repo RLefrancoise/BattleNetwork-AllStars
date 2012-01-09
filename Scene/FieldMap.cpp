@@ -20,12 +20,16 @@ float newDiag = sqrt(coter * coter + coter * coter);
 
 FieldMap::FieldMap()
 {	
+	#ifdef _DEBUG
 	LOG("Create FieldMap")
+	#endif
 }
 
 FieldMap::~FieldMap()
 {
+	#ifdef _DEBUG
 	LOG("Destroy FieldMap")
+	#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -124,7 +128,7 @@ void FieldMap::Initialize()
 void FieldMap::Destroy()
 {
 	if(m_actor) delete m_actor;
-	if(m_bg) delete m_bg;
+	//if(m_bg) delete m_bg;
 
 	for(int i = 0 ; i < m_grid.xTilesNb ; ++i)
 		for(int j = 0 ; j < m_grid.yTilesNb ; ++j)

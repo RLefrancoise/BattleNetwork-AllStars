@@ -194,6 +194,8 @@ int main()
 			{	
 				
 				screen = screens[screen].get()->Run();
+				if(screen == SCREEN_EXIT) break;
+				
 				//l'écran a changé ?
 				if(screen != previousScreen)
 				{
@@ -256,7 +258,8 @@ int main()
 	ImgManager::Reset();
 	SndManager::Reset();
 	FontManager::Reset();
-
+	GameSystem::Destroy();
+	
 	//SceneManager::getInstance()->kill();
 	
 #ifdef _DEBUG

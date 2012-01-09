@@ -6,6 +6,7 @@
 #include <oslib/oslib.h>
 
 #include "Utils.h"
+#include "Animation.hpp"
 
 class MMBNFont;
 
@@ -51,9 +52,17 @@ class GameSystem
 		};
 
 		static void Initialize();
+		static void Destroy();
+		
+		//========================
+		// PICTURES
+		//========================
 		static OSL_IMAGE* GetChipImage(ChipType type);
 		static OSL_IMAGE* GetElementImage(ChipElement element);
 
+		//========================
+		// FONTS
+		//========================
 		static MMBNFont* GetBattleFont();
 		static MMBNFont* GetActorLifeFont();
 		static MMBNFont* GetBattleChipNameFont();
@@ -63,16 +72,24 @@ class GameSystem
 		static MMBNFont* GetEnemyLifeFont();
 		static MMBNFont* GetCustomWindowLetterFont();
 
+		//========================
+		// ANIMATIONS
+		//========================
+		static Animation* GetLoadingAnimation();
+		
 	private:
 		
 		GameSystem();
-
+		
 		//========================
-		// ATTRIBUTS STATIC
+		// PICTURES
 		//========================
 		static OSL_IMAGE* m_chip_pics[CHIP_TYPE_NB]		;
 		static OSL_IMAGE* m_element_pics[CHIP_ELEMENT_NB];
 
+		//========================
+		// FONTS
+		//========================
 		static MMBNFont* m_actor_life_font;
 		static MMBNFont* m_battle_chip_name_font;
 		static MMBNFont* m_battle_chip_power_font;
@@ -80,6 +97,11 @@ class GameSystem
 		static MMBNFont* m_battle_enemy_name_font;
 		static MMBNFont* m_enemy_life_font;
 		static MMBNFont* m_custom_window_letter_font;
+		
+		//========================
+		// ANIMATIONS
+		//========================
+		static std::vector<Animation*> LOADING_ANIMATIONS;
 };
 
 #endif

@@ -1,7 +1,13 @@
 #include "GameSystem.h"
 
+#include <sstream>
+
+using namespace std;
+
 OSL_IMAGE* GameSystem::m_chip_pics[CHIP_TYPE_NB];
 OSL_IMAGE* GameSystem::m_element_pics[CHIP_ELEMENT_NB];
+
+
 MMBNFont* GameSystem::m_actor_life_font;
 MMBNFont* GameSystem::m_battle_chip_name_font;
 MMBNFont* GameSystem::m_battle_chip_power_font;
@@ -10,13 +16,42 @@ MMBNFont* GameSystem::m_battle_enemy_name_font;
 MMBNFont* GameSystem::m_enemy_life_font;
 MMBNFont* GameSystem::m_custom_window_letter_font;
 
+vector<Animation*> GameSystem::LOADING_ANIMATIONS;
+
 
 void GameSystem::Initialize()
 {
+	//PICTURES
 	m_chip_pics[NORMAL_CHIP]	= ImgManager::GetImage("System/Chips/CustomWindow/normal.png")			;
 	m_chip_pics[MEGA_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/mega.png")			;
 	m_chip_pics[GIGA_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/giga.png")			;
 	m_chip_pics[DARK_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/dark.png")			;
+	
+	
+	//LOADING ANIMATIONS
+	ifstream in( "System/Animation/Loading/animations.txt" , ifstream::in);
+	
+	if(!in.good())
+	{
+		LOG("Impossible de trouver le fichier System/Animation/Loading/animations.txt");
+		oslQuit();
+	}
+	
+	string line;
+	while(getline(in, line))
+	{
+		vector<string> v = StringUtils::Split(line, ":");
+		LOADING_ANIMATIONS.push_back(Animation::Load(string("System/Animation/Loading/") + v[0]));
+	}
+	
+	in.close();
+}
+
+void GameSystem::Destroy()
+{
+	//ANIMATIONS
+	for(unsigned int i(0) ; i < LOADING_ANIMATIONS.size() ; ++i)
+		if(LOADING_ANIMATIONS[i]) delete LOADING_ANIMATIONS[i];
 }
 
 OSL_IMAGE* GameSystem::GetChipImage(ChipType type)
@@ -69,3 +104,8 @@ MMBNFont* GameSystem::GetCustomWindowLetterFont()
 	return FontManager::GetFont("MMBNCustomWindowLetterFont");
 }
 		
+		
+Animation* GameSystem::GetLoadingAnimation()
+{
+	return LOADING_ANIMATIONS[Random::RandomInt(0, LOADING_ANIMATIONS.size() - 1)];
+}

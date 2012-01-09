@@ -233,7 +233,7 @@ class FieldMap : public Screen
 		//std::vector<Actor*> m_actors;			;
 		//background
 		//sf::Sprite	m_bg;						;
-		Animation* m_bg;
+		AnimationPtr m_bg;
 		//vue
 		View	m_view						;
 

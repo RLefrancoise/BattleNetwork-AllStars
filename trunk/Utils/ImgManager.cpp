@@ -46,6 +46,10 @@ void ImgManager::Reset()
 	
 	UnlockSema();
 	
+	#ifdef _DEBUG
+	LOG("Reset ImgManager")
+	#endif
+	
 	return;
 }
 
@@ -220,6 +224,7 @@ void ImgManager::RemoveImage(string name)
 	if(it != m_imageMap.end())
 	{
 		if(it->second) oslDeleteImage(it->second);
+		m_imageMap.erase(it);
 	#ifdef _DEBUG
 		LOG("Remove picture : " + name);
 	#endif

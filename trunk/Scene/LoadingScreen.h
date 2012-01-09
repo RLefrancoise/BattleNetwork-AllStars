@@ -11,7 +11,7 @@ class LoadingScreen
 
 	private:
 
-		static 	Animation*		m_anim										;
+		static 	AnimationPtr		m_anim									;
 		static 	unsigned int	m_current_char								;
 		static 	std::string		m_loading_string							;
 

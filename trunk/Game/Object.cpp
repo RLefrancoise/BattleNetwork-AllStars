@@ -8,7 +8,7 @@ Object::Object() : FieldMapElement()
 
 Object::~Object()
 {
-	if(m_sprite) oslDeleteImage(m_sprite);
+	//if(m_sprite) oslDeleteImage(m_sprite);
 }
 
 OSL_IMAGE* Object::GetSprite()

@@ -52,7 +52,7 @@ class MMBNBattleActor : public Displayable
 		ActorDirection GetDirection() const					;
 		ActorState GetState() const							;
 		std::string GetName() const							;
-		Animation* GetCurrentAnim()							;
+		AnimationPtr GetCurrentAnim()						;
 		Vector2f& GetPosition()								;
 		int GetLV() const									;
 		int GetHP() const									;
@@ -96,8 +96,8 @@ class MMBNBattleActor : public Displayable
 		//===============================
 		// ANIMATIONS
 		//===============================
-		std::map<ActorState,Animation*> m_animMap	;
-		std::map<ActorState,Animation*> m_reversedAnimMap	;
+		std::map<ActorState,AnimationPtr> m_animMap	;
+		std::map<ActorState,AnimationPtr> m_reversedAnimMap	;
 		Vector2f m_position;
 		float m_posX;
 		float m_posY;

@@ -168,7 +168,7 @@ int main()
 	//-------------------------------------------
 
 	//boucle principale
-	while (!osl_quit && screen != SCREEN_EXIT)
+	while (!osl_quit && (screen != SCREEN_EXIT) )
 	{
 		sceRtcGetCurrentTick(&temps);
 		frames++;
@@ -194,7 +194,7 @@ int main()
 			{	
 				
 				screen = screens[screen].get()->Run();
-				if(screen == SCREEN_EXIT) break;
+				if(screen == SCREEN_EXIT) continue;
 				
 				//l'écran a changé ?
 				if(screen != previousScreen)
@@ -270,7 +270,6 @@ int main()
 
 	oslEndGfx();
 	oslQuit();
-	sceKernelSleepThread();
 
 	return 0;
 }

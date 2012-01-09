@@ -45,6 +45,10 @@ void FontManager::Reset()
 	
 	UnlockSema();
 	
+	#ifdef _DEBUG
+	LOG("Reset FontManager")
+	#endif
+	
 	return;
 }
 

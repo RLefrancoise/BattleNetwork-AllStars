@@ -81,7 +81,7 @@ class MMBNPanelGrid
 		PanelsTeamPtr	m_panels_team	;
 
 		OSL_IMAGE* m_panel_pictures[PANELS_TEAM_NB];
-		Animation* m_panel_animations[PANEL_TYPES_NB];
+		AnimationPtr m_panel_animations[PANEL_TYPES_NB];
 
 		unsigned int m_width				;
 		unsigned int m_height				;
@@ -174,7 +174,7 @@ class MMBNCustomGauge : public Displayable
 
 		OSL_IMAGE*			m_empty							;
 		OSL_IMAGE*			m_gauge							;
-		Animation*			m_full							;
+		AnimationPtr		m_full							;
 
 		Timer				m_timer							;
 		float				m_time_limit					;
@@ -213,9 +213,9 @@ class MMBNBattleChipSelector : public Displayable
 		Vector2f			m_size							;
 
 		OSL_IMAGE*			m_selector						;
-		Animation*			m_cursor						;
-		Animation*			m_cursor2						;
-		Animation*			m_cursor3						;
+		AnimationPtr		m_cursor						;
+		AnimationPtr		m_cursor2						;
+		AnimationPtr		m_cursor3						;
 		OSL_IMAGE*			m_normal_chip					;
 		OSL_IMAGE*			m_mega_chip						;
 		OSL_IMAGE*			m_giga_chip						;
@@ -259,13 +259,13 @@ class MMBNBattleMap : public Screen
 
 		//HUD elements
 		MMBNPanelGrid*			m_grid						;
-		Animation*				m_bg						;
+		AnimationPtr			m_bg						;
 		MMBNLifeBar*			m_lifeBar					;
 		MMBNEmotionDisplay*		m_emotion					;
 		MMBNCustomGauge*		m_custom_gauge				;
 		MMBNBattleChipSelector*	m_chip_selector				;
 		OSL_IMAGE*				m_enemy_display_edge		;
-		Animation*				m_enemy_deleted				;
+		AnimationPtr			m_enemy_deleted				;
 
 		bool					m_select_chip				;
 

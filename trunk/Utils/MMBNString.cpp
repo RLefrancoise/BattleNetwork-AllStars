@@ -24,16 +24,28 @@ MMBNFont* MMBNString::GetFont()
 
 void MMBNString::Display(float offX, float offY)
 {
-	unsigned int inc = 0;
+	unsigned int incX = 0, incY = 0;
 
 	for(unsigned int i = 0 ; i < m_chars.size() ; i++)
 	{
+		if(m_chars[i] == '\n')
+		{
+			incX = 0;
+			incY += m_font->GetCharHeight();
+			continue;
+		}
+		if(m_chars[i] == ' ')
+		{
+			incX += m_font->GetCharWidth();
+			continue;
+		}
+		
 		pair<int,int> p = m_font->GetCharPosition(m_chars[i]);
 		if( (p.first == -1) || (p.second == -1) ) continue;
 
 		oslSetImageTile(m_font->GetFontPicture(), p.first * m_font->GetCharWidth(), p.second * m_font->GetCharHeight(), (p.first + 1) * m_font->GetCharWidth(), (p.second + 1) * m_font->GetCharHeight() );
-		oslDrawImageXY(m_font->GetFontPicture(), m_position.x + inc, m_position.y);
-		inc += m_font->GetCharWidth();
+		oslDrawImageXY(m_font->GetFontPicture(), m_position.x + incX + offX, m_position.y + incY + offY);
+		incX += m_font->GetCharWidth();
 	}
 }
 
@@ -57,6 +69,19 @@ Vector2f& MMBNString::GetPosition()
 unsigned int MMBNString::GetStringWidth()
 {
 	return (m_font->GetCharWidth() * m_chars.size());
+}
+
+unsigned int MMBNString::GetStringHeight()
+{
+	unsigned int height = m_font->GetCharHeight();
+	
+	for(unsigned int i = 0 ; i < m_chars.size() ; i++)
+	{
+		if(m_chars[i] == '\n')
+			height += m_font->GetCharHeight();
+	}
+	
+	return height;
 }
 
 void MMBNString::SetString(std::string& str)

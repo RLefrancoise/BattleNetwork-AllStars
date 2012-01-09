@@ -221,8 +221,10 @@ class MMBNBattleChipSelector : public Displayable
 		OSL_IMAGE*			m_giga_chip						;
 		OSL_IMAGE*			m_dark_chip						;
 
-		MMBNBattleChip*		m_current_chips[8]				;
-		unsigned int		m_selected_chips[5]				;
+		std::vector<MMBNBattleChip*> m_current_chips		;
+		std::vector<unsigned int> m_selected_chips			;
+		//MMBNBattleChip*		m_current_chips[8]				;
+		//int					m_selected_chips[5]				;
 		Vector2i			m_chips_position[8]				;
 		Vector2i			m_letters_position[8]			;
 
@@ -233,6 +235,8 @@ class MMBNBattleChipSelector : public Displayable
 
 		static const unsigned int ICON_WIDTH = 21			;
 		static const unsigned int ICON_HEIGHT = 21			;
+		static const unsigned int MAX_CHIPS = 8				;
+		static const unsigned int MAX_SELECTED_CHIPS = 5	;
 
 	public:
 		MMBNBattleChipSelector()							;
@@ -265,9 +269,11 @@ class MMBNBattleMap : public Screen
 
 		bool					m_select_chip				;
 
+		#ifdef _DEBUG
 		//debug
 		bool					m_display_debug_info		;
-
+		#endif
+		
 		//battle infos
 		bool					m_battle_is_over;			;
 		Timer					m_battle_timer				;

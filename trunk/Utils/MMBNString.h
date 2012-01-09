@@ -28,7 +28,8 @@ class MMBNString : public Displayable
 		Vector2f& GetPosition();
 
 		unsigned int GetStringWidth();
-
+		unsigned int GetStringHeight();
+		
 		void SetString(std::string& str);
 
 		void operator=(const char* &str);

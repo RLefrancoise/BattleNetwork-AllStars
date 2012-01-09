@@ -60,23 +60,23 @@ MMBNPanelGrid::MMBNPanelGrid()
 	m_panel_animations[WATER] 	= NULL;
 	
 	//actor and enemies
-	m_actor = MMBNBattleActor::Load("Roxas", false, true, false);
+	m_actor = MMBNBattleActor::Load("Killua", false, true, false);
 	PutActorOnPanel(m_actor, 2, 2);
 
-	m_enemies.push_back( MMBNBattleActor::Load("Killua", true, false, true) );
-	PutActorOnPanel(m_enemies[0], 5, 0);
+	m_enemies.push_back( MMBNBattleActor::Load("Sora", true, false, true) );
+	PutActorOnPanel(m_enemies[0], 5, 1);
 	
-	/*m_enemies.push_back( MMBNBattleActor::Load("Sora") );
-	PutActorOnPanel(m_enemies[1], 5, 1);
+	m_enemies.push_back( MMBNBattleActor::Load("Roxas", true, false, true) );
+	PutActorOnPanel(m_enemies[1], 5, 0);
 	
-	m_enemies.push_back( MMBNBattleActor::Load("DarkRoxas") );
-	PutActorOnPanel(m_enemies[2], 5, 2);
-	
-	m_enemies.push_back( MMBNBattleActor::Load("Megaman") );
-	PutActorOnPanel(m_enemies[3], 5, 3);
+	m_enemies.push_back( MMBNBattleActor::Load("Megaman", true, false, true) );
+	PutActorOnPanel(m_enemies[2], 5, 3);
 
-	m_enemies.push_back( MMBNBattleActor::Load("Protoman") );
-	PutActorOnPanel(m_enemies[4], 5, 4);*/
+	m_enemies.push_back( MMBNBattleActor::Load("Protoman", true, false, true) );
+	PutActorOnPanel(m_enemies[3], 5, 4);
+	
+	m_enemies.push_back( MMBNBattleActor::Load("DarkRoxas", true, false, true) );
+	PutActorOnPanel(m_enemies[4], 5, 2);
 	
 	vector<MMBNBattleActor*>::iterator it;
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
@@ -86,18 +86,15 @@ MMBNPanelGrid::MMBNPanelGrid()
 	}
 
 	//ia
-	m_ia.push_back(new MMBNBattleIA(this, m_enemies[0], ENEMY));
-	/*m_ia.push_back(new MMBNBattleIA(this, m_enemies[1], ENEMY));
-	m_ia.push_back(new MMBNBattleIA(this, m_enemies[2], ENEMY));
-	m_ia.push_back(new MMBNBattleIA(this, m_enemies[3], ENEMY));
-	m_ia.push_back(new MMBNBattleIA(this, m_enemies[4], ENEMY));*/
+	for(unsigned int i(0) ; i < m_enemies.size() ; ++i)
+		m_ia.push_back(new MMBNBattleIA(this, m_enemies[i], ENEMY));
 
 }
 
 MMBNPanelGrid::~MMBNPanelGrid()
 {
 	#ifdef _DEBUG
-		LOG("Destory PanelGrid")
+		LOG("Destroy PanelGrid")
 	#endif
 	
 	//actor
@@ -432,7 +429,7 @@ MMBNEmotionDisplay::~MMBNEmotionDisplay()
 
 void MMBNEmotionDisplay::Display(float offX, float offY)
 {
-	oslDrawImageXY(m_emotions[m_current_emotion], m_position.x, m_position.y);
+	oslDrawImageXY(m_emotions[m_current_emotion], m_position.x + offX, m_position.y + offY);
 }
 
 void MMBNEmotionDisplay::Move(float x, float y)
@@ -471,7 +468,7 @@ MMBNLifeBar::MMBNLifeBar()
 	#endif
 	
 	m_actor = NULL;
-	m_life_font = MMBNFont::Load("MMBNActorLifeFont");
+	m_life_font = GameSystem::GetActorLifeFont();
 }
 
 MMBNLifeBar::MMBNLifeBar(MMBNBattleActor* mmbnba)
@@ -481,7 +478,7 @@ MMBNLifeBar::MMBNLifeBar(MMBNBattleActor* mmbnba)
 	#endif
 	
 	m_actor = mmbnba;
-	m_life_font = MMBNFont::Load("MMBNActorLifeFont");
+	m_life_font = GameSystem::GetActorLifeFont();
 }
 
 MMBNLifeBar::~MMBNLifeBar()
@@ -489,14 +486,12 @@ MMBNLifeBar::~MMBNLifeBar()
 	#ifdef _DEBUG
 		LOG("Destroy LifeBar")
 	#endif
-	
-	if(m_life_font) delete m_life_font;
 }
 
 void MMBNLifeBar::Display(float offX, float offY)
 {
-	oslDrawFillRect(m_position.x, m_position.y, m_position.x + m_size.x, m_position.y + m_size.y, RGB(64,64,64));
-	oslDrawRect(m_position.x, m_position.y, m_position.x + m_size.x, m_position.y + m_size.y, RGB(255,255,255));
+	oslDrawFillRect(m_position.x + offX, m_position.y + offY, m_position.x + m_size.x + offX, m_position.y + m_size.y + offY, RGB(64,64,64));
+	oslDrawRect(m_position.x + offX, m_position.y + offY, m_position.x + m_size.x + offX, m_position.y + m_size.y + offY, RGB(255,255,255));
 
 	MMBNString life_s;
 	life_s.SetFont(m_life_font);
@@ -510,7 +505,7 @@ void MMBNLifeBar::Display(float offX, float offY)
 	int h = m_life_font->GetCharHeight();
 
 	//life_s.SetPosition( (m_size.x - w) / 2 + m_position.x, (m_size.y - h) / 2 + m_position.y );
-	life_s.SetPosition( m_position.x + m_size.x - w - (m_life_font->GetCharWidth() / 2), (m_size.y - h) / 2 + m_position.y );
+	life_s.SetPosition( m_position.x + m_size.x - w - (m_life_font->GetCharWidth() / 2) + offX, (m_size.y - h) / 2 + m_position.y + offY);
 
 	life_s.Display();
 }
@@ -712,6 +707,8 @@ void MMBNCustomGauge::Update()
 
 void MMBNCustomGauge::Reset()
 {
+	if(m_timer.is_paused()) m_timer.unpause();
+	
 	m_per = 0.0f;
 	m_state = RISING;
 	m_timer.stop();
@@ -745,6 +742,224 @@ bool MMBNCustomGauge::IsFull()
 
 
 
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+// BATTLE CHIP SELECTOR
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+MMBNBattleChipSelector::MMBNBattleChipSelector()
+{
+	
+	#ifdef _DEBUG
+		LOG("Create BattleChip Selector")
+	#endif
+
+	m_selector 		= ImgManager::GetImage("System/Chips/CustomWindow/chip_selector.png")	;
+	m_cursor		= Animation::Load("System/Chips/CustomWindow/Cursor")					;
+	m_cursor2		= Animation::Load("System/Chips/CustomWindow/Cursor2")					;
+	m_cursor3		= Animation::Load("System/Chips/CustomWindow/Cursor3")					;
+	
+	m_normal_chip	= GameSystem::GetChipImage(GameSystem::NORMAL_CHIP)						;
+	m_mega_chip		= GameSystem::GetChipImage(GameSystem::MEGA_CHIP)						;
+	m_giga_chip		= GameSystem::GetChipImage(GameSystem::GIGA_CHIP)						;
+	m_dark_chip		= GameSystem::GetChipImage(GameSystem::DARK_CHIP)						;
+
+	m_size.x 		= m_selector->sizeX														;
+	m_size.y 		= m_selector->sizeY														;
+	
+	//Put some chips for testing
+	MMBNBattleChip* drk_sword = MMBNBattleChip::Load("DrkSword_D");
+	drk_sword->SetExtendedDisplay(false);
+	m_current_chips.push_back(drk_sword);
+	
+	MMBNBattleChip* cus_volt1 = MMBNBattleChip::Load("CusVolt1_C");
+	cus_volt1->SetExtendedDisplay(false);
+	m_current_chips.push_back(cus_volt1);
+	
+	MMBNBattleChip* sword = MMBNBattleChip::Load("Sword_S");
+	sword->SetExtendedDisplay(false);
+	m_current_chips.push_back(sword);
+	
+	MMBNBattleChip* recov10_ = MMBNBattleChip::Load("Recov10_+");
+	recov10_->SetExtendedDisplay(false);
+	m_current_chips.push_back(recov10_);
+	
+	MMBNBattleChip* recov10_r = MMBNBattleChip::Load("Recov10_R");
+	recov10_r->SetExtendedDisplay(false);
+	m_current_chips.push_back(recov10_r);
+	
+	m_chips_position[0].x = 13	; 	m_chips_position[0].y = 157	;
+	m_chips_position[1].x = 37	; 	m_chips_position[1].y = 157	;
+	m_chips_position[2].x = 61	; 	m_chips_position[2].y = 157	;
+	m_chips_position[3].x = 85	; 	m_chips_position[3].y = 157	;
+	m_chips_position[4].x = 109	; 	m_chips_position[4].y = 157	;
+	m_chips_position[5].x = 13	; 	m_chips_position[5].y = 193	;
+	m_chips_position[6].x = 37	; 	m_chips_position[6].y = 193	;
+	m_chips_position[7].x = 61	; 	m_chips_position[7].y = 193	;
+	
+	for(unsigned int i(0) ; i < 5 ; ++i)
+	{
+		m_letters_position[i].x = m_chips_position[i].x + ICON_WIDTH / 2;
+		m_letters_position[i].y = 185;
+	}
+	
+	for(unsigned int i(5) ; i < 8 ; ++i)
+	{
+		m_letters_position[i].x = m_chips_position[i].x + ICON_WIDTH / 2;
+		m_letters_position[i].y = 221;
+	}
+	
+	m_current_position	= CHIP		;
+	m_selected_chip		= 0			;
+
+	m_ok_pressed		= false			;
+}
+
+MMBNBattleChipSelector::~MMBNBattleChipSelector()
+{
+	#ifdef _DEBUG
+		LOG("Destroy BattleChip Selector")
+	#endif
+	
+	if(m_cursor) delete m_cursor;
+	if(m_cursor2) delete m_cursor2;
+	if(m_cursor3) delete m_cursor3;
+	
+	vector<MMBNBattleChip*>::iterator it;
+	for(it = m_current_chips.begin() ; it != m_current_chips.end() ; ++it)
+		if(*it) delete *it;
+}
+
+void MMBNBattleChipSelector::Update(OSL_CONTROLLER* k)
+{
+	//RIGHT
+	if(k->pressed.right)
+	{
+		if(m_selected_chip != 4) m_selected_chip++;
+		else m_current_position = OK;
+		
+		if(m_selected_chip >= 8) m_selected_chip = 7;
+	}
+	//LEFT
+	else if(k->pressed.left)
+	{
+		if(m_current_position == CHIP)
+		{
+			if(m_selected_chip > 0) m_selected_chip--;
+			else m_selected_chip = 0;
+		}
+		else if(m_current_position == OK)
+			m_current_position = CHIP;
+	}
+	//UP
+	else if(k->pressed.up)
+	{
+		if( (m_selected_chip >= 5) && (m_selected_chip <= 7) ) m_selected_chip -= 5;
+	}
+	//DOWN
+	else if(k->pressed.down)
+	{
+		if( (m_selected_chip >= 0) && (m_selected_chip <= 2) ) m_selected_chip += 5;
+		else if( (m_selected_chip == 3) || (m_selected_chip == 4) ) m_selected_chip = 7;
+	}
+	
+	//CAN PRESS OK ?
+	if( (m_current_position == OK) && (k->pressed.cross) ) m_ok_pressed = true;
+}
+
+void MMBNBattleChipSelector::Display(float offX, float offY)
+{
+	//selector
+	oslDrawImageXY(m_selector, m_position.x + offX, m_position.y + offY);
+	
+	//chips
+	for(unsigned int i(0) ; i < m_current_chips.size() ; ++i)
+	{
+		if(m_current_chips[i])
+		{
+			//icon
+			oslDrawImageXY(m_current_chips[i]->GetIcon(), m_position.x + offX + m_chips_position[i].x, m_position.y + offY + m_chips_position[i].y);
+			
+			//letter
+			MMBNString letter;
+			letter.SetFont(GameSystem::GetCustomWindowLetterFont());
+			letter = m_current_chips[i]->GetLetter();
+			letter.SetPosition(m_position.x + offX + m_letters_position[i].x - letter.GetStringWidth() / 2, m_position.y + offY + m_letters_position[i].y - letter.GetStringHeight() / 2);
+			letter.Display();
+		}
+	}
+	
+	
+	//current chip
+	if( (m_current_position == CHIP) && (m_selected_chip < m_current_chips.size()) && (m_current_chips[m_selected_chip] != NULL) )
+	{
+		oslDrawImageXY(GameSystem::GetChipImage(m_current_chips[m_selected_chip]->GetType()), m_position.x, m_position.y);
+		m_current_chips[m_selected_chip]->SetPosition(m_position.x + offX + 22, m_position.y + offY + 18);
+		m_current_chips[m_selected_chip]->Display(offX, offY);
+	}
+	else
+		oslDrawImageXY(GameSystem::GetChipImage(GameSystem::NORMAL_CHIP), m_position.x, m_position.y);
+		
+	//cursor
+	switch(m_current_position)
+	{
+		case CHIP:
+			m_cursor->Update();
+			m_cursor->SetPosition(m_position.x + offX + m_chips_position[m_selected_chip].x + ICON_WIDTH / 2, m_position.y + offY + m_chips_position[m_selected_chip].y + ICON_HEIGHT / 2);
+			m_cursor->Display(offX, offY);
+			break;
+		case OK:
+			m_cursor2->Update();
+			m_cursor2->SetPosition(m_position.x + offX + 155, m_position.y + offY + 182);
+			m_cursor2->Display(offX, offY);
+			break;
+		case SHUFFLE:
+			m_cursor3->Update();
+			m_cursor3->Display(offX, offY);
+			break;
+	}
+	
+	
+}
+
+void MMBNBattleChipSelector::Move(float x, float y)
+{
+	m_position.x += x;
+	m_position.y += y;
+}
+
+void MMBNBattleChipSelector::SetPosition(float x, float y)
+{
+	m_position.x = x;
+	m_position.y = y;
+}
+
+Vector2f& MMBNBattleChipSelector::GetPosition()
+{
+	return m_position;
+}
+
+Vector2f& MMBNBattleChipSelector::GetSize()
+{
+	return m_size;
+}
+
+bool MMBNBattleChipSelector::OkPressed()
+{
+	return m_ok_pressed;
+}
+
+void MMBNBattleChipSelector::ResetCursor()
+{
+	m_ok_pressed = false;
+	m_current_position = CHIP;
+	m_selected_chip = 0;
+}
+
+
+
+
+
 
 
 
@@ -754,12 +969,16 @@ bool MMBNCustomGauge::IsFull()
 
 MMBNBattleMap::MMBNBattleMap()
 {
-	LOG("Create BattleMap")
+	#ifdef _DEBUG
+		LOG("Create BattleMap")
+	#endif
 }
 
 MMBNBattleMap::~MMBNBattleMap()
-{
-	LOG("Destroy BattleMap")
+{	
+	#ifdef _DEBUG
+		LOG("Destroy BattleMap")
+	#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -784,7 +1003,6 @@ int MMBNBattleMap::Run()
 void MMBNBattleMap::Initialize()
 {
 	m_bg = Animation::Load("Map/Background");
-	//m_bg = new Animation("Map/Background", std::vector<int>(7,150), false, true);
 
 	m_grid = new MMBNPanelGrid();
 
@@ -806,6 +1024,9 @@ void MMBNBattleMap::Initialize()
 	m_battle_time_string = "00:00:00";
 	
 	m_custom_gauge = new MMBNCustomGauge();
+	
+	m_chip_selector = new MMBNBattleChipSelector();
+	m_select_chip = false;
 }
 
 //////////////////////////////////////////////////////////////
@@ -826,6 +1047,8 @@ void MMBNBattleMap::Destroy()
 	if(m_enemy_deleted) delete m_enemy_deleted;
 	
 	if(m_custom_gauge) delete m_custom_gauge;
+	
+	if(m_chip_selector) delete m_chip_selector;
 	
 	SndManager::StopBGM(0);
 	
@@ -862,9 +1085,33 @@ void MMBNBattleMap::Display()
 	//======================================
 	// ACTORS
 	//======================================
-	m_lifeBar->Display();
-	m_emotion->Display();
-
+	//+++++++++++++++++++++++++++++++++++++
+	// CHIP SELECTOR
+	//+++++++++++++++++++++++++++++++++++++
+	if(m_select_chip)
+	{
+		m_chip_selector->SetPosition(0, 0);
+		m_chip_selector->Display();
+		m_lifeBar->Display(m_chip_selector->GetSize().x + 5);
+		m_emotion->Display(m_chip_selector->GetSize().x + 5);
+	}
+	else
+	{
+		m_lifeBar->Display();
+		m_emotion->Display();
+		
+		//+++++++++++++++++++++++++++++++++++++
+		// CUSTOM GAUGE
+		//+++++++++++++++++++++++++++++++++++++
+		m_custom_gauge->SetPosition(240 - m_custom_gauge->GetSize().x / 2, 5);
+		m_custom_gauge->Display();
+		
+		//+++++++++++++++++++++++++++++++++++++
+		// BATTLE TIME
+		//+++++++++++++++++++++++++++++++++++++
+		DisplayBattleTime(240 - m_battle_time_string.GetStringWidth() / 2, 5 + m_custom_gauge->GetSize().y);
+	}
+	
 	// display names of enemies
 	vector<MMBNBattleActor*> vect = m_grid->GetEnemies();
 	unsigned int inc = 0;
@@ -885,18 +1132,6 @@ void MMBNBattleMap::Display()
 		inc += f->GetCharHeight();
 	}
 
-	//+++++++++++++++++++++++++++++++++++++
-	// CUSTOM GAUGE
-	//+++++++++++++++++++++++++++++++++++++
-	m_custom_gauge->SetPosition(240 - m_custom_gauge->GetSize().x / 2, 5);
-	m_custom_gauge->Display();
-	
-	//+++++++++++++++++++++++++++++++++++++
-	// BATTLE TIME
-	//+++++++++++++++++++++++++++++++++++++
-	DisplayBattleTime(240 - m_battle_time_string.GetStringWidth() / 2, 5 + m_custom_gauge->GetSize().y);
-		
-		
 	//battle over ?
 	if(m_grid->BattleIsOver())
 	{
@@ -927,28 +1162,30 @@ void MMBNBattleMap::Display()
 	//+++++++++++++++++++++++++++++++++++++
 	// AFFICHAGE INFO
 	//+++++++++++++++++++++++++++++++++++++
-	if(!m_display_debug_info) return;
+	#ifdef _DEBUG
+		if(!m_display_debug_info) return;
 
-	Vector2f v = m_grid->GetActor()->GetPosition();
-	Vector2i v_panel = m_grid->GetActorPanel(m_grid->GetActor());
-	ostringstream obj_oss(ostringstream::out);
-	obj_oss << m_grid->GetActor()->GetName() << " X : " << v.x  << " Y : " << v.y << " TX : " << v_panel.x << " TY : " << v_panel.y;
-
-	oslSetTextColor(RGBA(255,0,0,255));
-	oslPrintf_xy(5,25,obj_oss.str().c_str());
-
-	int posY = 35;
-
-	for(unsigned int i = 0 ; i < m_grid->GetEnemies().size() ; i++)
-	{
-		Vector2f v = m_grid->GetEnemies()[i]->GetPosition();
-		Vector2i v_panel = m_grid->GetActorPanel(m_grid->GetEnemies()[i]);
+		Vector2f v = m_grid->GetActor()->GetPosition();
+		Vector2i v_panel = m_grid->GetActorPanel(m_grid->GetActor());
 		ostringstream obj_oss(ostringstream::out);
-		obj_oss << m_grid->GetEnemies()[i]->GetName() << " X : " << v.x  << " Y : " << v.y << " TX : " << v_panel.x << " TY : " << v_panel.y;
+		obj_oss << m_grid->GetActor()->GetName() << " X : " << v.x  << " Y : " << v.y << " TX : " << v_panel.x << " TY : " << v_panel.y;
 
-		oslPrintf_xy(5,posY,obj_oss.str().c_str());
-		posY += 10;
-	}
+		oslSetTextColor(RGBA(255,0,0,255));
+		oslPrintf_xy(5,25,obj_oss.str().c_str());
+
+		int posY = 35;
+
+		for(unsigned int i = 0 ; i < m_grid->GetEnemies().size() ; i++)
+		{
+			Vector2f v = m_grid->GetEnemies()[i]->GetPosition();
+			Vector2i v_panel = m_grid->GetActorPanel(m_grid->GetEnemies()[i]);
+			ostringstream obj_oss(ostringstream::out);
+			obj_oss << m_grid->GetEnemies()[i]->GetName() << " X : " << v.x  << " Y : " << v.y << " TX : " << v_panel.x << " TY : " << v_panel.y;
+
+			oslPrintf_xy(5,posY,obj_oss.str().c_str());
+			posY += 10;
+		}
+	#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -976,17 +1213,24 @@ int MMBNBattleMap::Update()
 	OSL_CONTROLLER* k = oslReadKeys();
 
 	if(k->pressed.triangle) return SCREEN_TITLE;
-	if(k->pressed.select) m_display_debug_info = !m_display_debug_info;
+	
+	#ifdef _DEBUG
+		if(k->pressed.select) m_display_debug_info = !m_display_debug_info;
+	#endif
 	
 	if(!m_grid->BattleIsOver())
 	{
-		if( (k->pressed.R || k->pressed.L) && m_custom_gauge->IsFull() ) m_custom_gauge->Reset();
 		
-		m_grid->Update(k);
-		m_custom_gauge->Update();
+		if(m_select_chip) m_chip_selector->Update(k);
+		else
+		{
+			m_grid->Update(k);
+			m_custom_gauge->Update();
+		}
 		
 		//gestion du héros
 		ActorHandle(k);
+		
 	}
 	else
 	{
@@ -999,22 +1243,22 @@ int MMBNBattleMap::Update()
 
 void MMBNBattleMap::ActorHandle(OSL_CONTROLLER* k)
 {
-
-	/*Vector2i v = m_grid->GetActorPanel(m_actor);
-
-	if(k->pressed.left)
-		v.x = v.x - 1;
-	else if(k->pressed.right)
-		v.x = v.x + 1;
-	else if(k->pressed.up)
-		v.y = v.y - 1;
-	else if(k->pressed.down)
-		v.y = v.y + 1;
+	if( (k->pressed.R || k->pressed.L) && m_custom_gauge->IsFull() )
+	{
+		m_custom_gauge->Reset();
+		m_custom_gauge->Pause();
+		m_chip_selector->ResetCursor();
+		m_select_chip = true;
+		m_battle_timer.pause();
+	}
 	
-
-
-	if( m_grid->IsInsideGrid(v.x, v.y) && ( m_grid->GetPanelType(v.x, v.y) == MMBNPanelGrid::PLAYER ) )
-		m_grid->PutActorOnPanel(m_actor, v.x, v.y);*/
+	if(m_chip_selector->OkPressed())
+	{
+		m_select_chip = false;
+		m_custom_gauge->Unpause();
+		m_battle_timer.unpause();
+	}
+	
 	
 }
 

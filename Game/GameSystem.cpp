@@ -13,13 +13,17 @@ MMBNFont* GameSystem::m_custom_window_letter_font;
 
 void GameSystem::Initialize()
 {
-
+	m_chip_pics[NORMAL_CHIP]	= ImgManager::GetImage("System/Chips/CustomWindow/normal.png")			;
+	m_chip_pics[MEGA_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/mega.png")			;
+	m_chip_pics[GIGA_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/giga.png")			;
+	m_chip_pics[DARK_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/dark.png")			;
 }
 
 OSL_IMAGE* GameSystem::GetChipImage(ChipType type)
 {
 	return m_chip_pics[type];
 }
+
 OSL_IMAGE* GameSystem::GetElementImage(ChipElement element)
 {
 	return m_element_pics[element];

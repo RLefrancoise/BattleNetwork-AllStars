@@ -1236,7 +1236,7 @@ int MMBNBattleMap::Update()
 	//=============================
 	OSL_CONTROLLER* k = oslReadKeys();
 
-	if(k->pressed.triangle) return SCREEN_TITLE;
+	if(k->pressed.triangle) return SCREEN_CHARACTER_SELECT;
 	
 	#ifdef _DEBUG
 		if(k->pressed.select) m_display_debug_info = !m_display_debug_info;
@@ -1258,7 +1258,7 @@ int MMBNBattleMap::Update()
 	}
 	else
 	{
-		if(m_enemy_deleted->IsOver() && k->pressed.cross) return SCREEN_TITLE;
+		if(m_enemy_deleted->IsOver() && k->pressed.cross) return SCREEN_CHARACTER_SELECT;
 	}
 
 	//par défaut, on reste sur le même écran

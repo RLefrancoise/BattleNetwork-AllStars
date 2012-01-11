@@ -176,7 +176,7 @@ int MMBNTitle::Update()
 		if(m_menu == NEW_GAME)
 			return SCREEN_FIELDMAP;
 		else if(m_menu == LOAD_GAME)
-			return SCREEN_BATTLEMAP;
+			return SCREEN_CHARACTER_SELECT;
 		else
 			return SCREEN_EXIT;
 		

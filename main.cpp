@@ -66,6 +66,12 @@ void ChangeScreen()
 				screens[screen] = field;
 			}
 			break;
+		case SCREEN_CHARACTER_SELECT:
+			{
+				ScreenPtr char_select(new MMBNCharacterSelect());
+				screens[screen] = char_select;
+			}
+			break;
 		default:
 			break;
 	}

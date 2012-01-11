@@ -8,6 +8,7 @@
 #include "Utils.h"
 #include "Variables.h"
 #include "GameSystem.h"
+#include "GameBattle.h"
 #include "MMBNBattleChip.h"
 #include "SceneManager.h"
 
@@ -145,6 +146,15 @@ int main()
 	MMBNBattleChip::LoadMaps();
 	SndManager::Initialize();
 	MMBNBattleActor::Initialize();
+	
+	GameBattle::BattleCharacter 				gon 		= { "Gon"		, Vector2i(2, 2) 	}	;
+	GameBattle::BattleCharacter 				killua 		= { "Killua"	, Vector2i(7, 2) 	}	;
+	
+	std::vector<GameBattle::BattleCharacter> 	v													;
+	v.push_back(killua)																				;
+	
+	GameBattle::BattleInfo 						battle_info = {"CentralArea", gon	, v	, "Battle_Field"		}	;
+	GameBattle::SetBattleInfo(battle_info)															;
 	
 	loadingScreen = NULL;
 	

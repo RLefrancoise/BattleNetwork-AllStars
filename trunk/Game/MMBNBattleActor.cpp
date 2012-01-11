@@ -100,10 +100,17 @@ MMBNBattleActor::~MMBNBattleActor()
 //////////////////////////////////////////////////////////////
 MMBNBattleActor* MMBNBattleActor::Load(std::string name, bool ia, bool loadNormalSprites, bool loadReverseSprites)
 {
+	#ifdef _DEBUG
+	LOG("Load actor " + name)
+	#endif
 	MMBNBattleActor* a = new MMBNBattleActor(name, loadNormalSprites, loadReverseSprites);
 
 	if(ia) a->InitializeIA();
-
+	
+	#ifdef _DEBUG
+	LOG("Actor loaded")
+	#endif
+	
 	return a;
 }
 

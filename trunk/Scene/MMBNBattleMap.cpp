@@ -1,4 +1,5 @@
 #include "MMBNBattleMap.h"
+#include "GameBattle.h"
 
 using namespace std;
 
@@ -60,35 +61,33 @@ MMBNPanelGrid::MMBNPanelGrid()
 	m_panel_animations[WATER] 	= NULL;*/
 	
 	//actor and enemies
-	m_actor = MMBNBattleActor::Load("Gon", false, true, false);
-	PutActorOnPanel(m_actor, 2, 2);
-
-	m_enemies.push_back( MMBNBattleActor::Load("Killua", true, false, true) );
-	PutActorOnPanel(m_enemies[0], 5, 1);
+	GameBattle::BattleInfo battle_info = GameBattle::GetBattleInfo();
 	
-	m_enemies.push_back( MMBNBattleActor::Load("Roxas", true, false, true) );
-	PutActorOnPanel(m_enemies[1], 5, 0);
+	#ifdef _DEBUG
+	LOG("Load battle actor")
+	#endif
+	m_actor = MMBNBattleActor::Load(battle_info.actor.name, false, true, false);
+	PutActorOnPanel(m_actor, battle_info.actor.position.x, battle_info.actor.position.y);
+	#ifdef _DEBUG
+	LOG("Battle actor loaded")
+	LOG("Load battle enemies")
+	#endif
 	
-	m_enemies.push_back( MMBNBattleActor::Load("Megaman", true, false, true) );
-	PutActorOnPanel(m_enemies[2], 5, 3);
-
-	m_enemies.push_back( MMBNBattleActor::Load("Protoman", true, false, true) );
-	PutActorOnPanel(m_enemies[3], 5, 4);
-	
-	m_enemies.push_back( MMBNBattleActor::Load("DarkRoxas", true, false, true) );
-	PutActorOnPanel(m_enemies[4], 5, 2);
-	
-	vector<MMBNBattleActor*>::iterator it;
-	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
+	vector<GameBattle::BattleCharacter>::iterator it;
+	for(it = battle_info.enemies.begin() ; it != battle_info.enemies.end() ; ++it)
 	{
-		(*it)->SetDirection(MMBNBattleActor::LEFT);
-		(*it)->SetState(MMBNBattleActor::BATTLE_STANDING);
+		MMBNBattleActor* a = MMBNBattleActor::Load(it->name, true, false, true);
+		a->SetDirection(MMBNBattleActor::LEFT);
+		a->SetState(MMBNBattleActor::BATTLE_STANDING);
+		m_enemies.push_back( a );
+		PutActorOnPanel(m_enemies.back(), it->position.x, it->position.y);
+		m_ia.push_back(new MMBNBattleIA(this, m_enemies.back(), ENEMY));
 	}
-
-	//ia
-	for(unsigned int i(0) ; i < m_enemies.size() ; ++i)
-		m_ia.push_back(new MMBNBattleIA(this, m_enemies[i], ENEMY));
-
+	
+	#ifdef _DEBUG
+	LOG("Battle enemies loaded")
+	#endif
+	
 }
 
 MMBNPanelGrid::~MMBNPanelGrid()
@@ -1025,7 +1024,7 @@ int MMBNBattleMap::Run()
 //////////////////////////////////////////////////////////////
 void MMBNBattleMap::Initialize()
 {
-	m_bg = Animation::Load("Map/Background");
+	m_bg = Animation::Load("Backgrounds/" + GameBattle::GetBattleInfo().bgName);
 
 	m_grid = new MMBNPanelGrid();
 
@@ -1180,7 +1179,7 @@ void MMBNBattleMap::Display()
 		//======================================
 		// BGM
 		//======================================
-		SndManager::PlayBGM("Battle_Field.bgm", 0, true);
+		SndManager::PlayBGM(GameBattle::GetBattleInfo().bgmName + ".bgm", 0, true);
 	}
 	
 	

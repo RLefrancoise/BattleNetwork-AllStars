@@ -68,7 +68,24 @@ Vector2f& MMBNString::GetPosition()
 
 unsigned int MMBNString::GetStringWidth()
 {
-	return (m_font->GetCharWidth() * m_chars.size());
+	unsigned int width = 0;
+	unsigned int max_width = 0;
+	
+	for(unsigned int i = 0 ; i < m_chars.size() ; i++)
+	{
+		if(m_chars[i] != '\n')
+		{
+			width += m_font->GetCharWidth();
+			if(max_width < width) max_width = width;
+		}
+		else
+			width = 0;
+		
+	}
+	
+	return max_width;
+	
+	//return (m_font->GetCharWidth() * m_chars.size());
 }
 
 unsigned int MMBNString::GetStringHeight()

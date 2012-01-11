@@ -233,6 +233,8 @@ class MMBNBattleChipSelector : public Displayable
 
 		bool				m_ok_pressed					;
 
+		bool				m_show_description				;
+		
 		static const unsigned int ICON_WIDTH = 21			;
 		static const unsigned int ICON_HEIGHT = 21			;
 		static const unsigned int MAX_CHIPS = 8				;

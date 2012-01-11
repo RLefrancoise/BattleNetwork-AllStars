@@ -5,5 +5,6 @@
 #include "MMBNBattleMap.h"
 #include "FieldMap.h"
 #include "Title.h"
+#include "MMBNTitle.h"
 
 #endif

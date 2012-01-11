@@ -87,6 +87,11 @@ MMBNFont* GameSystem::GetBattleChipLetterFont()
 	return FontManager::GetFont("MMBNBattleChipLetterFont");
 }
 
+MMBNFont* GameSystem::GetBattleChipNormalDescFont()
+{
+	return FontManager::GetFont("MMBNBattleChipNormalDescFont");
+}
+
 MMBNFont* GameSystem::GetBattleEnemyNameFont()
 {
 	return FontManager::GetFont("MMBNBattleFont");
@@ -105,5 +110,5 @@ MMBNFont* GameSystem::GetCustomWindowLetterFont()
 		
 AnimationPtr GameSystem::GetLoadingAnimation()
 {
-	return LOADING_ANIMATIONS[Random::RandomInt(0, LOADING_ANIMATIONS.size() - 1)];
+	return LOADING_ANIMATIONS[Random::RandomInt(0, LOADING_ANIMATIONS.size())];
 }

@@ -68,6 +68,7 @@ class GameSystem
 		static MMBNFont* GetBattleChipNameFont();
 		static MMBNFont* GetBattleChipPowerFont();
 		static MMBNFont* GetBattleChipLetterFont();
+		static MMBNFont* GetBattleChipNormalDescFont();
 		static MMBNFont* GetBattleEnemyNameFont();
 		static MMBNFont* GetEnemyLifeFont();
 		static MMBNFont* GetCustomWindowLetterFont();

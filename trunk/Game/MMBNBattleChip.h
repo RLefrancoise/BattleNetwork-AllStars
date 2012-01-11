@@ -27,7 +27,8 @@ class MMBNBattleChip : public Displayable
 		OSL_IMAGE* GetIcon()										;
 		char GetLetter()											;
 		GameSystem::ChipType GetType()								;
-
+		std::string GetDescription()								;
+		
 		void SetExtendedDisplay(bool extended)						;
 
 	private:

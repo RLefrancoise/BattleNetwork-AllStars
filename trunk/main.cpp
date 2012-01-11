@@ -48,7 +48,8 @@ void ChangeScreen()
 	{
 		case SCREEN_TITLE:
 			{
-				ScreenPtr title(new Title());
+				//ScreenPtr title(new Title());
+				ScreenPtr title(new MMBNTitle());
 				screens[screen] = title;
 			}
 			break;

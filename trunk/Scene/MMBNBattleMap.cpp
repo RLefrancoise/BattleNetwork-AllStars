@@ -60,10 +60,10 @@ MMBNPanelGrid::MMBNPanelGrid()
 	m_panel_animations[WATER] 	= NULL;*/
 	
 	//actor and enemies
-	m_actor = MMBNBattleActor::Load("Killua", false, true, false);
+	m_actor = MMBNBattleActor::Load("Gon", false, true, false);
 	PutActorOnPanel(m_actor, 2, 2);
 
-	m_enemies.push_back( MMBNBattleActor::Load("Gon", true, false, true) );
+	m_enemies.push_back( MMBNBattleActor::Load("Killua", true, false, true) );
 	PutActorOnPanel(m_enemies[0], 5, 1);
 	
 	m_enemies.push_back( MMBNBattleActor::Load("Roxas", true, false, true) );
@@ -812,7 +812,9 @@ MMBNBattleChipSelector::MMBNBattleChipSelector()
 	m_current_position	= CHIP		;
 	m_selected_chip		= 0			;
 
-	m_ok_pressed		= false			;
+	m_ok_pressed		= false		;
+	
+	m_show_description 	= false		;
 }
 
 MMBNBattleChipSelector::~MMBNBattleChipSelector()
@@ -865,6 +867,10 @@ void MMBNBattleChipSelector::Update(OSL_CONTROLLER* k)
 	
 	//CAN PRESS OK ?
 	if( (m_current_position == OK) && (k->pressed.cross) ) m_ok_pressed = true;
+	
+	//[]
+	if(k->pressed.square)
+		if(m_selected_chip < m_current_chips.size()) m_show_description = !m_show_description;
 }
 
 void MMBNBattleChipSelector::Display(float offX, float offY)
@@ -919,6 +925,22 @@ void MMBNBattleChipSelector::Display(float offX, float offY)
 			break;
 	}
 	
+	//chip description
+	if(m_show_description)
+	{
+		if( (m_selected_chip < m_current_chips.size()) && (m_current_position == CHIP) )
+		{
+			MMBNString s;
+			s.SetFont(GameSystem::GetBattleChipNormalDescFont());
+			s = m_current_chips[m_selected_chip]->GetDescription();
+			
+			oslDrawFillRect(m_position.x + offX + 5, 272 - s.GetStringHeight() - 15, m_position.x + offX + 5 + s.GetStringWidth() + 10, 267, RGB(240,240,240));
+			oslDrawRect(m_position.x + offX + 5, 272 - s.GetStringHeight() - 15, m_position.x + offX + 5 + s.GetStringWidth() + 10, 267, RGB(0,0,0));
+			s.SetPosition(m_position.x + offX + 10, 267 - s.GetStringHeight() - 5);
+			s.Display();
+		}
+	}
+	
 	
 }
 
@@ -952,6 +974,7 @@ bool MMBNBattleChipSelector::OkPressed()
 void MMBNBattleChipSelector::ResetCursor()
 {
 	m_ok_pressed = false;
+	m_show_description = false;
 	m_current_position = CHIP;
 	m_selected_chip = 0;
 }

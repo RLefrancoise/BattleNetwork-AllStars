@@ -56,7 +56,16 @@ MMBNBattleChip* MMBNBattleChip::Load(std::string name)
 
 		//DESC
 		else if(line.find("desc") == 0)
+		{
 			c->m_description = v.at(1);
+			string s;
+			for(unsigned int i(0) ; i < c->m_description.size() ; ++i)
+			{
+				if(c->m_description[i] == '|') s += '\n';
+				else s += c->m_description[i];
+			}
+			c->m_description = s;
+		}
 		
 		//TYPE
 		else if(line.find("type") == 0)
@@ -144,6 +153,11 @@ char MMBNBattleChip::GetLetter()
 GameSystem::ChipType MMBNBattleChip::GetType()
 {
 	return m_chip_type;
+}
+
+string MMBNBattleChip::GetDescription()
+{
+	return m_description;
 }
 
 void MMBNBattleChip::SetExtendedDisplay(bool extended)

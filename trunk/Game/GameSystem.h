@@ -78,6 +78,11 @@ class GameSystem
 		//========================
 		static AnimationPtr GetLoadingAnimation();
 		
+		//========================
+		// GAME DATA
+		//========================
+		static std::vector<std::string>& GetActorsNames();
+		
 	private:
 		
 		GameSystem();
@@ -103,6 +108,11 @@ class GameSystem
 		// ANIMATIONS
 		//========================
 		static std::vector<AnimationPtr> LOADING_ANIMATIONS;
+		
+		//========================
+		// GAME DATA
+		//========================
+		static std::vector<std::string> ACTORS_NAMES;
 };
 
 #endif

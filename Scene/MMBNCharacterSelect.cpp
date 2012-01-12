@@ -1,4 +1,27 @@
 #include "MMBNCharacterSelect.h"
+#include "GameSystem.h"
+
+using namespace std;
+
+CharacterSelectInfo::CharacterSelectInfo()
+{
+	m_name = "";
+	m_icon = NULL;
+	m_body = NULL;
+}
+
+CharacterSelectInfo::CharacterSelectInfo(string name, OSL_IMAGE* icon, OSL_IMAGE* body)
+{
+	m_name = name;
+	m_icon = icon;
+	m_body = body;
+}
+
+
+
+
+
+
 
 MMBNCharacterSelect::MMBNCharacterSelect()
 {
@@ -24,14 +47,77 @@ int	MMBNCharacterSelect::Run()
 
 void MMBNCharacterSelect::Initialize()
 {
+	//backgrounds
 	m_bg				= Animation::Load("Backgrounds/CharacterSelect")		;
 	m_plug_in			= Animation::Load("Backgrounds/PlugIn", false, false)	;
 		
-	//m_actor_cursor															;
-	//m_enemy_cursor															;
+	//cursors
+	m_actor_cursor		= Animation::Load("System/Menus/CharacterSelect/Cursor");
+	m_enemy_cursor		= Animation::Load("System/Menus/CharacterSelect/Cursor");
 		
-	m_current_bgm		= 0														;
+	//pictures
+	m_chara_frame		= ImgManager::GetImage("System/Menus/CharacterSelect/chara_frame.png");
 	
+	
+	//characters
+	ifstream in_actors( "Actors/actors.txt" , ifstream::in);
+		
+	if(!in_actors.good())
+	{
+		LOG("Impossible de trouver le fichier Actors/actors.txt");
+		oslQuit();
+	}
+	
+	string line;
+	while(getline(in_actors, line))
+	{
+		vector<string> v = StringUtils::Split(line, ":");
+		
+		#ifdef _DEBUG
+		LOG("Load character: " + v[0])
+		#endif
+
+		CharacterSelectInfoPtr csi(new CharacterSelectInfo(v[0], ImgManager::GetImage("Actors/" + v[0] + "/icon.png"), NULL));
+		
+		m_characters.push_back(csi);
+		
+		/*m_characters.back()->m_name = v[0];
+		m_characters.back()->m_icon = ImgManager::GetImage("Actors/" + v[0] + "/icon.png");
+		m_characters.back()->m_body = NULL;*/
+		#ifdef _DEBUG
+		LOG("Character loaded")
+		#endif
+	}
+	
+	in_actors.close();
+		
+	//characters data
+	/*for(unsigned int i(0) ; i < GameSystem::GetActorsNames().size() ; i++)
+	{
+		#ifdef _DEBUG
+		LOG("Found character: " + GameSystem::GetActorsNames()[i])
+		#endif
+
+		m_characters.push_back(csi);
+		
+		m_characters.back().name = GameSystem::GetActorsNames()[i];
+		m_characters.back().icon = ImgManager::GetImage("Actors/" + GameSystem::GetActorsNames()[i] + "/icon.png");
+		m_characters.back().body = NULL;
+	}*/
+	
+	/*int begin_x = 240 - (CHARA_PER_LINE * CHARA_ICON_SIZE) / 2;
+	int begin_y = 136 - ( (m_characters.size() % CHARA_PER_LINE) * CHARA_ICON_SIZE ) / 2;
+	
+	for(unsigned int i(0) ; i < m_characters.size() ; ++i)
+	{
+		Vector2i v;
+		v.x = begin_x + CHARA_ICON_SIZE * (i % CHARA_PER_LINE);
+		v.y = begin_y + CHARA_ICON_SIZE * (i / CHARA_PER_LINE);
+		m_chara_positions.push_back(v);
+	}*/
+	
+	//variables
+	m_current_bgm		= 0														;
 	m_can_plug_in		= false													;
 }
 
@@ -69,9 +155,15 @@ void MMBNCharacterSelect::Display()
 		return;
 	}
 	
-	
+	//background
 	m_bg->Update();
 	m_bg->Display();
+	
+	//characters
+	/*for(unsigned int i(0) ; i < m_characters.size() ; ++i)
+	{
+		oslDrawImageXY(m_characters[i]->m_icon, m_chara_positions[i].x, m_chara_positions[i].y);
+	}*/
 	
 	SndManager::PlayBGM("Digital_Strider.bgm", 0, true);
 

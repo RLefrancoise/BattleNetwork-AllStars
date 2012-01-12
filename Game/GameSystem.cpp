@@ -18,33 +18,64 @@ MMBNFont* GameSystem::m_custom_window_letter_font;
 
 vector<AnimationPtr> GameSystem::LOADING_ANIMATIONS;
 
+vector<string> GameSystem::ACTORS_NAMES;
+
 
 void GameSystem::Initialize()
 {
+	//========================
+	// PICTURES
+	//========================
 	//PICTURES
 	m_chip_pics[NORMAL_CHIP]	= ImgManager::GetImage("System/Chips/CustomWindow/normal.png")			;
 	m_chip_pics[MEGA_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/mega.png")			;
 	m_chip_pics[GIGA_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/giga.png")			;
 	m_chip_pics[DARK_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/dark.png")			;
 	
-	
+	//========================
+	// ANIMATIONS
+	//========================
 	//LOADING ANIMATIONS
-	ifstream in( "System/Animation/Loading/animations.txt" , ifstream::in);
-	
-	if(!in.good())
 	{
-		LOG("Impossible de trouver le fichier System/Animation/Loading/animations.txt");
-		oslQuit();
+		ifstream in( "System/Animation/Loading/animations.txt" , ifstream::in);
+		
+		if(!in.good())
+		{
+			LOG("Impossible de trouver le fichier System/Animation/Loading/animations.txt");
+			oslQuit();
+		}
+		
+		string line;
+		while(getline(in, line))
+		{
+			vector<string> v = StringUtils::Split(line, ":");
+			LOADING_ANIMATIONS.push_back(Animation::Load(string("System/Animation/Loading/") + v[0]));
+		}
+		
+		in.close();
 	}
-	
-	string line;
-	while(getline(in, line))
+	//========================
+	// GAME DATA
+	//========================
+	//ACTORS NAMES
 	{
-		vector<string> v = StringUtils::Split(line, ":");
-		LOADING_ANIMATIONS.push_back(Animation::Load(string("System/Animation/Loading/") + v[0]));
+		ifstream in( "Actors/actors.txt" , ifstream::in);
+		
+		if(!in.good())
+		{
+			LOG("Impossible de trouver le fichier Actors/actors.txt");
+			oslQuit();
+		}
+		
+		string line;
+		while(getline(in, line))
+		{
+			vector<string> v = StringUtils::Split(line, ":");
+			ACTORS_NAMES.push_back(v[0]);
+		}
+		
+		in.close();
 	}
-	
-	in.close();
 }
 
 void GameSystem::Destroy()
@@ -111,4 +142,12 @@ MMBNFont* GameSystem::GetCustomWindowLetterFont()
 AnimationPtr GameSystem::GetLoadingAnimation()
 {
 	return LOADING_ANIMATIONS[Random::RandomInt(0, LOADING_ANIMATIONS.size())];
+}
+
+
+
+
+vector<string>& GameSystem::GetActorsNames()
+{
+	return ACTORS_NAMES;
 }

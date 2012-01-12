@@ -6,19 +6,32 @@
 #include "MMBNString.h"
 
 #include <oslib/oslib.h>
+#include <boost/multi_array.hpp>
+#include <boost/shared_ptr.hpp>
 
 class CharacterSelectInfo
 {
 	public:
+		
+		CharacterSelectInfo();
+		CharacterSelectInfo(std::string name, OSL_IMAGE* icon, OSL_IMAGE* body, Vector2i pos);
+		~CharacterSelectInfo();
+		std::string GetName();
+		OSL_IMAGE* GetIcon();
+		OSL_IMAGE* GetBody();
+		Vector2i GetPosition();
+		
+	private:
 		std::string m_name;
 		OSL_IMAGE* m_icon;
 		OSL_IMAGE* m_body;
-		CharacterSelectInfo();
-		CharacterSelectInfo(std::string name, OSL_IMAGE* icon, OSL_IMAGE* body);
+		Vector2i m_position;
 		
 };
 
-typedef boost::shared_ptr<CharacterSelectInfo> CharacterSelectInfoPtr		;
+typedef boost::shared_ptr<CharacterSelectInfo> 							CharacterSelectInfoPtr	;
+typedef boost::multi_array< CharacterSelectInfoPtr, 1 >					CharactersInfo			;
+typedef boost::shared_ptr<CharactersInfo>								CharactersInfoPtr		;
 
 class MMBNCharacterSelect : public Screen
 {
@@ -40,25 +53,31 @@ class MMBNCharacterSelect : public Screen
 		virtual void Display()	;
 		
 		//background
-		AnimationPtr 	m_bg						;
-		AnimationPtr 	m_plug_in					;
+		AnimationPtr 		m_bg						;
+		AnimationPtr 		m_plug_in					;
 		
 		//cursors
-		AnimationPtr 	m_actor_cursor				;
-		AnimationPtr 	m_enemy_cursor				;
+		AnimationPtr 		m_actor_cursor				;
+		AnimationPtr 		m_enemy_cursor				;
 		
 		//pictures
-		OSL_IMAGE*		m_chara_frame				;
+		OSL_IMAGE*			m_chara_frame				;
+		
+		//texts
+		//MMBNString			m_title						;
 		
 		//variables
-		unsigned int 	m_current_bgm				;
-		bool			m_can_plug_in				;
+		unsigned int 		m_current_bgm				;
+		bool				m_can_plug_in				;
 		
-		static const int		CHARA_PER_LINE = 10			;
-		static const int		CHARA_ICON_SIZE = 32		;
+		unsigned int		CHARA_PER_LINE				;
+		unsigned int		CHARA_ICON_SIZE				;
 		
-		std::vector<CharacterSelectInfoPtr> m_characters;
-		std::vector<Vector2i> m_chara_positions		;
+		unsigned int		m_current_actor				;
+		unsigned int		m_current_enemy				;
+		
+		CharactersInfoPtr 	m_characters				;
+		unsigned int 		m_chara_nb					;
 
 };
 

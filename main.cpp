@@ -51,25 +51,25 @@ void ChangeScreen()
 			{
 				//ScreenPtr title(new Title());
 				ScreenPtr title(new MMBNTitle());
-				screens[screen] = title;
+				screens[screen].swap(title);
 			}
 			break;
 		case SCREEN_BATTLEMAP:
 			{
 				ScreenPtr battle(new MMBNBattleMap());
-				screens[screen] = battle;
+				screens[screen].swap(battle);
 			}
 			break;
 		case SCREEN_FIELDMAP:
 			{
 				ScreenPtr field(new FieldMap());
-				screens[screen] = field;
+				screens[screen].swap(field);
 			}
 			break;
 		case SCREEN_CHARACTER_SELECT:
 			{
 				ScreenPtr char_select(new MMBNCharacterSelect());
-				screens[screen] = char_select;
+				screens[screen].swap(char_select);
 			}
 			break;
 		default:

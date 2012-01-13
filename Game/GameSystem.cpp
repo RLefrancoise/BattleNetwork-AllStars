@@ -4,6 +4,7 @@
 
 using namespace std;
 
+OSL_IMAGE* GameSystem::m_controller_pics[CONTROLLER_NB];
 OSL_IMAGE* GameSystem::m_chip_pics[CHIP_TYPE_NB];
 OSL_IMAGE* GameSystem::m_element_pics[CHIP_ELEMENT_NB];
 
@@ -18,15 +19,24 @@ MMBNFont* GameSystem::m_custom_window_letter_font;
 
 vector<AnimationPtr> GameSystem::LOADING_ANIMATIONS;
 
-vector<string> GameSystem::ACTORS_NAMES;
-
+vector<string> 					GameSystem::ACTORS_NAMES	;
+vector<pair<string,string> > 	GameSystem::BGM_NAMES		;
+vector<pair<string,string> > 	GameSystem::BACKGROUNDS_NAMES;
 
 void GameSystem::Initialize()
 {
 	//========================
 	// PICTURES
 	//========================
-	//PICTURES
+	//CONTROLLER
+	m_controller_pics[TRIANGLE]	= ImgManager::GetImage("System/Menus/triangle.png")						;
+	m_controller_pics[SQUARE]	= ImgManager::GetImage("System/Menus/square.png")						;
+	m_controller_pics[CIRCLE]	= ImgManager::GetImage("System/Menus/circle.png")						;
+	m_controller_pics[CROSS]	= ImgManager::GetImage("System/Menus/cross.png")						;
+	m_controller_pics[L_TRIGGER]= ImgManager::GetImage("System/Menus/L.png")							;
+	m_controller_pics[R_TRIGGER]= ImgManager::GetImage("System/Menus/R.png")							;
+	
+	//CHIPS
 	m_chip_pics[NORMAL_CHIP]	= ImgManager::GetImage("System/Chips/CustomWindow/normal.png")			;
 	m_chip_pics[MEGA_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/mega.png")			;
 	m_chip_pics[GIGA_CHIP]		= ImgManager::GetImage("System/Chips/CustomWindow/giga.png")			;
@@ -76,11 +86,59 @@ void GameSystem::Initialize()
 		
 		in.close();
 	}
+	
+	//BGM NAMES
+	{
+		ifstream in( "Audio/BGM/bgm.txt" , ifstream::in);
+		
+		if(!in.good())
+		{
+			LOG("Impossible de trouver le fichier Audio/BGM/bgm.txt");
+			oslQuit();
+		}
+		
+		string line;
+		while(getline(in, line))
+		{
+			vector<string> v = StringUtils::Split(line, ":");
+			vector<string> w = StringUtils::Split(v[0], "|");
+			BGM_NAMES.push_back(pair<string,string>(w[0], w[1]));
+		}
+		
+		in.close();
+	}
+	
+	//BACKGROUNDS NAMES
+	{
+		ifstream in( "Backgrounds/backgrounds.txt" , ifstream::in);
+		
+		if(!in.good())
+		{
+			LOG("Impossible de trouver le fichier Backgrounds/backgrounds.txt");
+			oslQuit();
+		}
+		
+		string line;
+		while(getline(in, line))
+		{
+			vector<string> v = StringUtils::Split(line, ":");
+			vector<string> w = StringUtils::Split(v[0], "|");
+			BACKGROUNDS_NAMES.push_back(pair<string,string>(w[0], w[1]));
+		}
+		
+		in.close();
+	}
 }
 
 void GameSystem::Destroy()
 {
 	
+}
+
+
+OSL_IMAGE* GameSystem::GetControllerImage(GameController controller)
+{
+	return m_controller_pics[controller];
 }
 
 OSL_IMAGE* GameSystem::GetChipImage(ChipType type)
@@ -150,4 +208,14 @@ AnimationPtr GameSystem::GetLoadingAnimation()
 vector<string>& GameSystem::GetActorsNames()
 {
 	return ACTORS_NAMES;
+}
+
+vector<pair<string,string> >& GameSystem::GetBGMNames()
+{
+	return BGM_NAMES;
+}
+
+vector<pair<string,string> >& GameSystem::GetBackgroundsNames()
+{
+	return BACKGROUNDS_NAMES;
 }

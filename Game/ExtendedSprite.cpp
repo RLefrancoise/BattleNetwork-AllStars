@@ -12,6 +12,7 @@ ExtendedSprite::ExtendedSprite()
 {
 	m_hotPoint.x = 0;
 	m_hotPoint.y = 0;
+	m_reverse_on_display = false;
 }
 
 /*ExtendedSprite(const sf::Image &image) : sf::Sprite(image)
@@ -66,7 +67,12 @@ void ExtendedSprite::ReverseCollisionsBoxes()
 
 void ExtendedSprite::Display(float offX, float offY)
 {
-	if(m_sprite) oslDrawImageXY(m_sprite, m_sprite->x + offX, m_sprite->y + offY);
+	if(m_sprite)
+	{
+		if(m_reverse_on_display) oslMirrorImageH(m_sprite);
+		oslDrawImageXY(m_sprite, m_sprite->x + offX, m_sprite->y + offY);
+		if(m_reverse_on_display) oslMirrorImageH(m_sprite);
+	}
 }
 
 void ExtendedSprite::DisplayExtension()
@@ -87,6 +93,11 @@ void ExtendedSprite::DisplayExtension()
 		App.Draw(box);
 	}*/
 		
+}
+
+void ExtendedSprite::SetReverseOnDisplay(bool enable)
+{
+	m_reverse_on_display = enable;
 }
 
 void ExtendedSprite::LoadCollisions(int frameNb, std::string path)

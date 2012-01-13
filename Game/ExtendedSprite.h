@@ -30,6 +30,7 @@ class ExtendedSprite /*: public sf::Sprite*/
 
 		void Display(float offX = 0, float offY = 0);
 		void DisplayExtension();
+		void SetReverseOnDisplay(bool enable);
 		void LoadCollisions(int frameNb, std::string path);
 
 		std::vector<AABBCollisionBox> GetDefenceBoxes() const;
@@ -44,6 +45,8 @@ class ExtendedSprite /*: public sf::Sprite*/
 		Vector2i m_hotPoint;
 		Shape m_colliRect;
 		OSL_IMAGE* m_sprite;
+		
+		bool m_reverse_on_display;
 
 
 };

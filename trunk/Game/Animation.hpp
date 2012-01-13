@@ -39,6 +39,7 @@ class Animation
 		unsigned int			m_currentFrame;
 		std::vector<int>		m_delays;
 		bool					m_running;
+		bool					m_reverse;
 		bool					m_loop;
 		bool					m_isOver;
 		float					m_currentTime;

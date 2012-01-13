@@ -15,6 +15,16 @@ class GameSystem
 
 	public:
 		
+		enum GameController{
+			TRIANGLE,
+			SQUARE,
+			CIRCLE,
+			CROSS,
+			L_TRIGGER,
+			R_TRIGGER,
+			CONTROLLER_NB
+		};
+		
 		enum ChipElement{
 			FIRE_ELEMENT,
 			WATER_ELEMENT, 
@@ -57,6 +67,7 @@ class GameSystem
 		//========================
 		// PICTURES
 		//========================
+		static OSL_IMAGE* GetControllerImage(GameController controller);
 		static OSL_IMAGE* GetChipImage(ChipType type);
 		static OSL_IMAGE* GetElementImage(ChipElement element);
 
@@ -82,6 +93,8 @@ class GameSystem
 		// GAME DATA
 		//========================
 		static std::vector<std::string>& GetActorsNames();
+		static std::vector<std::pair<std::string,std::string> >& GetBGMNames();
+		static std::vector<std::pair<std::string,std::string> >& GetBackgroundsNames();
 		
 	private:
 		
@@ -90,6 +103,7 @@ class GameSystem
 		//========================
 		// PICTURES
 		//========================
+		static OSL_IMAGE* m_controller_pics[CONTROLLER_NB];
 		static OSL_IMAGE* m_chip_pics[CHIP_TYPE_NB]		;
 		static OSL_IMAGE* m_element_pics[CHIP_ELEMENT_NB];
 
@@ -113,6 +127,8 @@ class GameSystem
 		// GAME DATA
 		//========================
 		static std::vector<std::string> ACTORS_NAMES;
+		static std::vector<std::pair<std::string,std::string> > BGM_NAMES;
+		static std::vector<std::pair<std::string,std::string> > BACKGROUNDS_NAMES;
 };
 
 #endif

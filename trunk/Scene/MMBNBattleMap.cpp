@@ -1024,7 +1024,8 @@ int MMBNBattleMap::Run()
 //////////////////////////////////////////////////////////////
 void MMBNBattleMap::Initialize()
 {
-	m_bg = Animation::Load("Backgrounds/" + GameBattle::GetBattleInfo().bgName);
+	if(GameBattle::GetBattleInfo().bgName.compare("") != 0)
+		m_bg = Animation::Load("Backgrounds/" + GameBattle::GetBattleInfo().bgName);
 
 	m_grid = new MMBNPanelGrid();
 
@@ -1094,11 +1095,15 @@ void MMBNBattleMap::Display()
 	//======================================
 	// BACKGROUND
 	//======================================
-	oslSetScreenClipping(0, 0, 480, 272);
-	m_bg->Update();
-	m_bg->GetCurrentSprite().SetPosition(0,0);
-	m_bg->GetCurrentSprite().Display();
-
+	if(m_bg.get())
+	{
+		m_bg->Update();
+		m_bg->GetCurrentSprite().SetPosition(0,0);
+		m_bg->GetCurrentSprite().Display();
+	}
+	else
+		oslDrawFillRect(0, 0, 480, 272, RGB(0,0,0));
+		
 	//======================================
 	// PANELS
 	//======================================
@@ -1179,7 +1184,8 @@ void MMBNBattleMap::Display()
 		//======================================
 		// BGM
 		//======================================
-		SndManager::PlayBGM(GameBattle::GetBattleInfo().bgmName + ".bgm", 0, true);
+		if(GameBattle::GetBattleInfo().bgmName.compare("") != 0)
+			SndManager::PlayBGM(GameBattle::GetBattleInfo().bgmName + ".bgm", 0, true);
 	}
 	
 	

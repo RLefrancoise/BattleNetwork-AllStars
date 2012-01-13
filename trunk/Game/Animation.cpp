@@ -25,7 +25,7 @@ Animation::Animation(string spritesPath, std::vector<int> delays, bool reverse, 
 		OSL_IMAGE* Image = ImgManager::GetImage(path);
 
 		if( reverse  ) {
-			if( !ImgManager::Exists(string(spritesPath + "/" + oss->str() + "_r.png").c_str()) )
+			/*if( !ImgManager::Exists(string(spritesPath + "/" + oss->str() + "_r.png").c_str()) )
 			{
 				OSL_IMAGE* rImage = oslCreateImage(Image->sizeX, Image->sizeY, OSL_IN_RAM, OSL_PF_5551);
 				ImgManager::CopyImage(Image, rImage);
@@ -33,9 +33,11 @@ Animation::Animation(string spritesPath, std::vector<int> delays, bool reverse, 
 				ImgManager::AddImage(string(spritesPath + "/" + oss->str() + "_r.png"), rImage);
 				
 				ImgManager::RemoveImage(path);
-			}
+			}*/
 			
-			sprite.SetImage(ImgManager::GetImage(string(spritesPath + "/" + oss->str() + "_r.png")));
+			//sprite.SetImage(ImgManager::GetImage(string(spritesPath + "/" + oss->str() + "_r.png")));
+			sprite.SetImage(Image);
+			sprite.SetReverseOnDisplay(true);
 			sprite.ReverseCollisionsBoxes();
 			
 		}
@@ -53,6 +55,7 @@ Animation::Animation(string spritesPath, std::vector<int> delays, bool reverse, 
 
 	m_running = false;
 	m_isOver = false;
+	m_reverse = reverse;
 	m_loop = loop;
 	m_currentFrame = 0;
 	m_currentTime = 0;

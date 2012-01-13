@@ -67,17 +67,24 @@ class MMBNCharacterSelect : public Screen
 		//MMBNString			m_title						;
 		
 		//variables
-		unsigned int 		m_current_bgm				;
 		bool				m_can_plug_in				;
 		
 		unsigned int		CHARA_PER_LINE				;
 		unsigned int		CHARA_ICON_SIZE				;
 		
-		unsigned int		m_current_actor				;
-		unsigned int		m_current_enemy				;
+		int					m_current_actor				;
+		int					m_current_enemy				;
+		int 				m_current_bgm				;
+		int					m_current_background		;
+		
+		bool				m_is_selecting_actor		;
+		bool				m_is_selecting_enemy		;
 		
 		CharactersInfoPtr 	m_characters				;
 		unsigned int 		m_chara_nb					;
+		
+		
+		void				MoveCursor(OSL_CONTROLLER* k, int* cursor)		;
 
 };
 

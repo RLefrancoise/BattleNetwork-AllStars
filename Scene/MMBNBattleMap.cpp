@@ -276,10 +276,11 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 	//ATTACKING
 	if( k->pressed.cross )
 	{
+		
 		//play attack anim
 		if(m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) //attack only if in standing phase
 			m_actor->SetState(MMBNBattleActor::BATTLE_ATTACK);
-			
+		
 		Vector2i pos;
 		
 		vector<MMBNBattleActor*>::iterator it;
@@ -289,9 +290,10 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 			if(pos.x == (v.x + 1) && (pos.y == v.y))
 			{
 				if((*it)->GetState() == MMBNBattleActor::BATTLE_STANDING)
+				{
 					(*it)->SetState(MMBNBattleActor::BATTLE_DAMAGED);
-					
-				m_actor->Attack(*it);
+					m_actor->Attack(*it);
+				}
 			}
 		}		
 	}
@@ -300,14 +302,6 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 
 void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 {
-	//Update IA
-	vector<MMBNBattleIA*>::iterator it;
-	
-	for(it = m_ia.begin() ; it != m_ia.end() ; it++)
-		(*it)->Update();
-		
-	ActorHandle(k);
-	
 	
 	//state management
 	
@@ -316,6 +310,10 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 		//dead ?
 		if(m_actor->IsDead()) m_actor->SetState(MMBNBattleActor::BATTLE_DEAD);
 		
+		//battle over ?
+		if(BattleIsOver()) m_actor->SetState(MMBNBattleActor::BATTLE_WIN);
+		
+		//else
 		switch(m_actor->GetState())
 		{
 			case MMBNBattleActor::BATTLE_ATTACK:
@@ -328,6 +326,7 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 				break;
 				
 			case MMBNBattleActor::BATTLE_STANDING:
+			case MMBNBattleActor::BATTLE_WIN:
 			default:
 				break;
 			
@@ -351,6 +350,7 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 				if(m_enemies[i]->GetCurrentAnim()->IsOver())
 				{
 					m_enemies.erase(m_enemies.begin() + i);
+					m_ia.erase(m_ia.begin() + i);
 					i--;
 				}
 				break;
@@ -361,6 +361,17 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 			
 		}
 	}
+	
+	if(BattleIsOver()) return;
+	
+	//Update IA
+	vector<MMBNBattleIA*>::iterator it;
+	
+	for(it = m_ia.begin() ; it != m_ia.end() ; it++)
+		(*it)->Update();
+	
+	//actor
+	ActorHandle(k);
 }
 
 inline bool MMBNPanelGrid::BattleIsOver()
@@ -1039,7 +1050,9 @@ void MMBNBattleMap::Initialize()
 
 	m_enemy_display_edge = ImgManager::GetImage("Battle/enemy_display_edge.png");
 
-	m_enemy_deleted = Animation::Load("System/Animation/Battle/EnemyDeleted", false, false);
+	m_enemy_deleted 	= Animation::Load("System/Animation/Battle/EnemyDeleted", false, false);
+	
+	m_battle_start	 	= Animation::Load("System/Animation/Battle/BattleStart", false, false);
 	
 	#ifdef _DEBUG
 	m_display_debug_info = true;
@@ -1161,11 +1174,19 @@ void MMBNBattleMap::Display()
 		inc += f->GetCharHeight();
 	}
 
+	//"battle start anim" not finished ?
+	if(!m_battle_start->IsOver())
+	{
+		m_battle_start->Update();
+		m_battle_start->SetPosition(240,136);
+		m_battle_start->Display();
+	}
+	
 	//battle over ?
 	if(m_grid->BattleIsOver())
 	{
 		m_enemy_deleted->Update();
-		m_enemy_deleted->SetPosition(240, 161);
+		m_enemy_deleted->SetPosition(240, 136);
 		m_enemy_deleted->Display();
 		
 		//+++++++++++++++++++++++++++++++++++++
@@ -1226,6 +1247,10 @@ void MMBNBattleMap::Display()
 int MMBNBattleMap::Update()
 {
 
+	if(!m_battle_start->IsOver())
+		return SCREEN_BATTLEMAP;
+		
+		
 	if(!m_battle_timer.is_started())
 		m_battle_timer.start();
 		
@@ -1248,13 +1273,14 @@ int MMBNBattleMap::Update()
 		if(k->pressed.select) m_display_debug_info = !m_display_debug_info;
 	#endif
 	
+	if(!m_select_chip) m_grid->Update(k);
+	
 	if(!m_grid->BattleIsOver())
 	{
 		
 		if(m_select_chip) m_chip_selector->Update(k);
 		else
 		{
-			m_grid->Update(k);
 			m_custom_gauge->Update();
 		}
 		

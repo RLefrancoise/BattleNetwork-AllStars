@@ -26,7 +26,8 @@ class MMBNBattleActor : public Displayable
 			BATTLE_STANDING,
 			BATTLE_ATTACK,
 			BATTLE_DAMAGED,
-			BATTLE_DEAD
+			BATTLE_DEAD,
+			BATTLE_WIN
 		};
 
 		

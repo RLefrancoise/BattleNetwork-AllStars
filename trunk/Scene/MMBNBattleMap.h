@@ -268,7 +268,8 @@ class MMBNBattleMap : public Screen
 		MMBNBattleChipSelector*	m_chip_selector				;
 		OSL_IMAGE*				m_enemy_display_edge		;
 		AnimationPtr			m_enemy_deleted				;
-
+		AnimationPtr			m_battle_start				;
+		
 		bool					m_select_chip				;
 
 		#ifdef _DEBUG

@@ -174,7 +174,7 @@ int main()
 	oslSetFrameskip(1);
 	//But skip a maximum of 3 frames out of 4, else the game seems very laggy
 	oslSetMaxFrameskip(4);
-
+	
 	//---------------FPS-------------------------
 	u64 tempsDebut;
 	sceRtcGetCurrentTick(&tempsDebut);
@@ -198,7 +198,9 @@ int main()
 		{
 			//efface l'écran
 			oslClearScreen(RGB(0,0,0));
-
+			
+			oslSetAlpha(OSL_FX_RGBA, 0);
+			
 			//----------------DEBUG----------------------
 			/*#ifdef _DEBUG
 				ostringstream oss(ostringstream::out);

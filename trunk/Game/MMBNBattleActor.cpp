@@ -9,8 +9,8 @@
 
 using namespace std;
 
-map<MMBNBattleActor::ActorState, string> MMBNBattleActor::FOLDER_NAMES_OF_STATES		;
-map<MMBNBattleActor::ActorState, bool>	MMBNBattleActor::LOOP_OF_STATES				;
+map<MMBNBattleActor::ActorState, string> 	MMBNBattleActor::FOLDER_NAMES_OF_STATES			;
+map<MMBNBattleActor::ActorState, bool>		MMBNBattleActor::LOOP_OF_STATES					;
 
 void MMBNBattleActor::Initialize()
 {
@@ -18,11 +18,13 @@ void MMBNBattleActor::Initialize()
 	FOLDER_NAMES_OF_STATES[BATTLE_DAMAGED] 		= "/Battle/battle_damaged"		;
 	FOLDER_NAMES_OF_STATES[BATTLE_DEAD] 		= "/Battle/battle_dead"			;
 	FOLDER_NAMES_OF_STATES[BATTLE_ATTACK] 		= "/Battle/battle_attack"		;
+	FOLDER_NAMES_OF_STATES[BATTLE_WIN]	 		= "/Battle/battle_win"			;
 	
 	LOOP_OF_STATES[BATTLE_STANDING]				= true							;
 	LOOP_OF_STATES[BATTLE_DAMAGED]				= false							;
 	LOOP_OF_STATES[BATTLE_DEAD]					= false							;
 	LOOP_OF_STATES[BATTLE_ATTACK]				= false							;
+	LOOP_OF_STATES[BATTLE_WIN]					= false							;
 }
 
 
@@ -55,7 +57,8 @@ MMBNBattleActor::MMBNBattleActor(string name, bool loadNormalSprites, bool loadR
 	LoadStateAnim(BATTLE_ATTACK);
 	LoadStateAnim(BATTLE_DAMAGED);
 	LoadStateAnim(BATTLE_DEAD);
-
+	LoadStateAnim(BATTLE_WIN);
+	
 	//-------------------------------
 
 	m_direction = RIGHT;
@@ -295,10 +298,12 @@ void MMBNBattleActor::SetState(ActorState state)
 	//===============================
 	// BATTLE
 	//===============================
-	if(state == BATTLE_STANDING) m_state = BATTLE_STANDING;
+	/*if(state == BATTLE_STANDING) m_state = BATTLE_STANDING;
 	else if(state == BATTLE_ATTACK) m_state = BATTLE_ATTACK;
 	else if(state == BATTLE_DAMAGED) m_state = BATTLE_DAMAGED;
-	else if(state == BATTLE_DEAD) m_state = BATTLE_DEAD;
+	else if(state == BATTLE_DEAD) m_state = BATTLE_DEAD;*/
+	
+	m_state = state;
 	
 	//stop current anim
 	if(m_load_normal_sprites) m_animMap[m_state]->Stop();

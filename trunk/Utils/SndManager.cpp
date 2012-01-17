@@ -106,6 +106,7 @@ void SndManager::StopBGM(int voice)
 	LockSema();
 	
 	oslStopSound(m_bgmTab[voice]);
+	m_bgmNameTab[voice] = "";
 	
 	UnlockSema();
 }

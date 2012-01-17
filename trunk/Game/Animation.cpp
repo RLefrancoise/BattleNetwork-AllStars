@@ -133,6 +133,11 @@ bool Animation::IsOver()
 	return m_isOver;
 }
 
+unsigned int Animation::GetCurrentFrame()
+{
+	return m_currentFrame;
+}
+
 AnimationPtr Animation::Load(std::string spritesPath, bool reverse, bool loop)
 {
 	vector<int> delays;

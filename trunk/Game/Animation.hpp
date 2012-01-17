@@ -29,6 +29,7 @@ class Animation
 		void Stop();
 		bool IsRunning();
 		bool IsOver();
+		unsigned int GetCurrentFrame();
 
 	private :
 

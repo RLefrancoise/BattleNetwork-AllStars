@@ -43,7 +43,10 @@ void ChangeScreen()
 		
 		screens[previousScreen]->Destroy();
 		screens.erase(previousScreen);
+		ImgManager::DestroyContext("screen_context");
 	}
+	
+	ImgManager::UseContext("screen_context");
 	
 	switch(screen)
 	{
@@ -148,6 +151,8 @@ int main()
 	
 	//-------------------------------------------------
 
+	ImgManager::UseContext("game_system_context");
+	
 	GameSystem::Initialize();
 	MMBNBattleChip::LoadMaps();
 	SndManager::Initialize();

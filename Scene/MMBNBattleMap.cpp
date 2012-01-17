@@ -88,6 +88,9 @@ MMBNPanelGrid::MMBNPanelGrid()
 	LOG("Battle enemies loaded")
 	#endif
 	
+	m_actor_is_dead = false;
+	m_can_attack = false;
+	
 }
 
 MMBNPanelGrid::~MMBNPanelGrid()
@@ -276,11 +279,17 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 	//ATTACKING
 	if( k->pressed.cross )
 	{
-		
 		//play attack anim
 		if(m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) //attack only if in standing phase
+		{
 			m_actor->SetState(MMBNBattleActor::BATTLE_ATTACK);
+			m_can_attack = true;
+		}
 		
+	}
+	
+	if( m_can_attack && (m_actor->GetCurrentAnim()->GetCurrentFrame() == m_actor->GetInfo()->attack_frame) )
+	{
 		Vector2i pos;
 		
 		vector<MMBNBattleActor*>::iterator it;
@@ -289,14 +298,18 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 			pos = GetActorPanel(*it);
 			if(pos.x == (v.x + 1) && (pos.y == v.y))
 			{
+				//play enemy damage anim if enemy is not yet
 				if((*it)->GetState() == MMBNBattleActor::BATTLE_STANDING)
-				{
 					(*it)->SetState(MMBNBattleActor::BATTLE_DAMAGED);
-					m_actor->Attack(*it);
-				}
+					
+				//if can attack, attack the enemy
+				m_actor->Attack(*it);
 			}
-		}		
+		}
+		
+		m_can_attack = false;
 	}
+	
 	
 }
 
@@ -411,6 +424,8 @@ MMBNEmotionDisplay::MMBNEmotionDisplay()
 		LOG("Create EmotionDisplay")
 	#endif
 	
+	m_actor = NULL;
+	
 	for(unsigned int i = 0 ; i < EMOTIONS_NB ; i++)
 		m_emotions[i] = NULL;
 
@@ -422,6 +437,8 @@ MMBNEmotionDisplay::MMBNEmotionDisplay(MMBNBattleActor* mmbnba)
 	#ifdef _DEBUG
 		LOG("Create EmotionDisplay")
 	#endif
+	
+	m_actor = mmbnba;
 	
 	string name = mmbnba->GetName();
 

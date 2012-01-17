@@ -97,7 +97,8 @@ class MMBNPanelGrid
 		std::vector<MMBNBattleIA*> m_ia			;
 		
 		bool	m_actor_is_dead				;
-
+		bool 	m_can_attack				;
+		
 		MMBNBattleActor* GetEnemyOnPanel(unsigned int x, unsigned int y);
 
 	

@@ -9,6 +9,14 @@ using namespace std;
 SceUID ImgManager::m_img_sema = -1;
 bool ImgManager::m_initialized = false;
 
+//stack<vector<string> > ImgManager::m_img_stack;
+map<string, vector<string> > ImgManager::m_context_map;
+
+//string ImgManager::m_current_context;
+//string ImgManager::m_previous_context;
+
+stack<string> ImgManager::m_context_stack;
+
 void ImgManager::Initialize()
 {
 	m_img_sema = sceKernelCreateSema("img_manager_sem", 0, 1, 1, NULL);
@@ -34,21 +42,68 @@ void ImgManager::UnlockSema()
 
 void ImgManager::Reset()
 {
+	#ifdef _DEBUG
+	LOG("Reset ImgManager")
+	#endif
+	
 	if(!m_initialized) Initialize();
 	
 	LockSema();
 	
-	map<string, OSL_IMAGE*>::iterator it;
+	map<string, vector<string> >::iterator it;
+	for(it = m_context_map.begin() ; it != m_context_map.end() ; ++it)
+	{
+		vector<string> v = it->second;
+		UseContext(it->first);
+		vector<string>::iterator it_v;
+		for(it_v = v.begin() ; it_v != v.end() ; it_v++)
+			RemoveImage(*it_v);
+		UsePreviousContext();
+	}
+	
+	/*while(!m_context_stack.empty())
+	{
+		DestroyContext(m_context_stack.top());
+		m_context_stack.pop();
+	}*/
+	
+	m_context_map.clear();
+	
+	while(!m_context_stack.empty()) m_context_stack.pop();
+	
+	if(m_imageMap.size() != 0)
+	{
+		ostringstream oss(ostringstream::out);
+		oss << "{ImgManager->Reset()} Memory Leaks detected ! " << m_imageMap.size() << " pictures have not been deleted. Deletion will be done without context.";
+		LOG(oss.str())
+		
+		map<string, Image>::iterator it;
+		for(it = m_imageMap.begin() ; it != m_imageMap.end() ; ++it)
+			if(it->second.picture != NULL) oslDeleteImage(it->second.picture);
+
+		m_imageMap.clear();
+	}
+	
+	/*map<string, Image>::iterator it;
 	for(it = m_imageMap.begin() ; it != m_imageMap.end() ; ++it)
-		if(it->second != NULL) oslDeleteImage(it->second);
+		if(it->second.picture != NULL) oslDeleteImage(it->second.picture);
 
 	m_imageMap.clear();
 	
-	UnlockSema();
+	m_context_map.clear();*/
 	
-	#ifdef _DEBUG
-	LOG("Reset ImgManager")
-	#endif
+	/*map<string, vector<string> >::iterator it;
+	for(it = m_context_map.begin() ; it != m_context_map.end() ; ++it)
+	{
+		DestroyContext(it->first);
+	}*/
+	
+	/*while(ExistsContext())
+	{
+		DestroyContext();
+	}*/
+	
+	UnlockSema();
 	
 	return;
 }
@@ -111,30 +166,39 @@ void ImgManager::ReverseIMG(OSL_IMAGE* Image)
 }
 
 
-std::map<std::string, OSL_IMAGE*> ImgManager::m_imageMap;
+std::map<std::string, ImgManager::Image> ImgManager::m_imageMap;
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // ADD IMAGE
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-void  ImgManager::AddImage(string name, OSL_IMAGE* Image)
+void  ImgManager::AddImage(string name, OSL_IMAGE* i)
 {
 	if(!m_initialized) Initialize();
+	
+	//if(!ExistsContext(m_current_context))
+	if(m_context_stack.empty())
+	{	
+		LOG("No existing context for ImgManager : can't add the required image")
+		oslQuit();
+	}	
 	
 	LockSema();
 	
 	//image déjà présente ?
-	map<string, OSL_IMAGE*>::iterator it;
+	map<string, ImgManager::Image>::iterator it;
 	it = m_imageMap.find(name);
 
 	if(it == m_imageMap.end())
 	{
-		pair<string, OSL_IMAGE*> p;
+		pair<string, ImgManager::Image> p;
 		p.first = name;
-		p.second = Image;
+		ImgManager::Image im = { i, 1 };
+		p.second = im;
 		m_imageMap.insert(p);
 		
+		if(!ExistsInContext(name)) m_context_map[m_context_stack.top()].push_back(name);
 		#ifdef _DEBUG
 			LOG("Add picture : " + name);
 		#endif
@@ -155,7 +219,7 @@ bool ImgManager::Exists(string name)
 	
 	LockSema();
 	
-	map<string, OSL_IMAGE*>::iterator it;
+	map<string, ImgManager::Image>::iterator it;
 	it = m_imageMap.find(name);
 
 	UnlockSema();
@@ -172,10 +236,17 @@ OSL_IMAGE* ImgManager::GetImage(string name)
 {
 	if(!m_initialized) Initialize();
 	
+	//if(!ExistsContext(m_current_context))
+	if(m_context_stack.empty())
+	{	
+		LOG("No existing context for ImgManager : can't get the required image")
+		oslQuit();
+	}	
+	
 	LockSema();
 	
 	//image déjà chargée ?
-	map<string, OSL_IMAGE*>::iterator it;
+	map<string, ImgManager::Image>::iterator it;
 	it = m_imageMap.find(name);
 
 	//si non
@@ -195,42 +266,231 @@ OSL_IMAGE* ImgManager::GetImage(string name)
 		else //si le chargement a réussi on stocke dans la map
 		{
 
-			pair<string, OSL_IMAGE*> p;
+			pair<string, ImgManager::Image> p;
 			p.first = name;
-			p.second = img;
+			Image i = { img, 1};
+			p.second = i;
 			m_imageMap.insert(p);
+			
+			if(!ExistsInContext(name)) m_context_map[m_context_stack.top()].push_back(name);
+			
+			//m_img_stack.top().push_back(name); //add loaded image to current context
+			
 		#ifdef _DEBUG
 			LOG("Load picture : " + name);
 		#endif
 		}
 	}
-
+	//si oui, on regarde si elle a été demandé dans le contexte actuel
+	else
+	{
+		//si elle n'existe pas, on l'ajoute
+		if(!ExistsInContext(name))
+		{
+			m_imageMap[name].ref_cpt++;
+			m_context_map[m_context_stack.top()].push_back(name);
+			//m_img_stack.top().push_back(name);
+		}
+	}
+	
 	UnlockSema();
 	
+	#ifdef _DEBUG
+		ostringstream oss(ostringstream::out);
+		oss << "Get picture : " << name << " [ref: " << m_imageMap[name].ref_cpt << "] [Context:" << m_context_stack.top() << "]";
+		LOG(oss.str());
+	#endif
+		
 	//finalement, on retourne l'image
-	return m_imageMap[name];
+	return m_imageMap[name].picture;
 }
 
 void ImgManager::RemoveImage(string name)
 {
 	if(!m_initialized) Initialize();
 	
-	LockSema();
+	//if(!ExistsContext(m_current_context))
+	if(m_context_stack.empty())
+	{	
+		LOG("No existing context for ImgManager : can't remove the required image")
+		oslQuit();
+	}	
+	
+	//LockSema();
 	
 	//image déjà chargée ?
-	map<string, OSL_IMAGE*>::iterator it;
+	map<string, ImgManager::Image>::iterator it;
 	it = m_imageMap.find(name);
 	
 	//si oui
 	if(it != m_imageMap.end())
 	{
-		if(it->second) oslDeleteImage(it->second);
-		m_imageMap.erase(it);
-	#ifdef _DEBUG
-		LOG("Remove picture : " + name);
-	#endif
+		if(it->second.ref_cpt == 1)
+		{
+			if(it->second.picture) oslDeleteImage(it->second.picture);
+			m_imageMap.erase(it);
+			#ifdef _DEBUG
+				LOG("Remove picture : " + name + "[Context:" + m_context_stack.top() + "]");
+			#endif
+		}
+		else
+		{
+			it->second.ref_cpt--;
+			#ifdef _DEBUG
+				LOG("Decrease picture reference: " + name + "[Context:" + m_context_stack.top() + "]");
+			#endif
+		}
+		
+		RemoveFromContext(name);	
 		
 	}
 	
+	//UnlockSema();
+}
+
+void ImgManager::CreateContext(string name)
+{
+	#ifdef _DEBUG
+		LOG("Create ImgManager Context: " + name)
+	#endif
+	
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
+	vector<string> v;
+	//m_img_stack.push(v);
+	if(ExistsContext(name)) DestroyContext(name);
+	
+	m_context_map[name] = v;
+	
+	//UseContext(name);
+	
 	UnlockSema();
 }
+
+void ImgManager::DestroyContext(string name)
+{
+	#ifdef _DEBUG
+		LOG("Destroy ImgManager Context: " + name)
+	#endif
+	
+	if(!m_initialized) Initialize();
+	
+	LockSema();
+	
+	UseContext(name);
+	
+	vector<string>::iterator it;
+	for(it = m_context_map[name].begin() ; it != m_context_map[name].end() ; ++it)
+	//for(it = m_img_stack.top().begin() ; it != m_img_stack.top().end() ; ++it)
+	{
+		RemoveImage(*it);
+		--it;
+	}
+	
+	//m_img_stack.pop();
+	m_context_map.erase(name);
+	
+	UsePreviousContext();
+	
+	UnlockSema();
+}
+
+inline bool ImgManager::ExistsContext(string name)
+{
+	map<string, vector<string> >::iterator it;
+	it = m_context_map.find(name);
+	
+	return it != m_context_map.end();
+}
+
+bool ImgManager::ExistsInContext(std::string name)
+{
+	if(!m_initialized) Initialize();
+	
+	//if(!ExistsContext(m_current_context))
+	if(m_context_stack.empty())
+	{	
+		LOG("No existing context for ImgManager : ExistsInCurrentContext can't work")
+		oslQuit();
+	}	
+	
+	//LockSema();
+	
+	bool found = false;
+	
+	vector<string>::iterator it;
+	for(it = m_context_map[m_context_stack.top()].begin() ; it != m_context_map[m_context_stack.top()].end() ; ++it)
+	//for(it = m_img_stack.top().begin() ; !found && (it != m_img_stack.top().end()) ; ++it)
+	{
+		if(it->compare(name) == 0)
+			found = true;
+	}
+
+	//UnlockSema();
+	
+	return found;
+}
+
+void ImgManager::RemoveFromContext(std::string name)
+{
+	if(!m_initialized) Initialize();
+	
+	//if(!ExistsContext(m_current_context))
+	if(m_context_stack.empty())
+	{	
+		LOG("No existing context for ImgManager : can't remove picture from current context")
+		oslQuit();
+	}	
+	
+	//LockSema();
+	
+	if(!ExistsInContext(name)) return;
+	
+	vector<string>::iterator it;
+	for(it = m_context_map[m_context_stack.top()].begin() ; it != m_context_map[m_context_stack.top()].end() ; ++it)
+	//for(it = m_img_stack.top().begin() ; it != m_img_stack.top().end() ; ++it)
+	{
+		if(it->compare(name) == 0)
+		{
+			m_context_map[m_context_stack.top()].erase(it);
+			//m_img_stack.top().erase(it);
+			break;
+		}
+	}
+	
+	//UnlockSema();
+}
+
+void ImgManager::UseContext(string name)
+{
+	if(!ExistsContext(name)) CreateContext(name);
+	
+	//m_context_stack.push(m_current_context);
+	
+	//m_previous_context = m_current_context;
+	//m_current_context = name;
+	
+	m_context_stack.push(name);
+	
+	#ifdef _DEBUG
+	LOG("Use context: " + name)
+	#endif
+}
+
+void ImgManager::UsePreviousContext()
+{
+	if(!m_context_stack.empty())
+	{
+		//m_current_context = m_context_stack.top();
+		m_context_stack.pop();
+	}
+	//m_current_context = m_previous_context;
+	//m_previous_context = m_current_context;
+	
+	#ifdef _DEBUG
+	LOG("Use previous context")
+	#endif
+}
+		

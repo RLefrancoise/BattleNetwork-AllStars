@@ -108,6 +108,8 @@ MMBNBattleActor* MMBNBattleActor::Load(std::string name, bool ia, bool loadNorma
 	#endif
 	MMBNBattleActor* a = new MMBNBattleActor(name, loadNormalSprites, loadReverseSprites);
 
+	a->InitializeInfo();
+	
 	if(ia) a->InitializeIA();
 	
 	#ifdef _DEBUG
@@ -148,56 +150,32 @@ void MMBNBattleActor::InitializeIA()
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-// INIT DELAYS OF ANIM
+// INITIALIZE INFO
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-/*void MMBNBattleActor::InitDelaysOfAnim(string name, vector<int> &delays)
+void MMBNBattleActor::InitializeInfo()
 {
-	int spritesNb = 0, delay = 0;
-	ifstream in_anim( (string("Actors/") + m_name + string("/") + name + string("/anim.txt")).c_str() , ifstream::in);
+	ifstream in_info( (string("Actors/") + m_name + string("/info.txt")).c_str() , ifstream::in);
 
-	if(!in_anim.good())
+	if(!in_info.good())
 	{
-		LOG("Impossible de trouver le fichier anim.txt pour " + string("Actors/") + m_name + string("/") + name);
+		LOG("Impossible de trouver le fichier info.txt pour " + string("Actors/") + m_name);
 		oslQuit();
 	}
 
 	string line;
-	while(getline(in_anim, line))
+	while(getline(in_info, line))
 	{
-		if(line.find("sprites=") == 0)
+		if(line.find("attack_frame") == 0)
 		{
-			int equalsIndex = line.find_first_of("=");
-			line = line.substr(equalsIndex + 1);
-			istringstream iss(line);
-			iss >> spritesNb;
-		}
-		else if(line.find("delays=") == 0)
-		{
-			int equalsIndex = line.find_first_of("=");
-			line = line.substr(equalsIndex + 1);
-			int commaIndex = -1;
-
-			for(int i = 0 ; i < spritesNb ; i++)
-			{
-				commaIndex = line.find_first_of(",");
-
-				string delay_s;
-				if(commaIndex != -1) delay_s = line.substr(0, commaIndex);
-				else delay_s = line;
-
-				istringstream iss(delay_s);
-				iss >> delay;
-				delays.push_back(delay);
-
-				line = line.substr(commaIndex + 1);
-			}
-			
+			vector<string> v = StringUtils::Split(line, " ");
+			istringstream iss(v.at(1));
+			iss >> this->m_actor_info.attack_frame;
 		}
 	}
 
-	in_anim.close();
-}*/
+	in_info.close();
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -389,6 +367,11 @@ int MMBNBattleActor::GetSpd() const
 MMBNBattleActor::IAConfig* MMBNBattleActor::GetIAConfig()
 {
 	return &m_ia_config;
+}
+
+MMBNBattleActor::BattleActorInfo* MMBNBattleActor::GetInfo()
+{
+	return &m_actor_info;
 }
 
 void MMBNBattleActor::Attack(MMBNBattleActor* mmbnba)

@@ -15,6 +15,11 @@ class MMBNBattleActor : public Displayable
 			unsigned int moving_time;
 		} IAConfig;
 
+		typedef struct
+		{
+			unsigned int attack_frame;
+		} BattleActorInfo;
+		
 		enum ActorDirection
 		{
 			LEFT,
@@ -66,6 +71,8 @@ class MMBNBattleActor : public Displayable
 		bool IsDead()										;
 
 		IAConfig* GetIAConfig()								;
+		
+		BattleActorInfo* GetInfo()							;
 
 	protected:
 
@@ -85,7 +92,8 @@ class MMBNBattleActor : public Displayable
 		static std::map<ActorState, bool>			LOOP_OF_STATES			;
 		
 		void InitializeIA();
-
+		void InitializeInfo();
+		
 		//===============================
 		// ETAT & DIRECTION
 		//===============================
@@ -120,6 +128,8 @@ class MMBNBattleActor : public Displayable
 		
 		bool m_load_normal_sprites			;
 		bool m_load_reversed_sprites		;
+		
+		BattleActorInfo m_actor_info		;
 
 };
 

@@ -1,5 +1,7 @@
 #include "FontManager.h"
 #include "Logger.h"
+#include "ImgManager.h"
+
 #include <string>
 
 using namespace std;
@@ -66,7 +68,10 @@ MMBNFont* FontManager::GetFont(std::string name)
 	if(it == m_fontMap.end())
 	{
 		//on charge la police
+		ImgManager::UseContext("font_context");
 		MMBNFont* font = MMBNFont::Load(name);
+		ImgManager::UsePreviousContext();
+		
 		if(!font) //si le chargement échoue on log et on quitte
 		{
 			LOG("Can't load font : " + name);

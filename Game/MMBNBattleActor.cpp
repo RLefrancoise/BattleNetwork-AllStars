@@ -172,9 +172,39 @@ void MMBNBattleActor::InitializeInfo()
 			istringstream iss(v.at(1));
 			iss >> this->m_actor_info.attack_frame;
 		}
+		else if(line.find("attack_range") == 0)
+		{
+			vector<Vector2i> range;
+			
+			vector<string> v = StringUtils::Split(line, " ");
+			for(unsigned int i = 1 ; i < v.size() ; ++i)
+			{
+				vector<string> r = StringUtils::Split(v[i], ",");
+				istringstream iss(r.at(0) + " " + r.at(1));
+				int x_range;
+				int y_range;
+				iss >> x_range;
+				iss >> y_range;
+				range.push_back(Vector2i(x_range,y_range));
+			}
+			
+			this->m_actor_info.attack_info.range = range;
+		}
 	}
 
 	in_info.close();
+	
+	this->m_actor_info.attack_info.target_type = GameSystem::USER_TARGET;
+	
+	vector<GameSystem::PanelTeam> teams;
+	teams.push_back(GameSystem::PLAYER);
+	teams.push_back(GameSystem::ENEMY);
+	this->m_actor_info.attack_info.target_teams = teams;
+	
+	this->m_actor_info.attack_info.pierce_attack = true;
+	//GameSystem::AttackInfo info = { GameSystem::USER_TARGET, range, teams, true};
+	
+	//this->m_actor_info.attack_info = info;
 }
 
 //////////////////////////////////////////////////////////////

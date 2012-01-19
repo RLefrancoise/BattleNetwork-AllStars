@@ -256,7 +256,7 @@ OSL_IMAGE* ImgManager::GetImage(string name)
 		char n[name.size() + 1];
 		StringUtils::StringToChar(name, n);
 		//OSL_IMAGE* img = oslLoadImageFilePNG(n, OSL_IN_RAM | OSL_SWIZZLED, OSL_PF_5551);
-		OSL_IMAGE* img = oslLoadImageFilePNG(n, OSL_IN_RAM | OSL_SWIZZLED, OSL_PF_8888);
+		OSL_IMAGE* img = oslLoadImageFilePNG(n, OSL_IN_RAM | OSL_SWIZZLED, OSL_PF_4444);
 		
 		if(!img) //si le chargement échoue on log et on quitte
 		{

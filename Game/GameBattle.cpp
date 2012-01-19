@@ -1,5 +1,7 @@
 #include "GameBattle.h"
 
+using namespace std;
+
 GameBattle::BattleInfo GameBattle::BATTLE_INFO;
 
 GameBattle::BattleInfo& GameBattle::GetBattleInfo()
@@ -28,3 +30,9 @@ void GameBattle::SetBattleInfo(BattleInfo& info)
 	
 	BATTLE_INFO.bgmName = info.bgmName;
 }
+
+
+
+
+
+		

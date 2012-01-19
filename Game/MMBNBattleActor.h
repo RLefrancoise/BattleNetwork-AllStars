@@ -4,6 +4,7 @@
 #include "Displayable.h"
 #include "Animation.hpp"
 #include "Utils.h"
+#include "GameSystem.h"
 
 class MMBNBattleActor : public Displayable
 {
@@ -18,6 +19,8 @@ class MMBNBattleActor : public Displayable
 		typedef struct
 		{
 			unsigned int attack_frame;
+			GameSystem::AttackInfo attack_info;
+			
 		} BattleActorInfo;
 		
 		enum ActorDirection

@@ -60,7 +60,41 @@ class GameSystem
 			ENEMY_AREA_TARGET,
 			NONE_TARGET
 		};
-
+		
+		
+		
+		//BATTLE
+		typedef enum
+		{
+			NORMAL,
+			EMPTY,
+			BROKEN,
+			CRACKED,
+			FIRE,
+			ICE,
+			GRASS,
+			POISON,
+			WATER,
+			PANEL_TYPES_NB
+		} PanelType;
+		
+		typedef enum
+		{
+			PLAYER,
+			ENEMY,
+			PANELS_TEAM_NB
+		} PanelTeam;
+		
+		struct AttackInfo
+		{
+			TargetType target_type;
+			std::vector<Vector2i> range;
+			std::vector<PanelTeam> target_teams;
+			bool pierce_attack;
+		};
+		
+		
+		
 		static void Initialize();
 		static void Destroy();
 		

@@ -34,23 +34,23 @@ MMBNPanelGrid::MMBNPanelGrid()
 	// Each team has the half of the panels
 	for(unsigned int i = 0 ; i < (m_width / 2) ; i++)
 		for(unsigned int j = 0 ; j < m_height ; j++)
-			(*m_panels_team)[i][j] = PLAYER;
+			(*m_panels_team)[i][j] = GameSystem::PLAYER;
 		
 	for(unsigned int i = (m_width / 2) ; i < m_width ; i++)
 		for(unsigned int j = 0 ; j < m_height ; j++)
-			(*m_panels_team)[i][j] = ENEMY;
+			(*m_panels_team)[i][j] = GameSystem::ENEMY;
 		
 	//all the panels are normal
 	for(unsigned int i = 0 ; i < m_width ; i++)
 		for(unsigned int j = 0 ; j < m_height ; j++)
-			(*m_panels)[i][j] = NORMAL;
+			(*m_panels)[i][j] = GameSystem::NORMAL;
 			
 	//load the pictures for each team
-	m_panel_pictures[PLAYER] = ImgManager::GetImage("System/Animation/Battle/Panels/player_panel.png");
-	m_panel_pictures[ENEMY]  = ImgManager::GetImage("System/Animation/Battle/Panels/enemy_panel.png");
+	m_panel_pictures[GameSystem::PLAYER] = ImgManager::GetImage("System/Animation/Battle/Panels/player_panel.png");
+	m_panel_pictures[GameSystem::ENEMY]  = ImgManager::GetImage("System/Animation/Battle/Panels/enemy_panel.png");
 	
 	//load the animations for each type of panels
-	m_panel_animations[NORMAL] 	= Animation::Load("System/Animation/Battle/Panels/Normal", false, true);
+	m_panel_animations[GameSystem::NORMAL] 	= Animation::Load("System/Animation/Battle/Panels/Normal", false, true);
 	/*m_panel_animations[EMPTY] 	= NULL;
 	m_panel_animations[BROKEN] 	= NULL;
 	m_panel_animations[CRACKED] = NULL;
@@ -59,6 +59,9 @@ MMBNPanelGrid::MMBNPanelGrid()
 	m_panel_animations[GRASS] 	= NULL;
 	m_panel_animations[POISON] 	= NULL;
 	m_panel_animations[WATER] 	= NULL;*/
+	
+	m_attack_impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
+	
 	
 	//actor and enemies
 	GameBattle::BattleInfo battle_info = GameBattle::GetBattleInfo();
@@ -81,7 +84,7 @@ MMBNPanelGrid::MMBNPanelGrid()
 		a->SetState(MMBNBattleActor::BATTLE_STANDING);
 		m_enemies.push_back( a );
 		PutActorOnPanel(m_enemies.back(), it->position.x, it->position.y);
-		m_ia.push_back(new MMBNBattleIA(this, m_enemies.back(), ENEMY));
+		m_ia.push_back(new MMBNBattleIA(this, m_enemies.back(), GameSystem::ENEMY));
 	}
 	
 	#ifdef _DEBUG
@@ -90,6 +93,8 @@ MMBNPanelGrid::MMBNPanelGrid()
 	
 	m_actor_is_dead = false;
 	m_can_attack = false;
+	
+	m_display_attack_impact = false;
 	
 }
 
@@ -185,6 +190,19 @@ void MMBNPanelGrid::Display()
 		life_s.SetPosition( (*it)->GetPosition().x - (w / 2), (*it)->GetPosition().y );
 		life_s.Display();
 	}
+	
+	//attack impact
+	if(m_display_attack_impact)
+	{
+		m_attack_impact->Update();
+		m_attack_impact->Display();
+		
+		if(m_attack_impact->IsOver())
+		{
+			m_attack_impact->Stop();
+			m_display_attack_impact = false;
+		}
+	}
 		
 }
 
@@ -206,12 +224,12 @@ void MMBNPanelGrid::MoveActor(MMBNBattleActor* actor, int offX, int offY)
 	PutActorOnPanel(actor, GetActorPanel(actor).x + offX, GetActorPanel(actor).y + offY);
 }
 
-inline MMBNPanelGrid::PanelType MMBNPanelGrid::GetPanelType(unsigned int x, unsigned int y)
+inline GameSystem::PanelType MMBNPanelGrid::GetPanelType(unsigned int x, unsigned int y)
 {
 	return (*m_panels)[x][y];
 }
 
-inline MMBNPanelGrid::PanelTeam MMBNPanelGrid::GetPanelTeam(unsigned int x, unsigned int y)
+inline GameSystem::PanelTeam MMBNPanelGrid::GetPanelTeam(unsigned int x, unsigned int y)
 {
 	return (*m_panels_team)[x][y];
 }
@@ -272,7 +290,7 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 		else if(k->pressed.down)
 			v.y = v.y + 1;
 		
-		if( IsInsideGrid(v.x, v.y) && ( GetPanelTeam(v.x, v.y) == PLAYER ) )
+		if( IsInsideGrid(v.x, v.y) && ( GetPanelTeam(v.x, v.y) == GameSystem::PLAYER ) )
 			PutActorOnPanel(m_actor, v.x, v.y);
 	}
 	
@@ -296,7 +314,9 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 		for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 		{
 			pos = GetActorPanel(*it);
-			if(pos.x == (v.x + 1) && (pos.y == v.y))
+			vector<Vector2i> range = GetTargetedPanels(m_actor, m_actor->GetInfo()->attack_info);
+			if(IsInRange(pos, range))
+			//if(pos.x == (v.x + 1) && (pos.y == v.y))
 			{
 				//play enemy damage anim if enemy is not yet
 				if((*it)->GetState() == MMBNBattleActor::BATTLE_STANDING)
@@ -304,6 +324,9 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 					
 				//if can attack, attack the enemy
 				m_actor->Attack(*it);
+				
+				m_attack_impact->SetPosition( (pos.x * m_x_inc) + m_x_map + m_x_inc / 2, (pos.y * m_y_inc) + m_y_map + m_y_inc / 2);
+				m_display_attack_impact = true;
 			}
 		}
 		
@@ -407,7 +430,67 @@ inline unsigned int MMBNPanelGrid::GetHeight() const
 	return m_height;
 }
 
+vector<Vector2i> MMBNPanelGrid::GetTargetedPanels(MMBNBattleActor* launcher, GameSystem::AttackInfo &attack_info)
+{
+	vector<Vector2i> panels;
+	//for each case of the range
+	for(unsigned int i = 0 ; i < attack_info.range.size() ; ++i)
+	{
+		//we look for the teams allowed to be targeted
+		for(unsigned int j = 0 ; j < attack_info.target_teams.size() ; j++)
+		{
+			Vector2i v;
+			
+			switch(attack_info.target_type)
+			{	
+				//the range is computed according to the user
+				case GameSystem::USER_TARGET:
+					{
+						v = GetActorPanel(launcher);
+						v.x + attack_info.range[i].x < m_width ? v.x += attack_info.range[i].x : v.x = m_width - 1;
+						v.y + attack_info.range[i].y < m_height ? v.y += attack_info.range[i].y : v.y = m_height - 1;
+					}
+					break;
+					
+				//the range is computed according to the enemy
+				case GameSystem::ENEMY_TARGET:
+				//the range is computed according to the user area
+				case GameSystem::USER_AREA_TARGET:
+				//the range is computed according to the enemy area
+				case GameSystem::ENEMY_AREA_TARGET:
+				default:
+					break;
+			}
+				
+			//if the range is in an allowed panel team
+			if((*m_panels_team)[v.x][v.y] == attack_info.target_teams[j])
+			{
+				//we add the panel into the vector, only if it is not already in
+				bool found = false;
+				for(unsigned int k = 0 ; !found && k < panels.size() ; ++k)
+					if( (panels[k].x == v.x) && (panels[k].y == v.y) )
+						found = true;
+						
+				if(!found)
+					panels.push_back(v);
+			}
+				
+		}
+	}
+	
+	return panels;
+}
 
+bool MMBNPanelGrid::IsInRange(Vector2i &target, vector<Vector2i> &range)
+{
+	bool in_range = false;
+	
+	for(unsigned int i = 0 ; !in_range && (i < range.size()) ; ++i)
+		if(range[i].x == target.x && range[i].y == target.y)
+			in_range = true;
+			
+	return in_range;
+}
 
 
 
@@ -589,10 +672,10 @@ MMBNBattleIA::MMBNBattleIA()
 	
 	m_map			= NULL	;
 	m_actor			= NULL	;
-	m_actor_team	= MMBNPanelGrid::ENEMY	;
+	m_actor_team	= GameSystem::ENEMY	;
 }
 
-MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, MMBNPanelGrid::PanelTeam t)
+MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, GameSystem::PanelTeam t)
 {
 	#ifdef _DEBUG
 		LOG("Create BattleIA")

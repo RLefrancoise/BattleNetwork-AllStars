@@ -22,27 +22,10 @@ class MMBNPanelGrid
 
 	public:
 
-		typedef enum
-		{
-			NORMAL,
-			EMPTY,
-			BROKEN,
-			CRACKED,
-			FIRE,
-			ICE,
-			GRASS,
-			POISON,
-			WATER,
-			PANEL_TYPES_NB
-		} PanelType;
 		
-		typedef enum
-		{
-			PLAYER,
-			ENEMY,
-			PANELS_TEAM_NB
-		} PanelTeam;
 
+		
+		
 		MMBNPanelGrid();
 		~MMBNPanelGrid();
 
@@ -53,8 +36,8 @@ class MMBNPanelGrid
 		Vector2i GetActorPanel(MMBNBattleActor* actor);
 		void	MoveActor(MMBNBattleActor* actor, int offX, int offY);
 
-		PanelType GetPanelType(unsigned int x, unsigned int y);
-		PanelTeam GetPanelTeam(unsigned int x, unsigned int y);
+		GameSystem::PanelType GetPanelType(unsigned int x, unsigned int y);
+		GameSystem::PanelTeam GetPanelTeam(unsigned int x, unsigned int y);
 
 		bool	IsInsideGrid(int x, int y);
 		bool	IsWalkable(unsigned int x, unsigned int y);
@@ -72,17 +55,20 @@ class MMBNPanelGrid
 
 	private :
 		
-		typedef boost::multi_array< PanelType, 2 >					Panels			;
-		typedef boost::shared_ptr<Panels>							PanelsPtr		;
-		typedef boost::multi_array< PanelTeam, 2 >					PanelsTeam		;
-		typedef boost::shared_ptr<PanelsTeam>						PanelsTeamPtr	;
+		typedef boost::multi_array< GameSystem::PanelType, 2 >					Panels			;
+		typedef boost::shared_ptr<Panels>										PanelsPtr		;
+		typedef boost::multi_array< GameSystem::PanelTeam, 2 >					PanelsTeam		;
+		typedef boost::shared_ptr<PanelsTeam>									PanelsTeamPtr	;
 
 		PanelsPtr		m_panels		;
 		PanelsTeamPtr	m_panels_team	;
 
-		OSL_IMAGE* m_panel_pictures[PANELS_TEAM_NB];
-		AnimationPtr m_panel_animations[PANEL_TYPES_NB];
+		OSL_IMAGE* m_panel_pictures[GameSystem::PANELS_TEAM_NB];
+		AnimationPtr m_panel_animations[GameSystem::PANEL_TYPES_NB];
 
+		AnimationPtr m_attack_impact		;
+		bool		 m_display_attack_impact;
+		
 		unsigned int m_width				;
 		unsigned int m_height				;
 
@@ -100,6 +86,9 @@ class MMBNPanelGrid
 		bool 	m_can_attack				;
 		
 		MMBNBattleActor* GetEnemyOnPanel(unsigned int x, unsigned int y);
+		
+		std::vector<Vector2i> 	GetTargetedPanels(MMBNBattleActor* launcher, GameSystem::AttackInfo &attack_info);
+		bool					IsInRange(Vector2i &target, std::vector<Vector2i> &range);
 
 	
 };
@@ -310,13 +299,13 @@ class MMBNBattleIA
 		MMBNPanelGrid* m_map;
 		MMBNBattleActor* m_actor;
 		Timer m_moving_timer;
-		MMBNPanelGrid::PanelTeam m_actor_team;
+		GameSystem::PanelTeam m_actor_team;
 
 		void Move();
 
 	public:
 		MMBNBattleIA();
-		MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, MMBNPanelGrid::PanelTeam t);
+		MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, GameSystem::PanelTeam t);
 		~MMBNBattleIA();
 		void Update();
 

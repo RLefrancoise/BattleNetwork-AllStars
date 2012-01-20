@@ -60,8 +60,8 @@ MMBNPanelGrid::MMBNPanelGrid()
 	m_panel_animations[POISON] 	= NULL;
 	m_panel_animations[WATER] 	= NULL;*/
 	
-	m_attack_impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
-	
+	//m_attack_impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
+	Animation::Load("System/Animation/Battle/AttackImpact", false, false); //just to load it instead of inside the render loop
 	
 	//actor and enemies
 	GameBattle::BattleInfo battle_info = GameBattle::GetBattleInfo();
@@ -192,7 +192,7 @@ void MMBNPanelGrid::Display()
 	}
 	
 	//attack impact
-	if(m_display_attack_impact)
+	/*if(m_display_attack_impact)
 	{
 		m_attack_impact->Update();
 		m_attack_impact->Display();
@@ -202,6 +202,12 @@ void MMBNPanelGrid::Display()
 			m_attack_impact->Stop();
 			m_display_attack_impact = false;
 		}
+	}*/
+	
+	for(unsigned int i = 0 ; i < m_attack_impact.size() ; ++i)
+	{
+		m_attack_impact[i]->Update();
+		m_attack_impact[i]->Display();
 	}
 		
 }
@@ -308,28 +314,7 @@ void MMBNPanelGrid::ActorHandle(OSL_CONTROLLER* k)
 	
 	if( m_can_attack && (m_actor->GetCurrentAnim()->GetCurrentFrame() == m_actor->GetInfo()->attack_frame) )
 	{
-		Vector2i pos;
-		
-		vector<MMBNBattleActor*>::iterator it;
-		for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
-		{
-			pos = GetActorPanel(*it);
-			vector<Vector2i> range = GetTargetedPanels(m_actor, m_actor->GetInfo()->attack_info);
-			if(IsInRange(pos, range))
-			//if(pos.x == (v.x + 1) && (pos.y == v.y))
-			{
-				//play enemy damage anim if enemy is not yet
-				if((*it)->GetState() == MMBNBattleActor::BATTLE_STANDING)
-					(*it)->SetState(MMBNBattleActor::BATTLE_DAMAGED);
-					
-				//if can attack, attack the enemy
-				m_actor->Attack(*it);
-				
-				m_attack_impact->SetPosition( (pos.x * m_x_inc) + m_x_map + m_x_inc / 2, (pos.y * m_y_inc) + m_y_map + m_y_inc / 2);
-				m_display_attack_impact = true;
-			}
-		}
-		
+		AttackEnemies();
 		m_can_attack = false;
 	}
 	
@@ -398,6 +383,16 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 		}
 	}
 	
+	//impact anims
+	for(unsigned int i = 0 ; i < m_attack_impact.size() ; ++i)
+	{
+		if(m_attack_impact[i]->IsOver())
+		{
+			m_attack_impact.erase(m_attack_impact.begin() + i);
+			i--;
+		}
+	}
+	
 	if(BattleIsOver()) return;
 	
 	//Update IA
@@ -447,8 +442,22 @@ vector<Vector2i> MMBNPanelGrid::GetTargetedPanels(MMBNBattleActor* launcher, Gam
 				case GameSystem::USER_TARGET:
 					{
 						v = GetActorPanel(launcher);
-						v.x + attack_info.range[i].x < m_width ? v.x += attack_info.range[i].x : v.x = m_width - 1;
-						v.y + attack_info.range[i].y < m_height ? v.y += attack_info.range[i].y : v.y = m_height - 1;
+						
+						if(launcher->GetDirection() == MMBNBattleActor::RIGHT)
+						{	
+							v.x += attack_info.range[i].x;
+							v.y += attack_info.range[i].y;
+						}
+						else
+						{
+							v.x -= attack_info.range[i].x;
+							v.y -= attack_info.range[i].y;
+						}
+						
+						if(v.x < 0) v.x = 0;
+						if(v.y < 0) v.y = 0;
+						if(v.x >= m_width) v.x = m_width - 1;
+						if(v.y >= m_height) v.y = m_height - 1;
 					}
 					break;
 					
@@ -492,7 +501,78 @@ bool MMBNPanelGrid::IsInRange(Vector2i &target, vector<Vector2i> &range)
 	return in_range;
 }
 
+void MMBNPanelGrid::AttackEnemies()
+{
+	if( m_actor->GetCurrentAnim()->GetCurrentFrame() == m_actor->GetInfo()->attack_frame )
+	{
+		Vector2i pos;
+		
+		vector<MMBNBattleActor*>::iterator it;
+		for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
+		{
+			pos = GetActorPanel(*it);
+			vector<Vector2i> range = GetTargetedPanels(m_actor, m_actor->GetInfo()->attack_info);
+			
+			if(IsInRange(pos, range))
+			{
+				//play enemy damage anim if enemy is not yet
+				if((*it)->GetState() == MMBNBattleActor::BATTLE_STANDING)
+					(*it)->SetState(MMBNBattleActor::BATTLE_DAMAGED);
+					
+				//if can attack, attack the enemy
+				m_actor->Attack(*it);
+				
+				AnimationPtr impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
+				int x_rand = Random::RandomInt(0,m_x_inc / 2);
+				int y_rand = Random::RandomInt(0,m_y_inc / 2);
+				if(Random::RandomInt(0,2) == 1)
+					x_rand = x_rand * -1;
+				if(Random::RandomInt(0,2) == 1)
+					y_rand = y_rand * -1;
+				impact->SetPosition( (pos.x * m_x_inc) + m_x_map + m_x_inc / 2 + x_rand, (pos.y * m_y_inc) + m_y_map + m_y_inc / 2 + y_rand);
+				
+				m_attack_impact.push_back(impact);
+				
+			}
+		}
+		
+	}
+}
 
+bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher)
+{
+	if( launcher->GetCurrentAnim()->GetCurrentFrame() == launcher->GetInfo()->attack_frame )
+	{
+		Vector2i pos = GetActorPanel(m_actor);
+		
+		vector<Vector2i> range = GetTargetedPanels(launcher, launcher->GetInfo()->attack_info);
+		
+		if(IsInRange(pos, range))
+		{
+			//play actor damage anim if actor is not yet
+			if(m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING)
+				m_actor->SetState(MMBNBattleActor::BATTLE_DAMAGED);
+				
+			//if can attack, attack the actor
+			launcher->Attack(m_actor);
+			
+			AnimationPtr impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
+			int x_rand = Random::RandomInt(0,m_x_inc / 2);
+			int y_rand = Random::RandomInt(0,m_y_inc / 2);
+			if(Random::RandomInt(0,2) == 1)
+				x_rand = x_rand * -1;
+			if(Random::RandomInt(0,2) == 1)
+				y_rand = y_rand * -1;
+			impact->SetPosition( (pos.x * m_x_inc) + m_x_map + m_x_inc / 2 + x_rand, (pos.y * m_y_inc) + m_y_map + m_y_inc / 2 + y_rand);
+			
+			m_attack_impact.push_back(impact);
+			return true;
+		}
+		
+	}
+	
+	return false;
+}
 
 		
 ///////////////////////////////////////////////////////
@@ -673,6 +753,8 @@ MMBNBattleIA::MMBNBattleIA()
 	m_map			= NULL	;
 	m_actor			= NULL	;
 	m_actor_team	= GameSystem::ENEMY	;
+	
+	m_attack_done 	= false;
 }
 
 MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, GameSystem::PanelTeam t)
@@ -684,6 +766,8 @@ MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, GameSystem::Pan
 	m_map			= m	;
 	m_actor			= a	;
 	m_actor_team	= t	;
+	
+	m_attack_done 	= false;
 }
 
 MMBNBattleIA::~MMBNBattleIA()
@@ -707,6 +791,26 @@ void MMBNBattleIA::Update()
 		Move();
 		m_moving_timer.stop();
 		m_moving_timer.start();
+	}
+	
+	//-----ATTACK-----
+	if(!m_attack_timer.is_started())
+		m_attack_timer.start();
+		
+	//attack ?
+	if(!m_attack_done && (m_attack_timer.get_ticks() > 2000) )
+	{
+		if(m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING)
+			m_actor->SetState(MMBNBattleActor::BATTLE_ATTACK);
+			
+		m_attack_done = Attack();
+		if(m_attack_done)
+		{
+			m_attack_timer.stop();
+			m_attack_timer.start();
+			m_attack_done = false;
+		}
+		
 	}
 }
 
@@ -737,7 +841,16 @@ void MMBNBattleIA::Move()
 	m_map->PutActorOnPanel(m_actor, rand_x, rand_y);
 }
 
-
+bool MMBNBattleIA::Attack()
+{
+	//enemy attack actor
+	if(m_actor_team == GameSystem::ENEMY)
+	{
+		return m_map->AttackActor(m_actor);
+	}
+	
+	return true;
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

@@ -166,12 +166,15 @@ void MMBNBattleActor::InitializeInfo()
 	string line;
 	while(getline(in_info, line))
 	{
+		//ATTACK
+		//frame
 		if(line.find("attack_frame") == 0)
 		{
 			vector<string> v = StringUtils::Split(line, " ");
 			istringstream iss(v.at(1));
 			iss >> this->m_actor_info.attack_frame;
 		}
+		//range
 		else if(line.find("attack_range") == 0)
 		{
 			vector<Vector2i> range;
@@ -189,6 +192,13 @@ void MMBNBattleActor::InitializeInfo()
 			}
 			
 			this->m_actor_info.attack_info.range = range;
+		}
+		//power
+		else if(line.find("attack_power") == 0)
+		{
+			vector<string> v = StringUtils::Split(line, " ");
+			istringstream iss(v.at(1));
+			iss >> this->m_atk;
 		}
 	}
 

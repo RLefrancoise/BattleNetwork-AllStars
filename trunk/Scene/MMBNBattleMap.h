@@ -22,10 +22,6 @@ class MMBNPanelGrid
 
 	public:
 
-		
-
-		
-		
 		MMBNPanelGrid();
 		~MMBNPanelGrid();
 
@@ -52,6 +48,9 @@ class MMBNPanelGrid
 
 		unsigned int GetWidth() const;
 		unsigned int GetHeight() const;
+		
+		void AttackEnemies();
+		bool AttackActor(MMBNBattleActor* launcher);
 
 	private :
 		
@@ -66,7 +65,7 @@ class MMBNPanelGrid
 		OSL_IMAGE* m_panel_pictures[GameSystem::PANELS_TEAM_NB];
 		AnimationPtr m_panel_animations[GameSystem::PANEL_TYPES_NB];
 
-		AnimationPtr m_attack_impact		;
+		std::vector<AnimationPtr> m_attack_impact		;
 		bool		 m_display_attack_impact;
 		
 		unsigned int m_width				;
@@ -298,10 +297,15 @@ class MMBNBattleIA
 	private:
 		MMBNPanelGrid* m_map;
 		MMBNBattleActor* m_actor;
-		Timer m_moving_timer;
 		GameSystem::PanelTeam m_actor_team;
-
+		
+		Timer m_moving_timer;
+		Timer m_attack_timer;
+		
+		bool m_attack_done;
+		
 		void Move();
+		bool Attack();
 
 	public:
 		MMBNBattleIA();

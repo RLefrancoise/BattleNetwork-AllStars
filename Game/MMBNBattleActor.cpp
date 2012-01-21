@@ -139,9 +139,15 @@ void MMBNBattleActor::InitializeIA()
 	{
 		if(line.find("moving_time") == 0)
 		{
-			vector<string> v = StringUtils::Split(line, " ");
+			vector<string> v = StringUtils::Split(line, " \r\n");
 			istringstream iss(v.at(1));
 			iss >> this->m_ia_config.moving_time;
+		}
+		else if(line.find("attack_time") == 0)
+		{
+			vector<string> v = StringUtils::Split(line, " \r\n");
+			istringstream iss(v.at(1));
+			iss >> this->m_ia_config.attack_time;
 		}
 	}
 
@@ -170,7 +176,7 @@ void MMBNBattleActor::InitializeInfo()
 		//frame
 		if(line.find("attack_frame") == 0)
 		{
-			vector<string> v = StringUtils::Split(line, " ");
+			vector<string> v = StringUtils::Split(line, " \r\n");
 			istringstream iss(v.at(1));
 			iss >> this->m_actor_info.attack_frame;
 		}
@@ -179,7 +185,7 @@ void MMBNBattleActor::InitializeInfo()
 		{
 			vector<Vector2i> range;
 			
-			vector<string> v = StringUtils::Split(line, " ");
+			vector<string> v = StringUtils::Split(line, " \r\n");
 			for(unsigned int i = 1 ; i < v.size() ; ++i)
 			{
 				vector<string> r = StringUtils::Split(v[i], ",");
@@ -196,9 +202,18 @@ void MMBNBattleActor::InitializeInfo()
 		//power
 		else if(line.find("attack_power") == 0)
 		{
-			vector<string> v = StringUtils::Split(line, " ");
+			vector<string> v = StringUtils::Split(line, " \r\n");
 			istringstream iss(v.at(1));
 			iss >> this->m_atk;
+		}
+		//stagger enemy
+		else if(line.find("attack_stagger") == 0)
+		{
+			vector<string> v = StringUtils::Split(line, " \r\n");
+			if(v.at(1).compare("true") == 0)
+				this->m_actor_info.attack_info.stagger_enemy = true;
+			else
+				this->m_actor_info.attack_info.stagger_enemy = false;
 		}
 	}
 

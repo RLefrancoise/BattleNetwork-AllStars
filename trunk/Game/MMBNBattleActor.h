@@ -14,6 +14,7 @@ class MMBNBattleActor : public Displayable
 		typedef struct
 		{
 			unsigned int moving_time;
+			unsigned int attack_time;
 		} IAConfig;
 
 		typedef struct

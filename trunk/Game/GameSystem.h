@@ -91,6 +91,7 @@ class GameSystem
 			std::vector<Vector2i> range;
 			std::vector<PanelTeam> target_teams;
 			bool pierce_attack;
+			bool stagger_enemy;
 		};
 		
 		

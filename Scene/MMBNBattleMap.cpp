@@ -763,6 +763,8 @@ MMBNBattleIA::MMBNBattleIA()
 	m_actor_team	= GameSystem::ENEMY	;
 	
 	m_attack_done 	= false;
+	m_is_damaged	= false;
+	m_move_after_damage = false;
 }
 
 MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, GameSystem::PanelTeam t)
@@ -776,6 +778,8 @@ MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, GameSystem::Pan
 	m_actor_team	= t	;
 	
 	m_attack_done 	= false;
+	m_is_damaged 	= false;
+	m_move_after_damage = false;
 }
 
 MMBNBattleIA::~MMBNBattleIA()
@@ -788,17 +792,30 @@ MMBNBattleIA::~MMBNBattleIA()
 void MMBNBattleIA::Update()
 {
 	//-----MOVING-----
+	if(m_actor->GetState() == MMBNBattleActor::BATTLE_DAMAGED)
+		m_is_damaged = true;
+	
+	if(m_is_damaged && (m_actor->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
+	{
+		m_move_after_damage = true;
+		m_is_damaged = false;
+	}
+	
+	//(m_is_damaged && m_actor->GetCurrentAnim()->IsOver()) ? m_move_after_damage = true : m_move_after_damage = false;
+	
+		
 	if(!m_moving_timer.is_started())
 		m_moving_timer.start();
 
 	MMBNBattleActor::IAConfig* iac = m_actor->GetIAConfig();
 
 	//move actor ?
-	if( (m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) && (m_moving_timer.get_ticks() > iac->moving_time) )
+	if( m_move_after_damage || ( (m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) && (m_moving_timer.get_ticks() > iac->moving_time) ) )
 	{
 		Move();
 		m_moving_timer.stop();
 		m_moving_timer.start();
+		if(m_move_after_damage) m_move_after_damage = false;
 	}
 	
 	//-----ATTACK-----
@@ -806,7 +823,7 @@ void MMBNBattleIA::Update()
 		m_attack_timer.start();
 		
 	//attack ?
-	if(!m_attack_done && (m_attack_timer.get_ticks() > iac->attack_time) )
+	if(!m_move_after_damage && !m_attack_done && (m_attack_timer.get_ticks() > iac->attack_time) )
 	{
 		//if(m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING)
 		//	m_actor->SetState(MMBNBattleActor::BATTLE_ATTACK);

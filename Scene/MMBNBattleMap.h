@@ -303,6 +303,8 @@ class MMBNBattleIA
 		Timer m_attack_timer;
 		
 		bool m_attack_done;
+		bool m_is_damaged;
+		bool m_move_after_damage;
 		
 		void Move();
 		bool Attack();

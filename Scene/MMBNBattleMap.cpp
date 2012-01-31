@@ -541,43 +541,44 @@ void MMBNPanelGrid::AttackEnemies()
 
 bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher)
 {
-		Vector2i pos = GetActorPanel(m_actor);
+	Vector2i pos = GetActorPanel(m_actor);
+	
+	vector<Vector2i> range = GetTargetedPanels(launcher, launcher->GetInfo()->attack_info);
+	
+	if(IsInRange(pos, range))
+	{
+		//launcher in standing anim
+		if(launcher->GetState() == MMBNBattleActor::BATTLE_STANDING)
+			launcher->SetState(MMBNBattleActor::BATTLE_ATTACK);
 		
-		vector<Vector2i> range = GetTargetedPanels(launcher, launcher->GetInfo()->attack_info);
-		
-		if(IsInRange(pos, range))
+		//launcher in attack anim
+		if(launcher->GetState() == MMBNBattleActor::BATTLE_ATTACK)
 		{
-			//launcher in standing anim
-			if(launcher->GetState() == MMBNBattleActor::BATTLE_STANDING)
-				launcher->SetState(MMBNBattleActor::BATTLE_ATTACK);
-			
-			//launcher in attack anim
-			if(launcher->GetState() == MMBNBattleActor::BATTLE_ATTACK)
+			//if the current attack anim frame is a damaging one
+			if( launcher->GetCurrentAnim()->GetCurrentFrame() == launcher->GetInfo()->attack_frame )
 			{
-				//if the current attack anim frame is a damaging one
-				if( launcher->GetCurrentAnim()->GetCurrentFrame() == launcher->GetInfo()->attack_frame )
-				{
-					//play actor damage anim if actor is not yet & only if it is a staggering attack
-					if( (launcher->GetInfo()->attack_info.stagger_enemy) && (m_actor->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
-						m_actor->SetState(MMBNBattleActor::BATTLE_DAMAGED);
-					
-					launcher->Attack(m_actor);
-					
-					AnimationPtr impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
-					int x_rand = Random::RandomInt(0,m_x_inc / 2);
-					int y_rand = Random::RandomInt(0,m_y_inc / 2);
-					if(Random::RandomInt(0,2) == 1)
-						x_rand = x_rand * -1;
-					if(Random::RandomInt(0,2) == 1)
-						y_rand = y_rand * -1;
-					impact->SetPosition( (pos.x * m_x_inc) + m_x_map + m_x_inc / 2 + x_rand, (pos.y * m_y_inc) + m_y_map + m_y_inc / 2 + y_rand);
-					
-					m_attack_impact.push_back(impact);
-					return true;
-				}
-
+				//play actor damage anim if actor is not yet & only if it is a staggering attack
+				if( (launcher->GetInfo()->attack_info.stagger_enemy) && (m_actor->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
+					m_actor->SetState(MMBNBattleActor::BATTLE_DAMAGED);
+				
+				launcher->Attack(m_actor);
+				
+				AnimationPtr impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
+				int x_rand = Random::RandomInt(0,m_x_inc / 2);
+				int y_rand = Random::RandomInt(0,m_y_inc / 2);
+				if(Random::RandomInt(0,2) == 1)
+					x_rand = x_rand * -1;
+				if(Random::RandomInt(0,2) == 1)
+					y_rand = y_rand * -1;
+				impact->SetPosition( (pos.x * m_x_inc) + m_x_map + m_x_inc / 2 + x_rand, (pos.y * m_y_inc) + m_y_map + m_y_inc / 2 + y_rand);
+				
+				m_attack_impact.push_back(impact);
+				return true;
 			}
+			
 		}
+		
+	}
 		
 	return false;
 }
@@ -762,9 +763,14 @@ MMBNBattleIA::MMBNBattleIA()
 	m_actor			= NULL	;
 	m_actor_team	= GameSystem::ENEMY	;
 	
+	m_can_attack	= true;
 	m_attack_done 	= false;
+	
 	m_is_damaged	= false;
 	m_move_after_damage = false;
+	
+	m_is_attacking	= false;
+	m_move_after_attack = false;
 }
 
 MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, GameSystem::PanelTeam t)
@@ -777,9 +783,14 @@ MMBNBattleIA::MMBNBattleIA(MMBNPanelGrid* m, MMBNBattleActor* a, GameSystem::Pan
 	m_actor			= a	;
 	m_actor_team	= t	;
 	
+	m_can_attack	= true;
 	m_attack_done 	= false;
+	
 	m_is_damaged 	= false;
 	m_move_after_damage = false;
+	
+	m_is_attacking	= false;
+	m_move_after_attack = false;
 }
 
 MMBNBattleIA::~MMBNBattleIA()
@@ -791,31 +802,60 @@ MMBNBattleIA::~MMBNBattleIA()
 
 void MMBNBattleIA::Update()
 {
-	//-----MOVING-----
+
+	//boolean init
 	if(m_actor->GetState() == MMBNBattleActor::BATTLE_DAMAGED)
 		m_is_damaged = true;
-	
+		
 	if(m_is_damaged && (m_actor->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
 	{
 		m_move_after_damage = true;
 		m_is_damaged = false;
+		
+		m_moving_timer.stop();
+		m_moving_timer.start();
 	}
 	
-	//(m_is_damaged && m_actor->GetCurrentAnim()->IsOver()) ? m_move_after_damage = true : m_move_after_damage = false;
-	
+	if(m_actor->GetState() == MMBNBattleActor::BATTLE_ATTACK)
+		m_is_attacking = true;
 		
+	if(m_is_attacking && (m_actor->GetState() != MMBNBattleActor::BATTLE_ATTACK) )
+	{
+		m_move_after_attack = true;
+		m_is_attacking = false;
+		
+		m_attack_timer.stop();
+		m_attack_timer.start();
+			
+		m_move_after_attack_timer.stop();
+		m_move_after_attack_timer.start();
+	}
+	
+	//-----MOVING-----
 	if(!m_moving_timer.is_started())
 		m_moving_timer.start();
-
+		
 	MMBNBattleActor::IAConfig* iac = m_actor->GetIAConfig();
 
 	//move actor ?
-	if( m_move_after_damage || ( (m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) && (m_moving_timer.get_ticks() > iac->moving_time) ) )
+	if( m_move_after_damage || m_move_after_attack || ( (m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) && (m_moving_timer.get_ticks() > iac->moving_time) ) )
 	{
-		Move();
+		if(m_move_after_attack)
+		{
+			if(m_move_after_attack_timer.get_ticks() > 1000)
+			{
+				Move();
+			}
+		}
+		else
+			Move();
+		
 		m_moving_timer.stop();
 		m_moving_timer.start();
-		if(m_move_after_damage) m_move_after_damage = false;
+		m_move_after_attack = false;
+		m_move_after_damage = false;
+		m_can_attack = true;
+		
 	}
 	
 	//-----ATTACK-----
@@ -823,20 +863,15 @@ void MMBNBattleIA::Update()
 		m_attack_timer.start();
 		
 	//attack ?
-	if(!m_move_after_damage && !m_attack_done && (m_attack_timer.get_ticks() > iac->attack_time) )
-	{
-		//if(m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING)
-		//	m_actor->SetState(MMBNBattleActor::BATTLE_ATTACK);
-			
+	if(m_can_attack && !m_move_after_damage && !m_move_after_attack && !m_attack_done && (m_attack_timer.get_ticks() > iac->attack_time) )
+	{		
 		m_attack_done = Attack();
 		if(m_attack_done)
 		{
 			m_attack_timer.stop();
 			m_attack_timer.start();
 			m_attack_done = false;
-			
-			m_moving_timer.stop();
-			m_moving_timer.start();
+			m_can_attack = false;
 		}
 		
 	}

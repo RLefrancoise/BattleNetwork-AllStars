@@ -301,10 +301,16 @@ class MMBNBattleIA
 		
 		Timer m_moving_timer;
 		Timer m_attack_timer;
+		Timer m_move_after_attack_timer;
 		
+		bool m_can_attack;
 		bool m_attack_done;
+		
 		bool m_is_damaged;
 		bool m_move_after_damage;
+		
+		bool m_is_attacking;
+		bool m_move_after_attack;
 		
 		void Move();
 		bool Attack();

@@ -149,9 +149,20 @@ void MMBNBattleActor::InitializeIA()
 			istringstream iss(v.at(1));
 			iss >> this->m_ia_config.attack_time;
 		}
+		else if(line.find("wait_after_attack_time") == 0)
+		{
+			vector<string> v = StringUtils::Split(line, " \r\n");
+			istringstream iss(v.at(1));
+			iss >> this->m_ia_config.wait_after_attack_time;
+		}
 	}
 
 	in_ia.close();
+}
+
+void MMBNBattleActor::InitializeIASkills()
+{
+
 }
 
 //////////////////////////////////////////////////////////////

@@ -503,7 +503,13 @@ bool MMBNPanelGrid::IsInRange(Vector2i &target, vector<Vector2i> &range)
 
 void MMBNPanelGrid::AttackEnemies()
 {
-	if( m_actor->GetCurrentAnim()->GetCurrentFrame() == m_actor->GetInfo()->attack_frame )
+	vector<MMBNBattleActor*>::iterator it;
+	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
+	{
+		AttackActor(m_actor, *it);
+	}
+	
+	/*if( m_actor->GetCurrentAnim()->GetCurrentFrame() == m_actor->GetInfo()->attack_frame )
 	{
 		Vector2i pos;
 		
@@ -536,12 +542,12 @@ void MMBNPanelGrid::AttackEnemies()
 			}
 		}
 		
-	}
+	}*/
 }
 
-bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher)
+bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* target)
 {
-	Vector2i pos = GetActorPanel(m_actor);
+	Vector2i pos = GetActorPanel(target);
 	
 	vector<Vector2i> range = GetTargetedPanels(launcher, launcher->GetInfo()->attack_info);
 	
@@ -558,10 +564,10 @@ bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher)
 			if( launcher->GetCurrentAnim()->GetCurrentFrame() == launcher->GetInfo()->attack_frame )
 			{
 				//play actor damage anim if actor is not yet & only if it is a staggering attack
-				if( (launcher->GetInfo()->attack_info.stagger_enemy) && (m_actor->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
-					m_actor->SetState(MMBNBattleActor::BATTLE_DAMAGED);
+				if( (launcher->GetInfo()->attack_info.stagger_enemy) && (target->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
+					target->SetState(MMBNBattleActor::BATTLE_DAMAGED);
 				
-				launcher->Attack(m_actor);
+				launcher->Attack(target);
 				
 				AnimationPtr impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
 				int x_rand = Random::RandomInt(0,m_x_inc / 2);
@@ -842,7 +848,7 @@ void MMBNBattleIA::Update()
 	{
 		if(m_move_after_attack)
 		{
-			if(m_move_after_attack_timer.get_ticks() > 1000)
+			if(m_move_after_attack_timer.get_ticks() > iac->wait_after_attack_time)
 			{
 				Move();
 			}
@@ -909,7 +915,7 @@ bool MMBNBattleIA::Attack()
 	//enemy attack actor
 	if(m_actor_team == GameSystem::ENEMY)
 	{
-		return m_map->AttackActor(m_actor);
+		return m_map->AttackActor(m_actor, m_map->GetActor());
 	}
 	
 	return true;

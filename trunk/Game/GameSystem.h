@@ -92,12 +92,45 @@ class GameSystem
 			std::vector<PanelTeam> target_teams;
 			bool pierce_attack;
 			bool stagger_enemy;
+			std::vector<int> hit_frames;
 		};
 		
+		struct BattleProjectile
+		{
+			std::string name;
+			AnimationPtr animation;
+			unsigned int velocity;
+			Vector2i position;
+			std::vector<unsigned int> hitting_frames;
+			unsigned int damage;
+		};
 		
+		struct BattleAttack
+		{
+			std::string name;
+			unsigned int power;
+			AttackInfo attack_info;
+			bool use_projectile;
+			unsigned int projectiles_number;
+			std::map<unsigned int, std::vector<BattleProjectile> > projectiles_map;
+			std::string actor_animation_name;
+		};
 		
 		static void Initialize();
 		static void Destroy();
+		
+		//========================
+		// STRUCTURES LOADING
+		//========================
+		static GameSystem::ChipElement 	GetElementOfString(std::string e)		;
+		static GameSystem::DamageType 	GetDamageOfString(std::string d)		;
+		static GameSystem::TargetType 	GetTargetOfString(std::string t)		;
+		static GameSystem::ChipType 	GetChipTypeOfString(std::string c)		;
+		
+		static GameSystem::PanelTeam 	GetPanelTeamOfString(std::string p)		;
+		
+		static void InitAttackInfo(std::string file, AttackInfo* ai)			;
+		static void InitBattleAttack(std::string file, BattleAttack* ba)		;
 		
 		//========================
 		// PICTURES
@@ -134,6 +167,13 @@ class GameSystem
 	private:
 		
 		GameSystem();
+		
+		static std::map<std::string, GameSystem::ChipElement> 	ELEMENT_STRING_MAP		;
+		static std::map<std::string, GameSystem::DamageType> 	DAMAGE_STRING_MAP		;
+		static std::map<std::string, GameSystem::TargetType> 	TARGET_STRING_MAP		;
+		static std::map<std::string, GameSystem::ChipType> 		CHIPTYPE_STRING_MAP		;
+		
+		static std::map<std::string, GameSystem::PanelTeam> 	PANELTEAM_STRING_MAP	;
 		
 		//========================
 		// PICTURES

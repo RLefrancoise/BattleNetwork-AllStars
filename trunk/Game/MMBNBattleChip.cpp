@@ -6,10 +6,10 @@
 
 using namespace std;
 
-map<string, GameSystem::ChipElement>	MMBNBattleChip::m_element_map		;
+/*map<string, GameSystem::ChipElement>	MMBNBattleChip::m_element_map		;
 map<string, GameSystem::DamageType>		MMBNBattleChip::m_damage_map		;
 map<string, GameSystem::TargetType>		MMBNBattleChip::m_target_map		;
-map<string, GameSystem::ChipType>		MMBNBattleChip::m_type_map			;
+map<string, GameSystem::ChipType>		MMBNBattleChip::m_type_map			;*/
 
 MMBNBattleChip::MMBNBattleChip()
 {
@@ -69,11 +69,11 @@ MMBNBattleChip* MMBNBattleChip::Load(std::string name)
 		
 		//TYPE
 		else if(line.find("type") == 0)
-			c->m_chip_type = m_type_map[v.at(1)];
+			c->m_chip_type = GameSystem::GetChipTypeOfString(v.at(1));
 			
 		//ELEMENT
 		else if(line.find("element") == 0)
-			c->m_element = m_element_map[v.at(1)];
+			c->m_element = GameSystem::GetElementOfString(v.at(1));
 
 		//POWER
 		else if(line.find("power") == 0)
@@ -88,11 +88,11 @@ MMBNBattleChip* MMBNBattleChip::Load(std::string name)
 		
 		//DAMAGE
 		else if(line.find("damage") == 0)
-			c->m_damage_type = m_damage_map[v.at(1)];
+			c->m_damage_type = GameSystem::GetDamageOfString(v.at(1));
 		
 		//TARGET
 		else if(line.find("target") == 0)
-			c->m_target_type = m_target_map[v.at(1)];
+			c->m_target_type = GameSystem::GetTargetOfString(v.at(1));
 
 		//PAUSE
 		else if(line.find("pause") == 0)
@@ -165,7 +165,7 @@ void MMBNBattleChip::SetExtendedDisplay(bool extended)
 	m_extended_display = extended;
 }
 
-void MMBNBattleChip::LoadMaps()
+/*void MMBNBattleChip::LoadMaps()
 {
 	//ELEMENTS
 	m_element_map["fire"]		= GameSystem::FIRE_ELEMENT		;
@@ -196,7 +196,7 @@ void MMBNBattleChip::LoadMaps()
 	m_type_map["mega"]			= GameSystem::MEGA_CHIP			;
 	m_type_map["giga"]			= GameSystem::GIGA_CHIP			;
 	m_type_map["dark"]			= GameSystem::DARK_CHIP			;
-}
+}*/
 
 
 void MMBNBattleChip::DisplayExtended(float offX, float offY)

@@ -50,7 +50,7 @@ class MMBNPanelGrid
 		unsigned int GetHeight() const;
 		
 		void AttackEnemies();
-		bool AttackActor(MMBNBattleActor* launcher);
+		bool AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* target);
 
 	private :
 		
@@ -298,6 +298,8 @@ class MMBNBattleIA
 		MMBNPanelGrid* m_map;
 		MMBNBattleActor* m_actor;
 		GameSystem::PanelTeam m_actor_team;
+		
+		int m_current_actor_attack; //index of the current attack the ia is using
 		
 		Timer m_moving_timer;
 		Timer m_attack_timer;

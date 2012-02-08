@@ -15,6 +15,8 @@ class MMBNBattleActor : public Displayable
 		{
 			unsigned int moving_time;
 			unsigned int attack_time;
+			unsigned int wait_after_attack_time;
+			std::vector<GameSystem::BattleAttack> battle_attacks;
 		} IAConfig;
 
 		typedef struct
@@ -96,6 +98,7 @@ class MMBNBattleActor : public Displayable
 		static std::map<ActorState, bool>			LOOP_OF_STATES			;
 		
 		void InitializeIA();
+		void InitializeIASkills();
 		void InitializeInfo();
 		
 		//===============================

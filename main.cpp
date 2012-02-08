@@ -154,7 +154,7 @@ int main()
 	ImgManager::UseContext("game_system_context");
 	
 	GameSystem::Initialize();
-	MMBNBattleChip::LoadMaps();
+	//MMBNBattleChip::LoadMaps();
 	SndManager::Initialize();
 	MMBNBattleActor::Initialize();
 	

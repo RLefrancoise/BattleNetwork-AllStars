@@ -12,7 +12,7 @@ class MMBNBattleChip : public Displayable
 
 	public:
 		
-		static void LoadMaps();
+		//static void LoadMaps();
 
 		virtual ~MMBNBattleChip()									;
 
@@ -53,10 +53,10 @@ class MMBNBattleChip : public Displayable
 		bool						m_extended_display				;
 
 
-		static std::map<std::string, GameSystem::ChipElement> m_element_map;
+		/*static std::map<std::string, GameSystem::ChipElement> m_element_map;
 		static std::map<std::string, GameSystem::DamageType> m_damage_map;
 		static std::map<std::string, GameSystem::TargetType> m_target_map;
-		static std::map<std::string, GameSystem::ChipType> m_type_map;
+		static std::map<std::string, GameSystem::ChipType> m_type_map;*/
 
 		void DisplayExtended(float offX = 0, float offY = 0);
 		void DisplaySimple(float offX = 0, float offY = 0);

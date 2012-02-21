@@ -100,6 +100,11 @@ void ExtendedSprite::SetReverseOnDisplay(bool enable)
 	m_reverse_on_display = enable;
 }
 
+bool ExtendedSprite::IsReversedOnDisplay()
+{
+	return m_reverse_on_display;
+}
+
 void ExtendedSprite::LoadCollisions(int frameNb, std::string path)
 {
 	ifstream in_colli( (path + "/collisions.txt").c_str() , ifstream::in);

@@ -138,6 +138,18 @@ unsigned int Animation::GetCurrentFrame()
 	return m_currentFrame;
 }
 
+void Animation::Reverse()
+{
+	vector<ExtendedSprite>::iterator it;
+	for(it = m_sprites.begin() ; it != m_sprites.end() ; ++it)
+	{
+		it->IsReversedOnDisplay() ? it->SetReverseOnDisplay(false) : it->SetReverseOnDisplay(true);
+		it->ReverseCollisionsBoxes();
+	}
+	
+	m_reverse = !m_reverse;
+}
+
 AnimationPtr Animation::Load(std::string spritesPath, bool reverse, bool loop)
 {
 	vector<int> delays;

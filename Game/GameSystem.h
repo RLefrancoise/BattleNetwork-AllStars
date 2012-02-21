@@ -113,7 +113,8 @@ class GameSystem
 			bool use_projectile;
 			unsigned int projectiles_number;
 			std::map<unsigned int, std::vector<BattleProjectile> > projectiles_map;
-			std::string actor_animation_name;
+			//std::string actor_animation_name;
+			AnimationPtr actor_animation;
 		};
 		
 		static void Initialize();

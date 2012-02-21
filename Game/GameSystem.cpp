@@ -340,7 +340,8 @@ void GameSystem::InitBattleAttack(string file, BattleAttack* ba)
 		if(line.find("animation") == 0)
 		{	
 			vector<string> v = StringUtils::Split(line, " \r\n");
-			ba->actor_animation_name = string("Battle/Animations/Attacks/") + v.at(1);
+			//ba->actor_animation_name = string("Battle/Animations/Attacks/") + v.at(1);
+			ba->actor_animation = Animation::Load( string("Battle/Animations/Attacks/") + v.at(1), false, false );
 		}
 	}
 

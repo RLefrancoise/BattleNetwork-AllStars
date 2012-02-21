@@ -30,6 +30,7 @@ class Animation
 		bool IsRunning();
 		bool IsOver();
 		unsigned int GetCurrentFrame();
+		void Reverse();
 
 	private :
 

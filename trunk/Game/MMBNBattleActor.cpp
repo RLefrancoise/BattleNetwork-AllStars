@@ -108,6 +108,8 @@ MMBNBattleActor* MMBNBattleActor::Load(std::string name, bool ia, bool loadNorma
 	#endif
 	MMBNBattleActor* a = new MMBNBattleActor(name, loadNormalSprites, loadReverseSprites);
 
+	a->m_is_ia = ia;
+	
 	a->InitializeInfo();
 	
 	if(ia) a->InitializeIA();
@@ -158,11 +160,37 @@ void MMBNBattleActor::InitializeIA()
 	}
 
 	in_ia.close();
+	
+	this->m_ia_config.current_attack = -1;
+	
+	InitializeIASkills();
 }
 
 void MMBNBattleActor::InitializeIASkills()
 {
+	ifstream in_skills( (string("Actors/") + m_name + string("/Battle/IA/Skills/skills.txt")).c_str() , ifstream::in);
 
+	if(!in_skills.good())
+	{
+		LOG("Impossible de trouver le fichier skills.txt pour " + string("Actors/") + m_name + string("/Battle/IA/Skills/skills.txt"));
+		oslQuit();
+	}
+
+	string line;
+	while(getline(in_skills, line))
+	{
+		vector<string> v = StringUtils::Split(line, " \r\n");
+		GameSystem::BattleAttack ba;
+		
+		GameSystem::InitAttackInfo( string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/attack_info.txt"), &(ba.attack_info) );
+		GameSystem::InitBattleAttack( string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/") + v.at(0) + string(".txt"), &ba );
+		ba.actor_animation->Reverse();
+		
+		this->m_ia_config.battle_attacks.push_back(ba);
+	}
+
+	in_skills.close();
+	
 }
 
 //////////////////////////////////////////////////////////////
@@ -276,6 +304,25 @@ void MMBNBattleActor::Display(float offX, float offY)
 	m_offX = offX;
 	m_offY = offY;
 
+	//is using skill
+	if(m_state == BATTLE_SKILL)
+	{
+		//is ia
+		if(m_is_ia)
+		{
+			if( (m_ia_config.current_attack >= 0) && (m_ia_config.current_attack < m_ia_config.battle_attacks.size()) )
+			{
+				m_ia_config.battle_attacks[m_ia_config.current_attack].actor_animation->Update();
+				m_ia_config.battle_attacks[m_ia_config.current_attack].actor_animation->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+				m_ia_config.battle_attacks[m_ia_config.current_attack].actor_animation->GetCurrentSprite().Display();
+				#ifdef _DEBUG
+					m_ia_config.battle_attacks[m_ia_config.current_attack].actor_animation->GetCurrentSprite().DisplayExtension();
+				#endif
+			}
+		}
+		return;
+	}
+	
 	//if only the normal sprites have been loaded, we don't care about direction
 	if(m_load_normal_sprites && !m_load_reversed_sprites)
 	{
@@ -349,10 +396,18 @@ void MMBNBattleActor::SetState(ActorState state)
 	
 	m_state = state;
 	
-	//stop current anim
-	if(m_load_normal_sprites) m_animMap[m_state]->Stop();
-	if(m_load_reversed_sprites) m_reversedAnimMap[m_state]->Stop();
-
+	if(m_state == BATTLE_SKILL)
+	{
+		for(unsigned int i = 0 ; m_is_ia && (i < m_ia_config.battle_attacks.size()) ; ++i)
+			m_ia_config.battle_attacks[i].actor_animation->Stop();
+	}
+	else
+	{
+		//stop current anim
+		if(m_load_normal_sprites) m_animMap[m_state]->Stop();
+		if(m_load_reversed_sprites) m_reversedAnimMap[m_state]->Stop();
+	}
+	
 	//===================================
 	// ON STOPPE TOUTES LES ANIMATIONS SAUF CELLE DE L'ETAT COURANT
 	//===================================
@@ -444,6 +499,12 @@ void MMBNBattleActor::Attack(MMBNBattleActor* mmbnba)
 {
 	mmbnba->m_hp -= this->m_atk;
 	if(mmbnba->m_hp < 0) mmbnba->m_hp = 0;
+}
+
+void MMBNBattleActor::SkillAttack(MMBNBattleActor* target, GameSystem::BattleAttack* skill)
+{
+	target->m_hp -= skill->power;
+	if(target->m_hp < 0) target->m_hp = 0;
 }
 
 bool MMBNBattleActor::IsDead()

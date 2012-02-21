@@ -17,6 +17,7 @@ class MMBNBattleActor : public Displayable
 			unsigned int attack_time;
 			unsigned int wait_after_attack_time;
 			std::vector<GameSystem::BattleAttack> battle_attacks;
+			int current_attack;
 		} IAConfig;
 
 		typedef struct
@@ -38,7 +39,8 @@ class MMBNBattleActor : public Displayable
 			BATTLE_ATTACK,
 			BATTLE_DAMAGED,
 			BATTLE_DEAD,
-			BATTLE_WIN
+			BATTLE_WIN,
+			BATTLE_SKILL
 		};
 
 		
@@ -74,6 +76,7 @@ class MMBNBattleActor : public Displayable
 		int GetSpd() const									;
 
 		void Attack(MMBNBattleActor* mmbnba)				;
+		void SkillAttack(MMBNBattleActor* target, GameSystem::BattleAttack* skill);
 		bool IsDead()										;
 
 		IAConfig* GetIAConfig()								;
@@ -137,6 +140,8 @@ class MMBNBattleActor : public Displayable
 		bool m_load_reversed_sprites		;
 		
 		BattleActorInfo m_actor_info		;
+		
+		bool m_is_ia						;
 
 };
 

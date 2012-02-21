@@ -51,6 +51,7 @@ class MMBNPanelGrid
 		
 		void AttackEnemies();
 		bool AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* target);
+		bool UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* target, GameSystem::BattleAttack* skill);
 
 	private :
 		
@@ -66,6 +67,7 @@ class MMBNPanelGrid
 		AnimationPtr m_panel_animations[GameSystem::PANEL_TYPES_NB];
 
 		std::vector<AnimationPtr> m_attack_impact		;
+		int 		 m_current_impact_anim;
 		bool		 m_display_attack_impact;
 		
 		unsigned int m_width				;
@@ -302,8 +304,11 @@ class MMBNBattleIA
 		int m_current_actor_attack; //index of the current attack the ia is using
 		
 		Timer m_moving_timer;
+		
 		Timer m_attack_timer;
 		Timer m_move_after_attack_timer;
+		
+		Timer m_move_after_skill_timer;
 		
 		bool m_can_attack;
 		bool m_attack_done;
@@ -313,6 +318,9 @@ class MMBNBattleIA
 		
 		bool m_is_attacking;
 		bool m_move_after_attack;
+		
+		bool m_is_using_skill;
+		bool m_move_after_skill;
 		
 		void Move();
 		bool Attack();

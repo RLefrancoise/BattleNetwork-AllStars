@@ -31,6 +31,7 @@ class ExtendedSprite /*: public sf::Sprite*/
 		void Display(float offX = 0, float offY = 0);
 		void DisplayExtension();
 		void SetReverseOnDisplay(bool enable);
+		bool IsReversedOnDisplay();
 		void LoadCollisions(int frameNb, std::string path);
 
 		std::vector<AABBCollisionBox> GetDefenceBoxes() const;

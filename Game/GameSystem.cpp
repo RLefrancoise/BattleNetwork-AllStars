@@ -209,16 +209,20 @@ GameSystem::PanelTeam 	GameSystem::GetPanelTeamOfString(string p)
 }
 
 
-void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
+/*void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
 {
+	#ifdef _DEBUG
+		LOG("Init attack info from file " + file)
+	#endif
+	
 	ifstream in_info( file.c_str() , ifstream::in);
 
 	if(!in_info.good())
 	{
-		LOG("Impossible de trouver le fichier " + file);
+		LOG("Impossible de trouver le fichier " + file)
 		oslQuit();
 	}
-
+	
 	string line;
 	while(getline(in_info, line))
 	{
@@ -227,6 +231,9 @@ void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
 		{	
 			vector<string> v = StringUtils::Split(line, " \r\n");
 			ai->target_type = TARGET_STRING_MAP[v.at(1)];
+			#ifdef _DEBUG
+				LOG("target type " + v.at(1))
+			#endif
 			
 		}
 		//range
@@ -242,6 +249,9 @@ void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
 				iss >> x_range;
 				iss >> y_range;
 				ai->range.push_back(Vector2i(x_range,y_range));
+				#ifdef _DEBUG
+					LOG("range " + r.at(0) + " " + r.at(1))
+				#endif
 			}
 			
 		}
@@ -250,7 +260,12 @@ void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
 		{	
 			vector<string> v = StringUtils::Split(line, " \r\n");
 			for(unsigned int i = 1 ; i < v.size() ; ++i)
+			{
 				ai->target_teams.push_back(PANELTEAM_STRING_MAP[v.at(i)]);
+				#ifdef _DEBUG
+					LOG("target teams " + v.at(i))
+				#endif
+			}
 			
 		}
 		//piercing attack
@@ -261,6 +276,10 @@ void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
 				ai->pierce_attack = true;
 			else
 				ai->pierce_attack = false;
+				
+			#ifdef _DEBUG
+				LOG("pierce " + v.at(1))
+			#endif
 		}
 		//stagger enemy
 		else if(line.find("stagger") == 0)
@@ -270,6 +289,10 @@ void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
 				ai->stagger_enemy = true;
 			else
 				ai->stagger_enemy = false;
+				
+			#ifdef _DEBUG
+				LOG("stagger" + v.at(1))
+			#endif
 		}
 		//frames
 		else if(line.find("hit_frames") == 0)
@@ -281,6 +304,10 @@ void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
 				unsigned int frame;
 				iss >> frame;
 				ai->hit_frames.push_back(frame);
+				
+				#ifdef _DEBUG
+					LOG("hit frame " + v.at(i))
+				#endif
 			}
 			
 		}
@@ -347,7 +374,7 @@ void GameSystem::InitBattleAttack(string file, BattleAttack* ba)
 
 	in_info.close();
 }
-
+*/
 
 
 

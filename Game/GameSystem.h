@@ -85,7 +85,7 @@ class GameSystem
 			PANELS_TEAM_NB
 		} PanelTeam;
 		
-		struct AttackInfo
+		/*struct AttackInfo
 		{
 			TargetType target_type;
 			std::vector<Vector2i> range;
@@ -115,7 +115,7 @@ class GameSystem
 			std::map<unsigned int, std::vector<BattleProjectile> > projectiles_map;
 			//std::string actor_animation_name;
 			AnimationPtr actor_animation;
-		};
+		};*/
 		
 		static void Initialize();
 		static void Destroy();
@@ -130,8 +130,8 @@ class GameSystem
 		
 		static GameSystem::PanelTeam 	GetPanelTeamOfString(std::string p)		;
 		
-		static void InitAttackInfo(std::string file, AttackInfo* ai)			;
-		static void InitBattleAttack(std::string file, BattleAttack* ba)		;
+		/*static void InitAttackInfo(std::string file, AttackInfo* ai)			;
+		static void InitBattleAttack(std::string file, BattleAttack* ba)		;*/
 		
 		//========================
 		// PICTURES

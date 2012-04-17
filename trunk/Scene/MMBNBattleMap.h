@@ -51,7 +51,7 @@ class MMBNPanelGrid
 		
 		void AttackEnemies();
 		bool AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* target);
-		bool UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* target, GameSystem::BattleAttack* skill);
+		bool UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* target, MMBNBattleAttackPtr& skill);
 
 	private :
 		
@@ -88,7 +88,7 @@ class MMBNPanelGrid
 		
 		MMBNBattleActor* GetEnemyOnPanel(unsigned int x, unsigned int y);
 		
-		std::vector<Vector2i> 	GetTargetedPanels(MMBNBattleActor* launcher, GameSystem::AttackInfo &attack_info);
+		std::vector<Vector2i> 	GetTargetedPanels(MMBNBattleActor* launcher, AttackInfoPtr& attack_info);
 		bool					IsInRange(Vector2i &target, std::vector<Vector2i> &range);
 
 	
@@ -324,6 +324,10 @@ class MMBNBattleIA
 		
 		void Move();
 		bool Attack();
+		bool Skill(unsigned int skill_nb);
+		
+		unsigned int m_current_skill;
+		bool m_skill_choosed;
 
 	public:
 		MMBNBattleIA();

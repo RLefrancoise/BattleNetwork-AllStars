@@ -5,25 +5,39 @@
 #include "Animation.hpp"
 #include "Utils.h"
 #include "GameSystem.h"
+#include "MMBNBattleAttack.h"
+
+class IAConfig
+{
+	public:
+	
+		unsigned int moving_time;
+		unsigned int attack_time;
+		unsigned int wait_after_attack_time;
+		std::vector<MMBNBattleAttackPtr> battle_attacks;
+		//MMBNBattleAttackPtr current_attack;
+		int current_attack;
+};
 
 class MMBNBattleActor : public Displayable
 {
 
 	public:
 
-		typedef struct
+		/*typedef struct
 		{
 			unsigned int moving_time;
 			unsigned int attack_time;
 			unsigned int wait_after_attack_time;
-			std::vector<GameSystem::BattleAttack> battle_attacks;
-			int current_attack;
-		} IAConfig;
+			std::vector<MMBNBattleAttackPtr> battle_attacks;
+			//int current_attack;
+			MMBNBattleAttackPtr current_attack;
+		} IAConfig;*/
 
 		typedef struct
 		{
 			unsigned int attack_frame;
-			GameSystem::AttackInfo attack_info;
+			AttackInfoPtr attack_info;
 			
 		} BattleActorInfo;
 		
@@ -76,7 +90,7 @@ class MMBNBattleActor : public Displayable
 		int GetSpd() const									;
 
 		void Attack(MMBNBattleActor* mmbnba)				;
-		void SkillAttack(MMBNBattleActor* target, GameSystem::BattleAttack* skill);
+		void SkillAttack(MMBNBattleActor* target, MMBNBattleAttackPtr& skill);
 		bool IsDead()										;
 
 		IAConfig* GetIAConfig()								;

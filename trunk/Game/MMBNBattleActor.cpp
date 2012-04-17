@@ -161,6 +161,7 @@ void MMBNBattleActor::InitializeIA()
 
 	in_ia.close();
 	
+	//this->m_ia_config.current_attack = NULL;
 	this->m_ia_config.current_attack = -1;
 	
 	InitializeIASkills();
@@ -180,13 +181,15 @@ void MMBNBattleActor::InitializeIASkills()
 	while(getline(in_skills, line))
 	{
 		vector<string> v = StringUtils::Split(line, " \r\n");
-		GameSystem::BattleAttack ba;
+		MMBNBattleAttackPtr ba( new MMBNBattleAttack(string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/") + v.at(0) + string(".txt")
+								, string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/attack_info.txt")) 
+								);
 		
-		GameSystem::InitAttackInfo( string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/attack_info.txt"), &(ba.attack_info) );
-		GameSystem::InitBattleAttack( string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/") + v.at(0) + string(".txt"), &ba );
-		ba.actor_animation->Reverse();
+		ba->GetAnimation()->Reverse();
 		
-		this->m_ia_config.battle_attacks.push_back(ba);
+		MMBNBattleAttackPtr p;
+		this->m_ia_config.battle_attacks.push_back(p);
+		this->m_ia_config.battle_attacks[this->m_ia_config.battle_attacks.size() - 1].swap(ba);
 	}
 
 	in_skills.close();
@@ -208,6 +211,9 @@ void MMBNBattleActor::InitializeInfo()
 		oslQuit();
 	}
 
+	AttackInfoPtr aip(new AttackInfo());
+	this->m_actor_info.attack_info.swap(aip);
+	
 	string line;
 	while(getline(in_info, line))
 	{
@@ -236,7 +242,7 @@ void MMBNBattleActor::InitializeInfo()
 				range.push_back(Vector2i(x_range,y_range));
 			}
 			
-			this->m_actor_info.attack_info.range = range;
+			this->m_actor_info.attack_info->SetRange(range);
 		}
 		//power
 		else if(line.find("attack_power") == 0)
@@ -250,22 +256,22 @@ void MMBNBattleActor::InitializeInfo()
 		{
 			vector<string> v = StringUtils::Split(line, " \r\n");
 			if(v.at(1).compare("true") == 0)
-				this->m_actor_info.attack_info.stagger_enemy = true;
+				this->m_actor_info.attack_info->SetStaggerEnemy(true);
 			else
-				this->m_actor_info.attack_info.stagger_enemy = false;
+				this->m_actor_info.attack_info->SetStaggerEnemy(false);
 		}
 	}
 
 	in_info.close();
 	
-	this->m_actor_info.attack_info.target_type = GameSystem::USER_TARGET;
+	this->m_actor_info.attack_info->SetTargetType(GameSystem::USER_TARGET);
 	
 	vector<GameSystem::PanelTeam> teams;
 	teams.push_back(GameSystem::PLAYER);
 	teams.push_back(GameSystem::ENEMY);
-	this->m_actor_info.attack_info.target_teams = teams;
+	this->m_actor_info.attack_info->SetTeams(teams);
 	
-	this->m_actor_info.attack_info.pierce_attack = true;
+	this->m_actor_info.attack_info->SetPierceAttack(true);
 	//GameSystem::AttackInfo info = { GameSystem::USER_TARGET, range, teams, true};
 	
 	//this->m_actor_info.attack_info = info;
@@ -310,13 +316,20 @@ void MMBNBattleActor::Display(float offX, float offY)
 		//is ia
 		if(m_is_ia)
 		{
+			//if(m_ia_config.current_attack.get() != NULL)
 			if( (m_ia_config.current_attack >= 0) && (m_ia_config.current_attack < m_ia_config.battle_attacks.size()) )
 			{
-				m_ia_config.battle_attacks[m_ia_config.current_attack].actor_animation->Update();
-				m_ia_config.battle_attacks[m_ia_config.current_attack].actor_animation->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
-				m_ia_config.battle_attacks[m_ia_config.current_attack].actor_animation->GetCurrentSprite().Display();
+				/*m_ia_config.current_attack->GetAnimation()->Update();
+				m_ia_config.current_attack->GetAnimation()->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+				m_ia_config.current_attack->GetAnimation()->GetCurrentSprite().Display();
 				#ifdef _DEBUG
-					m_ia_config.battle_attacks[m_ia_config.current_attack].actor_animation->GetCurrentSprite().DisplayExtension();
+					m_ia_config.current_attack->GetAnimation()->GetCurrentSprite().DisplayExtension();
+				#endif*/
+				m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->Update();
+				m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+				m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->GetCurrentSprite().Display();
+				#ifdef _DEBUG
+					m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->GetCurrentSprite().DisplayExtension();
 				#endif
 			}
 		}
@@ -398,8 +411,9 @@ void MMBNBattleActor::SetState(ActorState state)
 	
 	if(m_state == BATTLE_SKILL)
 	{
-		for(unsigned int i = 0 ; m_is_ia && (i < m_ia_config.battle_attacks.size()) ; ++i)
-			m_ia_config.battle_attacks[i].actor_animation->Stop();
+		if(m_is_ia)
+			for(unsigned int i = 0 ; i < m_ia_config.battle_attacks.size() ; ++i)
+				m_ia_config.battle_attacks[i]->GetAnimation()->Stop();
 	}
 	else
 	{
@@ -443,10 +457,21 @@ string MMBNBattleActor::GetName() const
 
 AnimationPtr MMBNBattleActor::GetCurrentAnim()
 {
-	if(m_direction == RIGHT)
-		return m_animMap[m_state];
+	if(m_state != BATTLE_SKILL)
+	{
+		if(m_direction == RIGHT)
+			return m_animMap[m_state];
+		else
+			return m_reversedAnimMap[m_state];
+	}
 	else
-		return m_reversedAnimMap[m_state];
+	{
+		if(this->m_ia_config.current_attack >= 0 && this->m_ia_config.current_attack < this->m_ia_config.battle_attacks.size())
+			return this->m_ia_config.battle_attacks[this->m_ia_config.current_attack]->GetAnimation();
+	}
+	
+	AnimationPtr ap;
+	return ap;
 }
 
 Vector2f& MMBNBattleActor::GetPosition()
@@ -485,7 +510,7 @@ int MMBNBattleActor::GetSpd() const
 	return m_spd;
 }
 
-MMBNBattleActor::IAConfig* MMBNBattleActor::GetIAConfig()
+IAConfig* MMBNBattleActor::GetIAConfig()
 {
 	return &m_ia_config;
 }
@@ -501,9 +526,9 @@ void MMBNBattleActor::Attack(MMBNBattleActor* mmbnba)
 	if(mmbnba->m_hp < 0) mmbnba->m_hp = 0;
 }
 
-void MMBNBattleActor::SkillAttack(MMBNBattleActor* target, GameSystem::BattleAttack* skill)
+void MMBNBattleActor::SkillAttack(MMBNBattleActor* target, MMBNBattleAttackPtr& skill)
 {
-	target->m_hp -= skill->power;
+	target->m_hp -= skill->GetPower();
 	if(target->m_hp < 0) target->m_hp = 0;
 }
 

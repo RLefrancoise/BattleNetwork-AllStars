@@ -1,5 +1,7 @@
 #include "MMBNBattleAttack.h"
 
+#include "MMBNBattleActor.h"
+
 using namespace std;
 
 //////////////////////////////////
@@ -212,7 +214,26 @@ string AttackInfo::ToString()
 ////////////////////////////////////////////////
 BattleProjectile::BattleProjectile()
 {
+	name = "Unknown Projectile";
+	velocity = 0;
+	moving_type = GameSystem::NONE_PROJECTILE_MOVING_TYPE;
+	damage = 0;
+	owner = NULL;
+}
 
+BattleProjectile::BattleProjectile(const string& name, const string& anim, bool reverse, unsigned int velocity, GameSystem::ProjectileMovingType mt, const vector<unsigned int>& hit_frames, unsigned int damage, MMBNBattleActor* owner)
+{
+	this->name = name;
+	this->animation = Animation::Load(string("Battle/Animations/Projectiles/") + anim, reverse, true);
+	this->reverse = reverse;
+	this->velocity = velocity;
+	this->moving_type = mt;
+	for(unsigned int i = 0 ; i < hit_frames.size() ; i++)
+		this->hitting_frames.push_back(hit_frames[i]);
+		
+	this->damage = damage;
+	this->owner = owner;
+	
 }
 
 BattleProjectile::~BattleProjectile()
@@ -220,7 +241,119 @@ BattleProjectile::~BattleProjectile()
 
 }
 
+BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& file, bool reverse, MMBNBattleActor* owner)
+{
+	#ifdef _DEBUG
+		LOG("Init battle attack from file " + file)
+	#endif
+	
+	ifstream in_info( file.c_str() , ifstream::in);
 
+	if(!in_info.good())
+	{
+		LOG("Impossible de trouver le fichier " + file);
+		oslQuit();
+	}
+
+	bool def_found = false;
+	
+	string line;
+	while(getline(in_info, line))
+	{
+		//look for proj def
+		if(!def_found)
+		{
+			ostringstream oss;
+			oss << "PROJ " << proj_nb;
+			if(line.find(oss.str() == 0)
+				def_found = true;
+		}
+		//name
+		if(line.find("name") == 0)
+		{	
+			vector<string> v = StringUtils::Split(line, " \r\n");
+			this->name = v.at(1);
+			
+		}
+		//power
+		if(line.find("power") == 0)
+		{	
+			vector<string> v = StringUtils::Split(line, " \r\n");
+			istringstream iss(v.at(1));
+			iss >> this->power;
+			
+		}
+		
+		//use projectile
+		if(line.find("use_projectile") == 0)
+		{
+			vector<string> v = StringUtils::Split(line, " \r\n");
+			if(v.at(1).compare("true") == 0)
+				this->use_projectile = true;
+			else
+				this->use_projectile = false;
+		}
+		
+		//projectiles number
+		if(line.find("projectiles_number") == 0)
+		{	
+			vector<string> v = StringUtils::Split(line, " \r\n");
+			istringstream iss(v.at(1));
+			iss >> this->projectiles_number;
+			
+		}
+		//animation name
+		if(line.find("animation") == 0)
+		{	
+			vector<string> v = StringUtils::Split(line, " \r\n");
+			//ba->actor_animation_name = string("Battle/Animations/Attacks/") + v.at(1);
+			AnimationPtr ap(Animation::Load( string("Battle/Animations/Attacks/") + v.at(1), false, false ));
+			this->actor_animation.swap(ap);
+		}
+	}
+
+	in_info.close();
+}
+
+const string& BattleProjectile::GetName() const
+{
+	return name;
+}
+
+AnimationPtr BattleProjectile::GetAnimation() const
+{
+	return animation;
+}
+
+const unsigned int BattleProjectile::GetVelocity() const
+{
+	return velocity;
+}
+
+const GameSystem::ProjectileMovingType& BattleProjectile::GetMovingType() const
+{
+	return moving_type;
+}
+
+const Vector2i& BattleProjectile::GetPosition() const
+{
+	return position;
+}
+
+const vector<unsigned int> BattleProjectile::GetHitFrames() const
+{
+	return hitting_frames;
+}
+
+const unsigned int BattleProjectile::GetDamage() const
+{
+	return damage;
+}
+
+const MMBNBattleActor* BattleProjectile::GetOwner() const
+{
+	return owner;
+}
 
 
 ///////////////////////////////////////////////
@@ -314,42 +447,42 @@ MMBNBattleAttack::~MMBNBattleAttack()
 }
 
 
-string MMBNBattleAttack::GetName()
+const string MMBNBattleAttack::GetName() const
 {
 	return name;
 }
 
-unsigned int MMBNBattleAttack::GetPower()
+const unsigned int MMBNBattleAttack::GetPower() const
 {
 	return power;
 }
 
-AttackInfoPtr& MMBNBattleAttack::GetAttackInfo()
+const AttackInfoPtr& MMBNBattleAttack::GetAttackInfo() const
 {
 	return attack_info;
 }
 
-bool MMBNBattleAttack::UseProjectile()
+const bool MMBNBattleAttack::UseProjectile() const
 {
 	return use_projectile;
 }
 
-unsigned int MMBNBattleAttack::GetProjectilesNumber()
+const unsigned int MMBNBattleAttack::GetProjectilesNumber() const
 {
 	return projectiles_number;
 }
 
-map<unsigned int, vector<BattleProjectile> > MMBNBattleAttack::GetProjectilesMap() const
+const map<unsigned int, vector<BattleProjectilePtr> > MMBNBattleAttack::GetProjectilesMap() const
 {
 	return projectiles_map;
 }
 
-AnimationPtr MMBNBattleAttack::GetAnimation()
+AnimationPtr MMBNBattleAttack::GetAnimation() const
 {
 	return actor_animation;
 }
 
-string MMBNBattleAttack::ToString()
+const string MMBNBattleAttack::ToString() const
 {
 	ostringstream oss(ostringstream::out);
 	oss << "name " << this->name << "\r\n";

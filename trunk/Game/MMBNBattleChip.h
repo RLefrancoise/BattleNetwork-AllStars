@@ -22,7 +22,7 @@ class MMBNBattleChip : public Displayable
 		void Move(float x, float y)									;
 		void SetPosition(float x, float y)							;
 
-		Vector2f& GetPosition()										;
+		const Vector2f& GetPosition() const							;
 		OSL_IMAGE* GetImage()										;
 		OSL_IMAGE* GetIcon()										;
 		char GetLetter()											;

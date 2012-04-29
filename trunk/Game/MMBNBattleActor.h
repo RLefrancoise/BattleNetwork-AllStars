@@ -81,7 +81,7 @@ class MMBNBattleActor : public Displayable
 		ActorState GetState() const							;
 		std::string GetName() const							;
 		AnimationPtr GetCurrentAnim()						;
-		Vector2f& GetPosition()								;
+		const Vector2f& GetPosition() const					;
 		int GetLV() const									;
 		int GetHP() const									;
 		int GetMaxHP() const								;
@@ -90,7 +90,7 @@ class MMBNBattleActor : public Displayable
 		int GetSpd() const									;
 
 		void Attack(MMBNBattleActor* mmbnba)				;
-		void SkillAttack(MMBNBattleActor* target, MMBNBattleAttackPtr& skill);
+		void SkillAttack(MMBNBattleActor* target, const MMBNBattleAttackPtr& skill);
 		bool IsDead()										;
 
 		IAConfig* GetIAConfig()								;

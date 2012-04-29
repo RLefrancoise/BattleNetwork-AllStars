@@ -72,7 +72,7 @@ class Actor : public FieldMapElement
 		ActorState GetState() const							;
 		std::string GetName() const							;
 		Animation* GetCurrentAnim()							;
-		Vector2f& GetPosition()								;
+		const Vector2f& GetPosition() const					;
 		Vector2f& GetTilePosition()							;
 		Vector2f GetOffset()								;
 		Vector2f GetPositionWithOffset()					;

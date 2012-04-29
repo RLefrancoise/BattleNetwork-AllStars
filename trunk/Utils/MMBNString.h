@@ -25,7 +25,7 @@ class MMBNString : public Displayable
 		void Display(float offX = 0, float offY = 0);
 		void Move(float x, float y);
 		void SetPosition(float x, float y);
-		Vector2f& GetPosition();
+		const Vector2f& GetPosition() const;
 
 		unsigned int GetStringWidth();
 		unsigned int GetStringHeight();

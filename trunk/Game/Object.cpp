@@ -35,10 +35,10 @@ Vector2f& Object::GetOrigin()
 	return m_origin;
 }
 
-Vector2f& Object::GetPosition()
+const Vector2f& Object::GetPosition() const
 {
-	m_abs_position.x = m_position.x + m_origin.x;
-	m_abs_position.y = m_position.y + m_origin.y;
+	//m_abs_position.x = m_position.x + m_origin.x;
+	//m_abs_position.y = m_position.y + m_origin.y;
 	return m_abs_position;
 }
 
@@ -69,6 +69,10 @@ void Object::SetPosition(float x, float y)
 	m_sprite->y = y - m_origin.y;
 
 	m_colliShape.SetPosition(x - m_origin.x, y - m_origin.y);
+	
+	
+	m_abs_position.x = m_position.x + m_origin.x;
+	m_abs_position.y = m_position.y + m_origin.y;
 }
 
 void Object::SetOffset(float offX, float offY)

@@ -85,6 +85,14 @@ class GameSystem
 			PANELS_TEAM_NB
 		} PanelTeam;
 		
+		enum ProjectileMovingType
+		{
+			STRAIGHT_PROJECTILE_MOVING_TYPE,
+			FOLLOW_ACTOR_PROJECTILE_MOVING_TYPE,
+			FOLLOW_ENEMY_PROJECTILE_MOVING_TYPE,
+			NONE_PROJECTILE_MOVING_TYPE
+		};
+		
 		/*struct AttackInfo
 		{
 			TargetType target_type;

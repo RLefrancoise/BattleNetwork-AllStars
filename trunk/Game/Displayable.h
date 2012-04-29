@@ -9,7 +9,7 @@ class Displayable
 		virtual void Display(float offX = 0, float offY = 0)	= 0;
 		virtual void Move(float x, float y)						= 0;
 		virtual void SetPosition(float x, float y)				= 0;
-		virtual Vector2f& GetPosition()							= 0;
+		virtual const Vector2f& GetPosition() const				= 0;
 };
 
 #endif

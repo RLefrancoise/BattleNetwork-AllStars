@@ -61,7 +61,7 @@ void MMBNString::SetPosition(float x, float y)
 	m_position.y = y;
 }
 
-Vector2f& MMBNString::GetPosition()
+const Vector2f& MMBNString::GetPosition() const
 {
 	return m_position;
 }

@@ -130,7 +130,7 @@ void MMBNBattleChip::SetPosition(float x, float y)
 	m_position.y = y;
 }
 
-Vector2f& MMBNBattleChip::GetPosition()
+const Vector2f& MMBNBattleChip::GetPosition() const
 {
 	return m_position;
 }

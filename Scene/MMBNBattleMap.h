@@ -38,8 +38,8 @@ class MMBNPanelGrid
 		bool	IsInsideGrid(int x, int y);
 		bool	IsWalkable(unsigned int x, unsigned int y);
 
-		MMBNBattleActor*	GetActor();
-		std::vector<MMBNBattleActor*>& GetEnemies();
+		MMBNBattleActor*	GetActor() const;
+		const std::vector<MMBNBattleActor*>& GetEnemies() const;
 
 		void	ActorHandle(OSL_CONTROLLER* k);
 
@@ -51,7 +51,7 @@ class MMBNPanelGrid
 		
 		void AttackEnemies();
 		bool AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* target);
-		bool UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* target, MMBNBattleAttackPtr& skill);
+		bool UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* target, const MMBNBattleAttackPtr& skill);
 
 	private :
 		
@@ -88,7 +88,7 @@ class MMBNPanelGrid
 		
 		MMBNBattleActor* GetEnemyOnPanel(unsigned int x, unsigned int y);
 		
-		std::vector<Vector2i> 	GetTargetedPanels(MMBNBattleActor* launcher, AttackInfoPtr& attack_info);
+		std::vector<Vector2i> 	GetTargetedPanels(MMBNBattleActor* launcher, const AttackInfoPtr& attack_info);
 		bool					IsInRange(Vector2i &target, std::vector<Vector2i> &range);
 
 	
@@ -118,7 +118,7 @@ class MMBNEmotionDisplay : public Displayable
 		void Display(float offX = 0, float offY = 0)		;
 		void Move(float x, float y)							;
 		void SetPosition(float x, float y)					;
-		Vector2f& GetPosition()								;
+		const Vector2f& GetPosition() const					;
 
 
 
@@ -142,7 +142,7 @@ class MMBNLifeBar : public Displayable
 		void Display(float offX = 0, float offY = 0)		;
 		void Move(float x, float y)							;
 		void SetPosition(float x, float y)					;
-		Vector2f& GetPosition()								;
+		const Vector2f& GetPosition() const					;
 		void SetSize(unsigned int w, unsigned int h)		;
 		Vector2f& GetSize()									;
 		void SetActor(MMBNBattleActor* mmbnba)				;
@@ -179,7 +179,7 @@ class MMBNCustomGauge : public Displayable
 		void Display(float offX = 0, float offY = 0)		;
 		void Move(float x, float y)							;
 		void SetPosition(float x, float y)					;
-		Vector2f& GetPosition()								;
+		const Vector2f& GetPosition() const					;
 		void Update()										;
 		void Reset()										;
 		void Pause()										;
@@ -238,7 +238,7 @@ class MMBNBattleChipSelector : public Displayable
 		void Display(float offX = 0, float offY = 0)		;
 		void Move(float x, float y)							;
 		void SetPosition(float x, float y)					;
-		Vector2f& GetPosition()								;
+		const Vector2f& GetPosition() const					;
 		Vector2f& GetSize()									;
 
 		bool OkPressed()									;
@@ -260,6 +260,7 @@ class MMBNBattleMap : public Screen
 		OSL_IMAGE*				m_enemy_display_edge		;
 		AnimationPtr			m_enemy_deleted				;
 		AnimationPtr			m_battle_start				;
+		AnimationPtr			m_you_lose					;
 		
 		bool					m_select_chip				;
 

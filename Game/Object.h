@@ -17,7 +17,7 @@ class Object : public FieldMapElement
 		void SetSprite(OSL_IMAGE* sprite)					;
 		void SetOrigin(float x, float y)					;
 		Vector2f& GetOrigin()								;
-		Vector2f& GetPosition()								;
+		const Vector2f& GetPosition() const					;
 		Vector2f& GetTilePosition()							;
 		Vector2f& GetOffset()								;
 		void SetPosition(float x, float y)					;

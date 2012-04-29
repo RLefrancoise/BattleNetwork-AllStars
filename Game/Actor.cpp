@@ -350,7 +350,7 @@ void Actor::Display(float offX, float offY)
 	m_colliDiamond.Display(offX, offY);
 	
 	m_animMap[m_state]->Update();
-	m_animMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+	m_animMap[m_state]->GetCurrentSprite().SetPosition(m_pos.x + offX, m_pos.y + offY);
 	m_animMap[m_state]->GetCurrentSprite().Display();
 	//#ifdef _DEBUG
 		m_animMap[m_state]->GetCurrentSprite().DisplayExtension();
@@ -360,7 +360,7 @@ void Actor::Display(float offX, float offY)
 
 void Actor::Move(float x, float y)
 {
-	this->SetPosition(m_posX + x, m_posY + y);
+	this->SetPosition(m_pos.x + x, m_pos.y + y);
 }
 
 void Actor::SetDirection(ActorDirection direction)
@@ -415,9 +415,9 @@ void Actor::SetState(ActorState state)
 
 void Actor::SetPosition(float x, float y)
 {
-	m_posX = x;
-	m_posY = y;
-	m_colliDiamond.SetPosition(m_posX,m_posY);
+	m_pos.x = x;
+	m_pos.y = y;
+	m_colliDiamond.SetPosition(m_pos.x,m_pos.y);
 }
 
 Shape& Actor::GetColliShape()
@@ -446,10 +446,10 @@ Animation* Actor::GetCurrentAnim()
 	return m_animMap[m_state];
 }
 
-Vector2f& Actor::GetPosition()
+const Vector2f& Actor::GetPosition() const
 {
-	m_pos.x = m_posX;
-	m_pos.y = m_posY;
+	//m_pos.x = m_posX;
+	//m_pos.y = m_posY;
 	return m_pos;
 	//return Vector2f(m_posX, m_posY);
 	
@@ -476,7 +476,7 @@ Vector2f Actor::GetOffset()
 
 Vector2f Actor::GetPositionWithOffset()
 {
-	return Vector2f(m_posX + m_offX, m_posY + m_offY);
+	return Vector2f(m_pos.x + m_offX, m_pos.y + m_offY);
 }
 
 int Actor::GetLV() const

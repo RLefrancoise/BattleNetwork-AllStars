@@ -326,7 +326,7 @@ void MMBNBattleActor::Display(float offX, float offY)
 					m_ia_config.current_attack->GetAnimation()->GetCurrentSprite().DisplayExtension();
 				#endif*/
 				m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->Update();
-				m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+				m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->GetCurrentSprite().SetPosition(m_position.x + offX, m_position.y + offY);
 				m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->GetCurrentSprite().Display();
 				#ifdef _DEBUG
 					m_ia_config.battle_attacks[m_ia_config.current_attack]->GetAnimation()->GetCurrentSprite().DisplayExtension();
@@ -340,7 +340,7 @@ void MMBNBattleActor::Display(float offX, float offY)
 	if(m_load_normal_sprites && !m_load_reversed_sprites)
 	{
 		m_animMap[m_state]->Update();
-		m_animMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+		m_animMap[m_state]->GetCurrentSprite().SetPosition(m_position.x + offX, m_position.y + offY);
 		m_animMap[m_state]->GetCurrentSprite().Display();
 		#ifdef _DEBUG
 			m_animMap[m_state]->GetCurrentSprite().DisplayExtension();
@@ -350,7 +350,7 @@ void MMBNBattleActor::Display(float offX, float offY)
 	else if(!m_load_normal_sprites && m_load_reversed_sprites)
 	{
 		m_reversedAnimMap[m_state]->Update();
-		m_reversedAnimMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+		m_reversedAnimMap[m_state]->GetCurrentSprite().SetPosition(m_position.x + offX, m_position.y + offY);
 		m_reversedAnimMap[m_state]->GetCurrentSprite().Display();
 		#ifdef _DEBUG
 			m_reversedAnimMap[m_state]->GetCurrentSprite().DisplayExtension();
@@ -362,7 +362,7 @@ void MMBNBattleActor::Display(float offX, float offY)
 		if(m_direction == RIGHT)
 		{
 			m_animMap[m_state]->Update();
-			m_animMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+			m_animMap[m_state]->GetCurrentSprite().SetPosition(m_position.x + offX, m_position.y + offY);
 			m_animMap[m_state]->GetCurrentSprite().Display();
 			#ifdef _DEBUG
 				m_animMap[m_state]->GetCurrentSprite().DisplayExtension();
@@ -371,7 +371,7 @@ void MMBNBattleActor::Display(float offX, float offY)
 		else
 		{
 			m_reversedAnimMap[m_state]->Update();
-			m_reversedAnimMap[m_state]->GetCurrentSprite().SetPosition(m_posX + offX, m_posY + offY);
+			m_reversedAnimMap[m_state]->GetCurrentSprite().SetPosition(m_position.x + offX, m_position.y + offY);
 			m_reversedAnimMap[m_state]->GetCurrentSprite().Display();
 			#ifdef _DEBUG
 				m_reversedAnimMap[m_state]->GetCurrentSprite().DisplayExtension();
@@ -384,7 +384,7 @@ void MMBNBattleActor::Display(float offX, float offY)
 
 void MMBNBattleActor::Move(float x, float y)
 {
-	this->SetPosition(m_posX + x, m_posY + y);
+	this->SetPosition(m_position.x + x, m_position.y + y);
 }
 
 void MMBNBattleActor::SetDirection(ActorDirection direction)
@@ -436,8 +436,8 @@ void MMBNBattleActor::SetState(ActorState state)
 
 void MMBNBattleActor::SetPosition(float x, float y)
 {
-	m_posX = x;
-	m_posY = y;
+	m_position.x = x;
+	m_position.y = y;
 }
 
 MMBNBattleActor::ActorDirection MMBNBattleActor::GetDirection() const
@@ -474,10 +474,10 @@ AnimationPtr MMBNBattleActor::GetCurrentAnim()
 	return ap;
 }
 
-Vector2f& MMBNBattleActor::GetPosition()
+const Vector2f& MMBNBattleActor::GetPosition() const
 {
-	m_position.x = m_posX;
-	m_position.y = m_posY;
+	//m_position.x = m_posX;
+	//m_position.y = m_posY;
 	return m_position;
 }
 
@@ -526,7 +526,7 @@ void MMBNBattleActor::Attack(MMBNBattleActor* mmbnba)
 	if(mmbnba->m_hp < 0) mmbnba->m_hp = 0;
 }
 
-void MMBNBattleActor::SkillAttack(MMBNBattleActor* target, MMBNBattleAttackPtr& skill)
+void MMBNBattleActor::SkillAttack(MMBNBattleActor* target, const MMBNBattleAttackPtr& skill)
 {
 	target->m_hp -= skill->GetPower();
 	if(target->m_hp < 0) target->m_hp = 0;

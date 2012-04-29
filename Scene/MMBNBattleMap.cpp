@@ -273,12 +273,12 @@ bool MMBNPanelGrid::IsWalkable(unsigned int x, unsigned int y)
 	
 }
 
-inline MMBNBattleActor* MMBNPanelGrid::GetActor()
+inline MMBNBattleActor* MMBNPanelGrid::GetActor() const
 {
 	return m_actor;
 }
 
-inline vector<MMBNBattleActor*>& MMBNPanelGrid::GetEnemies()
+inline const vector<MMBNBattleActor*>& MMBNPanelGrid::GetEnemies() const
 {
 	return m_enemies;
 }
@@ -436,7 +436,7 @@ inline unsigned int MMBNPanelGrid::GetHeight() const
 	return m_height;
 }
 
-vector<Vector2i> MMBNPanelGrid::GetTargetedPanels(MMBNBattleActor* launcher, AttackInfoPtr& attack_info)
+vector<Vector2i> MMBNPanelGrid::GetTargetedPanels(MMBNBattleActor* launcher, const AttackInfoPtr& attack_info)
 {
 	vector<Vector2i> panels;
 	//for each case of the range
@@ -498,7 +498,6 @@ vector<Vector2i> MMBNPanelGrid::GetTargetedPanels(MMBNBattleActor* launcher, Att
 		}
 	}
 	
-	//LOG("{GetTargetedPanels}Exit GetTargetedPanels")
 	return panels;
 }
 
@@ -509,8 +508,6 @@ bool MMBNPanelGrid::IsInRange(Vector2i &target, vector<Vector2i> &range)
 	for(unsigned int i = 0 ; !in_range && (i < range.size()) ; ++i)
 		if( (range[i].x == target.x) && (range[i].y == target.y) )
 			in_range = true;
-			
-	//LOG("{IsInRange}Exit IsInRange")
 	
 	return in_range;
 }
@@ -528,14 +525,10 @@ bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* targ
 {
 	Vector2i pos = GetActorPanel(target);
 	
-	//LOG("{AttackActor}" + launcher->GetInfo()->attack_info->ToString())
-	
 	vector<Vector2i> range = GetTargetedPanels(launcher, launcher->GetInfo()->attack_info);
 	
 	if(IsInRange(pos, range))
 	{
-		//LOG("Attack in range")
-		
 		//launcher in standing anim
 		if(launcher->GetState() == MMBNBattleActor::BATTLE_STANDING)
 			launcher->SetState(MMBNBattleActor::BATTLE_ATTACK);
@@ -546,15 +539,16 @@ bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* targ
 			//if the current attack anim frame is a damaging one
 			if( launcher->GetCurrentAnim()->GetCurrentFrame() == launcher->GetInfo()->attack_frame )
 			{
-				//play actor damage anim if actor is not yet & only if it is a staggering attack
-				if( (launcher->GetInfo()->attack_info->IsStaggerAttack()) && (target->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
+				//if enemy dead do nothing
+				if( target->IsDead() ) return true;
+				
+				//play actor damage anim if actor is not yet & only if it is a staggering attack & if target is not dead
+				if( !target->IsDead() && (launcher->GetInfo()->attack_info->IsStaggerAttack()) && (target->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
 					target->SetState(MMBNBattleActor::BATTLE_DAMAGED);
 				
 				launcher->Attack(target);
 				
 				m_current_impact_anim++;
-				//AnimationPtr impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
-				
 				
 				int x_rand = Random::RandomInt(0,m_x_inc / 2);
 				int y_rand = Random::RandomInt(0,m_y_inc / 2);
@@ -566,8 +560,6 @@ bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* targ
 				if( (m_current_impact_anim >= 0) && (m_current_impact_anim < m_attack_impact.size()) )
 					m_attack_impact[m_current_impact_anim]->SetPosition( (pos.x * m_x_inc) + m_x_map + m_x_inc / 2 + x_rand, (pos.y * m_y_inc) + m_y_map + m_y_inc / 2 + y_rand);
 				
-				//m_attack_impact.push_back(impact);
-				//LOG("{AttackActor} Exit AttackActor")
 				return true;
 			}
 			
@@ -575,22 +567,17 @@ bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* targ
 		
 	}
 	
-	//LOG("{AttackActor} Exit AttackActor")
 	return false;
 }
 
-bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* target, MMBNBattleAttackPtr& skill)
+bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* target, const MMBNBattleAttackPtr& skill)
 {	
 	Vector2i pos = GetActorPanel(target);
-	
-	//LOG("{UseSkillOnActor}" + skill->ToString())
 	
 	vector<Vector2i> range = GetTargetedPanels(launcher, skill->GetAttackInfo());
 	
 	if(IsInRange(pos, range))
 	{
-		//LOG("Skill in range")
-		
 		//launcher in standing anim
 		if(launcher->GetState() == MMBNBattleActor::BATTLE_STANDING)
 			launcher->SetState(MMBNBattleActor::BATTLE_SKILL);
@@ -598,8 +585,6 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 		//launcher in skill anim
 		if(launcher->GetState() == MMBNBattleActor::BATTLE_SKILL)
 		{
-			//LOG("Launcher in skill anim, look for hit frames")
-			
 			//if the current attack anim frame is a damaging one
 			bool is_hit_frame = false;
 			for(unsigned int i = 0 ; !is_hit_frame && (i < skill->GetAttackInfo()->GetHitFrames().size()) ; ++i)
@@ -610,21 +595,16 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 			
 			if( is_hit_frame )
 			{
-				//LOG("Hit frame found")
+				//if enemy dead do nothing
+				if( target->IsDead() ) return true;
 				
-				//play actor damage anim if actor is not yet & only if it is a staggering attack
+				//play actor damage anim if actor is not yet & only if it is a staggering attack & if target is not dead
 				if( (skill->GetAttackInfo()->IsStaggerAttack()) && (target->GetState() != MMBNBattleActor::BATTLE_DAMAGED) )
 					target->SetState(MMBNBattleActor::BATTLE_DAMAGED);
 				
-				//LOG("Set damaged anim for target if needed")
-				
 				launcher->SkillAttack(target, skill);
 				
-				//LOG("Damage target")
-				
 				m_current_impact_anim++;
-				//AnimationPtr impact = Animation::Load("System/Animation/Battle/AttackImpact", false, false);
-				
 				
 				int x_rand = Random::RandomInt(0,m_x_inc / 2);
 				int y_rand = Random::RandomInt(0,m_y_inc / 2);
@@ -636,9 +616,6 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 				if( (m_current_impact_anim >= 0) && (m_current_impact_anim < m_attack_impact.size()) )
 					m_attack_impact[m_current_impact_anim]->SetPosition( (pos.x * m_x_inc) + m_x_map + m_x_inc / 2 + x_rand, (pos.y * m_y_inc) + m_y_map + m_y_inc / 2 + y_rand);
 				
-				//m_attack_impact.push_back(impact);
-				
-				//LOG("{UseSkillOnActor} Exit UseSkillOnActor")
 				return true;
 			}
 			
@@ -646,7 +623,6 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 		
 	}
 	
-	//LOG("{UseSkillOnActor} Exit UseSkillOnActor")
 	return false;
 }
 
@@ -708,7 +684,7 @@ void MMBNEmotionDisplay::SetPosition(float x, float y)
 	m_position.y = y;
 }
 
-Vector2f& MMBNEmotionDisplay::GetPosition()
+const Vector2f& MMBNEmotionDisplay::GetPosition() const
 {
 	return m_position;
 }
@@ -786,7 +762,7 @@ void MMBNLifeBar::SetPosition(float x, float y)
 	m_position.y = y;
 }
 
-Vector2f& MMBNLifeBar::GetPosition()
+const Vector2f& MMBNLifeBar::GetPosition() const
 {
 	return m_position;
 }
@@ -891,11 +867,9 @@ void MMBNBattleIA::Update()
 	
 	//attack
 	if( m_actor->GetState() == MMBNBattleActor::BATTLE_SKILL )
-	//if( m_actor->GetState() == MMBNBattleActor::BATTLE_ATTACK )
 		m_is_attacking = true;
 		
 	if( m_is_attacking && (m_actor->GetState() != MMBNBattleActor::BATTLE_SKILL) )
-	//if( m_is_attacking && (m_actor->GetState() != MMBNBattleActor::BATTLE_ATTACK) )
 	{
 		m_move_after_attack = true;
 		m_is_attacking = false;
@@ -907,22 +881,6 @@ void MMBNBattleIA::Update()
 		m_move_after_attack_timer.start();
 	}
 	
-	//skill
-	/*if( m_actor->GetState() == MMBNBattleActor::BATTLE_SKILL )
-		m_is_using_skill = true;
-		
-	if( m_is_using_skill && (m_actor->GetState() != MMBNBattleActor::BATTLE_SKILL) )
-	{
-		m_move_after_skill = true;
-		m_is_using_skill = false;
-		
-		m_attack_timer.stop();
-		m_attack_timer.start();
-			
-		m_move_after_skill_timer.stop();
-		m_move_after_skill_timer.start();
-	}*/
-	
 	//-----MOVING-----
 	if(!m_moving_timer.is_started())
 		m_moving_timer.start();
@@ -930,7 +888,7 @@ void MMBNBattleIA::Update()
 	IAConfig* iac = m_actor->GetIAConfig();
 
 	//move actor ?
-	if( m_move_after_damage || m_move_after_attack /*|| m_move_after_skill*/ || ( (m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) && (m_moving_timer.get_ticks() > iac->moving_time) ) )
+	if( m_move_after_damage || m_move_after_attack || ( (m_actor->GetState() == MMBNBattleActor::BATTLE_STANDING) && (m_moving_timer.get_ticks() > iac->moving_time) ) )
 	{
 		if(m_move_after_attack)
 		{
@@ -939,20 +897,13 @@ void MMBNBattleIA::Update()
 				Move();
 			}
 		}
-		/*else if(m_move_after_skill)
-		{
-			if(m_move_after_skill_timer.get_ticks() > 1000)
-			{
-				Move();
-			}
-		}*/
+		
 		else
 			Move();
 		
 		m_moving_timer.stop();
 		m_moving_timer.start();
 		m_move_after_attack = false;
-		//m_move_after_skill  = false;
 		m_move_after_damage = false;
 		m_can_attack = true;
 		
@@ -963,37 +914,14 @@ void MMBNBattleIA::Update()
 		m_attack_timer.start();
 		
 	//attack ?
-	if(m_can_attack && !m_move_after_damage && !m_move_after_attack /*&& !m_move_after_skill*/ && !m_attack_done && (m_attack_timer.get_ticks() > iac->attack_time) )
+	if(m_can_attack && !m_move_after_damage && !m_move_after_attack && !m_attack_done && (m_attack_timer.get_ticks() > iac->attack_time) )
 	{		
 	
-		//choose if normal attack or skill
-		/*unsigned int choice = Random::RandomInt(0, 2);
-		if(choice == 0)
-		{
-			if(!m_skill_choosed)
-			{
-				choice = Random::RandomInt(0, m_actor->GetIAConfig()->battle_attacks.size());
-				//m_actor->GetIAConfig()->current_attack.swap( (m_actor->GetIAConfig()->battle_attacks[choice]) );
-				m_actor->GetIAConfig()->current_attack = choice;
-				m_current_skill = choice;
-				m_skill_choosed = true;
-			}
-			
-			if(!m_is_attacking) m_attack_done = Skill(m_current_skill);
-			
-		}
-		else
-		{
-			if(!m_is_using_skill) m_attack_done = Attack();
-		}*/
-		
-		if(!m_is_attacking /*&& !m_skill_choosed*/)
+		if(!m_is_attacking)
 		{
 			m_actor->GetIAConfig()->current_attack = Random::RandomInt(0, m_actor->GetIAConfig()->battle_attacks.size());
-			//m_skill_choosed = true;
 		}
 			
-		//m_actor->GetIAConfig()->current_attack = 0;
 		m_attack_done = Skill(m_actor->GetIAConfig()->current_attack);
 		
 		if(m_attack_done)
@@ -1051,8 +979,6 @@ bool MMBNBattleIA::Skill(unsigned int skill_nb)
 	//enemy attack actor
 	if(m_actor_team == GameSystem::ENEMY)
 	{
-		//m_actor->GetIAConfig()->current_attack.swap( (m_actor->GetIAConfig()->battle_attacks[skill_nb]) );
-		//return m_map->UseSkillOnActor( m_actor, m_map->GetActor(), m_actor->GetIAConfig()->current_attack );
 		return m_map->UseSkillOnActor( m_actor, m_map->GetActor(), m_actor->GetIAConfig()->battle_attacks[m_actor->GetIAConfig()->current_attack] );
 	}
 	
@@ -1119,7 +1045,7 @@ void MMBNCustomGauge::SetPosition(float x, float y)
 	m_position.y = y;
 }
 
-Vector2f& MMBNCustomGauge::GetPosition()
+const Vector2f& MMBNCustomGauge::GetPosition() const
 {
 	return m_position;
 }
@@ -1386,7 +1312,7 @@ void MMBNBattleChipSelector::SetPosition(float x, float y)
 	m_position.y = y;
 }
 
-Vector2f& MMBNBattleChipSelector::GetPosition()
+const Vector2f& MMBNBattleChipSelector::GetPosition() const
 {
 	return m_position;
 }
@@ -1473,6 +1399,8 @@ void MMBNBattleMap::Initialize()
 	m_enemy_deleted 	= Animation::Load("System/Animation/Battle/EnemyDeleted", false, false);
 	
 	m_battle_start	 	= Animation::Load("System/Animation/Battle/BattleStart", false, false);
+	
+	m_you_lose			= Animation::Load("System/Animation/Battle/YouLose", false, false);
 	
 	#ifdef _DEBUG
 	m_display_debug_info = true;
@@ -1628,6 +1556,13 @@ void MMBNBattleMap::Display()
 		if(GameBattle::GetBattleInfo().bgmName.compare("") != 0)
 			SndManager::PlayBGM(GameBattle::GetBattleInfo().bgmName + ".bgm", 0, true);
 	}
+	//actor is dead ?
+	if(m_grid->ActorIsDead())
+	{
+		m_you_lose->Update();
+		m_you_lose->SetPosition(240,136);
+		m_you_lose->Display();
+	}
 	
 	
 	//+++++++++++++++++++++++++++++++++++++
@@ -1669,18 +1604,9 @@ int MMBNBattleMap::Update()
 
 	if(!m_battle_start->IsOver())
 		return SCREEN_BATTLEMAP;
-		
-		
+	
 	if(!m_battle_timer.is_started())
 		m_battle_timer.start();
-		
-	//si on ne doit pas gérer les évènements, on vide la pile et on sort
-	/*if(!m_eventsEnabled)
-	{
-		sf::Event Event;
-		while (App.GetEvent(Event));
-		return SCREEN_BATTLEMAP;
-	}*/
 
 	//=============================
 	// TRAITEMENT DES EVENEMENTS
@@ -1695,14 +1621,12 @@ int MMBNBattleMap::Update()
 	
 	if(!m_select_chip) m_grid->Update(k);
 	
-	if(!m_grid->BattleIsOver())
+	//if neither actor or enemies are dead
+	if(!m_grid->BattleIsOver() && !m_grid->ActorIsDead())
 	{
 		
 		if(m_select_chip) m_chip_selector->Update(k);
-		else
-		{
-			m_custom_gauge->Update();
-		}
+		else m_custom_gauge->Update();
 		
 		//gestion du héros
 		ActorHandle(k);
@@ -1710,7 +1634,10 @@ int MMBNBattleMap::Update()
 	}
 	else
 	{
+		m_battle_timer.pause();
+		
 		if(m_enemy_deleted->IsOver() && k->pressed.cross) return SCREEN_CHARACTER_SELECT;
+		if(m_you_lose->IsOver() && k->pressed.cross) return SCREEN_CHARACTER_SELECT;
 	}
 
 	//par défaut, on reste sur le même écran

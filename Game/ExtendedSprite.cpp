@@ -180,6 +180,9 @@ void ExtendedSprite::SetPosition(float X, float Y)
 {
 	m_sprite->x = X - m_hotPoint.x;
 	m_sprite->y = Y - m_hotPoint.y;
+	
+	m_position.x = X;
+	m_position.y = Y;
 }
 
 void ExtendedSprite::SetImage(OSL_IMAGE* img)
@@ -208,4 +211,9 @@ Vector2i ExtendedSprite::GetSize() const
 	v.x = m_sprite->sizeX;
 	v.y = m_sprite->sizeY;
 	return v;
+}
+
+const Vector2f& ExtendedSprite::GetPosition() const
+{
+	return m_position;
 }

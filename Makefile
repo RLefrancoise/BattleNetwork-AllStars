@@ -4,15 +4,15 @@ TARGET = KH_PSP
 #PRX_OBJS = $(PRX:.S=.o)
 #OBJS = $(SRC:.cpp=.o) $(PRX_OBJS)
 
-SRC = $(wildcard Game/*.cpp) $(wildcard Scene/*.cpp) $(wildcard Utils/*.cpp) $(wildcard *.cpp)
+SRC = $(wildcard Game/*.cpp) $(wildcard Scene/*.cpp) $(wildcard Utils/*.cpp) $(wildcard tinyxml/*.cpp) $(wildcard *.cpp)
 #PRX = $(wildcard PRX/*.S)
 #PRX_OBJS = $(PRX:.S=.o)
 OBJS = $(SRC:.cpp=.o)
 
 CURRENTDIR = C:\Users\Renaud\Documents\programmation\C++\SVN\KHBN\khbn-code-0
 
-INCDIR = $(CURRENTDIR)/Game $(CURRENTDIR)/Scene $(CURRENTDIR)/Utils $(CURRENTDIR)/PRX C:\Users\Renaud\Documents\programmation\C++\CMake\KH\thirdParty\boost\include
-CFLAGS =  -D_DEBUG -G0 -Wall -O2 -g
+INCDIR = $(CURRENTDIR)/Game $(CURRENTDIR)/Scene $(CURRENTDIR)/Utils $(CURRENTDIR)/tinyxml $(CURRENTDIR)/PRX C:\Users\Renaud\Documents\programmation\C++\CMake\KH\thirdParty\boost\include
+CFLAGS =  -D_DEBUG -DTIXML_USE_STL -G0 -Wall -O2 -g
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -g
 ASFLAGS = $(CFLAGS)
 

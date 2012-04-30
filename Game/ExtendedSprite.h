@@ -38,6 +38,7 @@ class ExtendedSprite /*: public sf::Sprite*/
 		std::vector<AABBCollisionBox> GetOffenseBoxes() const;
 		Vector2i GetHotPoint() const;
 		Vector2i GetSize() const;
+		const Vector2f& GetPosition() const;
 
 	private :
 
@@ -46,6 +47,8 @@ class ExtendedSprite /*: public sf::Sprite*/
 		Vector2i m_hotPoint;
 		Shape m_colliRect;
 		OSL_IMAGE* m_sprite;
+		
+		Vector2f m_position;
 		
 		bool m_reverse_on_display;
 

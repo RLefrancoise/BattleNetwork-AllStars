@@ -161,12 +161,12 @@ GameSystem::TargetType AttackInfo::GetTargetType() const
 	return target_type;
 }
 
-vector<Vector2i> AttackInfo::GetRange() const
+const vector<Vector2i>& AttackInfo::GetRange() const
 {
 	return range;
 }
 
-vector<GameSystem::PanelTeam> AttackInfo::GetTeams() const
+const vector<GameSystem::PanelTeam>& AttackInfo::GetTeams() const
 {
 	return target_teams;
 }
@@ -181,7 +181,7 @@ bool AttackInfo::IsStaggerAttack()
 	return stagger_enemy;
 }
 
-vector<int>& AttackInfo::GetHitFrames()
+const vector<int>& AttackInfo::GetHitFrames() const
 {
 	return hit_frames;
 }
@@ -221,7 +221,7 @@ BattleProjectile::BattleProjectile()
 	owner = NULL;
 }
 
-BattleProjectile::BattleProjectile(const string& name, const string& anim, bool reverse, unsigned int velocity, GameSystem::ProjectileMovingType mt, const vector<unsigned int>& hit_frames, unsigned int damage, MMBNBattleActor* owner)
+BattleProjectile::BattleProjectile(const string& name, const string& anim, bool reverse, unsigned int velocity, GameSystem::ProjectileMovingType mt, const vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, MMBNBattleActor* owner)
 {
 	this->name = name;
 	this->animation = Animation::Load(string("Battle/Animations/Projectiles/") + anim, reverse, true);
@@ -232,6 +232,7 @@ BattleProjectile::BattleProjectile(const string& name, const string& anim, bool 
 		this->hitting_frames.push_back(hit_frames[i]);
 		
 	this->damage = damage;
+	this->trigger = trigger;
 	this->owner = owner;
 	
 }
@@ -244,7 +245,9 @@ BattleProjectile::~BattleProjectile()
 BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& file, bool reverse, MMBNBattleActor* owner)
 {
 	#ifdef _DEBUG
-		LOG("Init battle attack from file " + file)
+		ostringstream _debug;
+		_debug << "Init projectile from file " << file << " : proj nb is " << proj_nb;
+		LOG(_debug.str())
 	#endif
 	
 	ifstream in_info( file.c_str() , ifstream::in);
@@ -257,6 +260,15 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 
 	bool def_found = false;
 	
+	//proj info
+	string name;
+	string anim;
+	unsigned int velocity;
+	GameSystem::ProjectileMovingType mt;
+	std::vector<unsigned int> hit_frames;
+	unsigned int damage;
+	unsigned int trigger;
+	
 	string line;
 	while(getline(in_info, line))
 	{
@@ -265,54 +277,86 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 		{
 			ostringstream oss;
 			oss << "PROJ " << proj_nb;
-			if(line.find(oss.str() == 0)
+			if(line.find(oss.str()) == 0)
 				def_found = true;
 		}
-		//name
-		if(line.find("name") == 0)
-		{	
-			vector<string> v = StringUtils::Split(line, " \r\n");
-			this->name = v.at(1);
-			
-		}
-		//power
-		if(line.find("power") == 0)
-		{	
-			vector<string> v = StringUtils::Split(line, " \r\n");
-			istringstream iss(v.at(1));
-			iss >> this->power;
-			
-		}
-		
-		//use projectile
-		if(line.find("use_projectile") == 0)
+		//read current proj attributes
+		else
 		{
-			vector<string> v = StringUtils::Split(line, " \r\n");
-			if(v.at(1).compare("true") == 0)
-				this->use_projectile = true;
-			else
-				this->use_projectile = false;
+			//if end of proj declaration, go out
+			if(line.find("ENDPROJ") == 0) break;
+			
+			if(line.find("name") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				name = v.at(1);
+			}
+			else if(line.find("anim") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				anim = v.at(1);
+				//anim = Animation::Load("Battle/Animations/Projectiles/" + v.at(1), reverse, true);
+			}
+			else if(line.find("moving") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				mt = GameSystem::STRAIGHT_PROJECTILE_MOVING_TYPE; //a changer ici
+			}
+			else if(line.find("damage") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				istringstream iss(v.at(1));
+				iss >> damage;
+			}
+			else if(line.find("velocity") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				istringstream iss(v.at(1));
+				iss >> velocity;
+			}
+			else if(line.find("trigger") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				istringstream iss(v.at(1));
+				iss >> trigger;
+			}
+			else if(line.find("hit") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				for(unsigned int i = 1 ; i < v.size() ; i++)
+				{
+					istringstream iss(v.at(i));
+					unsigned int hit;
+					iss >> hit;
+					hit_frames.push_back(hit);
+				}
+			}
 		}
 		
-		//projectiles number
-		if(line.find("projectiles_number") == 0)
-		{	
-			vector<string> v = StringUtils::Split(line, " \r\n");
-			istringstream iss(v.at(1));
-			iss >> this->projectiles_number;
-			
-		}
-		//animation name
-		if(line.find("animation") == 0)
-		{	
-			vector<string> v = StringUtils::Split(line, " \r\n");
-			//ba->actor_animation_name = string("Battle/Animations/Attacks/") + v.at(1);
-			AnimationPtr ap(Animation::Load( string("Battle/Animations/Attacks/") + v.at(1), false, false ));
-			this->actor_animation.swap(ap);
-		}
 	}
 
 	in_info.close();
+	
+	BattleProjectilePtr bpp(new BattleProjectile(name, anim, reverse, velocity, mt, hit_frames, trigger, damage, owner));
+	
+	#ifdef _DEBUG
+		ostringstream oss(ostringstream::out);
+		oss << "name " << bpp->name << "\r\n";
+		oss << "reverse " << bpp->reverse << "\r\n";
+		oss << "velocity " << bpp->velocity << "\r\n";
+		oss << "damage " << bpp->damage << "\r\n";
+		oss << "trigger " << bpp->trigger << "\r\n";
+		oss << "moving_type " << bpp->moving_type << "\r\n";
+		oss << "hit_frames ";
+		for(unsigned int i = 0 ; i < bpp->hitting_frames.size() ; i ++)
+			oss << bpp->hitting_frames.at(i) << " ";
+		oss << "\r\n";
+		LOG(oss.str())
+		LOG("Battle projectile loaded")
+	#endif
+	
+	
+	return bpp;
 }
 
 const string& BattleProjectile::GetName() const
@@ -335,11 +379,6 @@ const GameSystem::ProjectileMovingType& BattleProjectile::GetMovingType() const
 	return moving_type;
 }
 
-const Vector2i& BattleProjectile::GetPosition() const
-{
-	return position;
-}
-
 const vector<unsigned int> BattleProjectile::GetHitFrames() const
 {
 	return hitting_frames;
@@ -350,12 +389,39 @@ const unsigned int BattleProjectile::GetDamage() const
 	return damage;
 }
 
+const unsigned int BattleProjectile::GetTrigger() const
+{
+	return trigger;
+}
+
 const MMBNBattleActor* BattleProjectile::GetOwner() const
 {
 	return owner;
 }
 
 
+void BattleProjectile::Display(float offX, float offY)
+{
+	animation->Update();
+	animation->Display(offX, offY);
+}
+
+void BattleProjectile::Move(float x, float y)
+{
+	animation->SetPosition(animation->GetPosition().x + x, animation->GetPosition().y + y);
+}
+
+void BattleProjectile::SetPosition(float x, float y)
+{
+	animation->SetPosition(x, y);
+}
+
+const Vector2f& BattleProjectile::GetPosition() const
+{
+	return animation->GetPosition();
+}
+		
+		
 ///////////////////////////////////////////////
 // BATTLE ATTACK
 ///////////////////////////////////////////////
@@ -364,17 +430,17 @@ MMBNBattleAttack::MMBNBattleAttack()
 
 }
 
-MMBNBattleAttack::MMBNBattleAttack(string file, string attack_info_file)
+MMBNBattleAttack::MMBNBattleAttack(const string& path, const string& file, bool reverse)
 {
 	#ifdef _DEBUG
-		LOG("Init battle attack from file " + file)
+		LOG("Init battle attack from file " + path + file)
 	#endif
 	
-	ifstream in_info( file.c_str() , ifstream::in);
+	ifstream in_info( (path + file).c_str() , ifstream::in);
 
 	if(!in_info.good())
 	{
-		LOG("Impossible de trouver le fichier " + file);
+		LOG("Impossible de trouver le fichier " + (path + file));
 		oslQuit();
 	}
 
@@ -437,8 +503,25 @@ MMBNBattleAttack::MMBNBattleAttack(string file, string attack_info_file)
 		LOG("Battle Attack loaded")
 	#endif
 	
-	AttackInfoPtr aip(new AttackInfo(attack_info_file));
+	AttackInfoPtr aip(new AttackInfo(path + "attack_info.txt"));
 	this->attack_info.swap(aip);
+	
+	//load projectiles if needed
+	if(this->use_projectile)
+	{
+		#ifdef _DEBUG
+			LOG("Load projectiles")
+		#endif
+		for(unsigned int i = 0 ; i < this->projectiles_number ; ++i)
+		{
+			pair<unsigned int, BattleProjectilePtr> p;
+			BattleProjectilePtr bpp = BattleProjectile::Load(i + 1, path + "projectiles.txt", reverse, NULL);
+			this->projectiles_map[bpp->GetTrigger()].push_back(bpp);
+		}
+		#ifdef _DEBUG
+			LOG("Projectiles loaded")
+		#endif
+	}
 }
 
 MMBNBattleAttack::~MMBNBattleAttack()

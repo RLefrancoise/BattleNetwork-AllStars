@@ -10,6 +10,7 @@
 
 #include "Animation.hpp"
 #include "GameSystem.h"
+#include "Displayable.h"
 
 class MMBNBattleActor;
 
@@ -37,11 +38,11 @@ class AttackInfo
 		void SetHitFrames(std::vector<int> frames);
 		
 		GameSystem::TargetType GetTargetType() const;
-		std::vector<Vector2i> GetRange() const;
-		std::vector<GameSystem::PanelTeam> GetTeams() const;
+		const std::vector<Vector2i>& GetRange() const;
+		const std::vector<GameSystem::PanelTeam>& GetTeams() const;
 		bool IsPierceAttack();
 		bool IsStaggerAttack();
-		std::vector<int>& GetHitFrames();
+		const std::vector<int>& GetHitFrames() const;
 		
 		std::string ToString();
 };
@@ -51,7 +52,7 @@ typedef boost::shared_ptr<AttackInfo> AttackInfoPtr				;
 class BattleProjectile;
 typedef boost::shared_ptr<BattleProjectile> BattleProjectilePtr				;
 
-class BattleProjectile
+class BattleProjectile : public Displayable
 {
 	
 	
@@ -61,24 +62,32 @@ class BattleProjectile
 		bool reverse;
 		unsigned int velocity;
 		GameSystem::ProjectileMovingType moving_type;
-		Vector2i position;
 		std::vector<unsigned int> hitting_frames;
+		unsigned int trigger;
 		unsigned int damage;
 		MMBNBattleActor* owner;
 		
-	public:
 		BattleProjectile();
-		BattleProjectile(const std::string& name, const std::string& anim, bool reverse, unsigned int velocity, GameSystem::ProjectileMovingType mt, const std::vector<unsigned int>& hit_frames, unsigned int damage, MMBNBattleActor* owner);
+		BattleProjectile(const std::string& name, const std::string& anim, bool reverse, unsigned int velocity, GameSystem::ProjectileMovingType mt, const std::vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, MMBNBattleActor* owner);
+		
+	public:
+		
 		~BattleProjectile();
-		BattleProjectilePtr Load(unsigned int proj_nb, const std::string& file, bool reverse, MMBNBattleActor* owner);
+		static BattleProjectilePtr Load(unsigned int proj_nb, const std::string& file, bool reverse, MMBNBattleActor* owner);
+		
 		const std::string& GetName() const;
 		AnimationPtr GetAnimation() const;
 		const unsigned int GetVelocity() const;
 		const GameSystem::ProjectileMovingType& GetMovingType() const;
-		const Vector2i& GetPosition() const;
 		const std::vector<unsigned int> GetHitFrames() const;
 		const unsigned int GetDamage() const;
+		const unsigned int GetTrigger() const;
 		const MMBNBattleActor* GetOwner() const;
+		
+		void Display(float offX = 0, float offY = 0)		;
+		void Move(float x, float y)							;
+		void SetPosition(float x, float y)					;
+		const Vector2f& GetPosition() const					;
 };
 
 class MMBNBattleAttack
@@ -95,7 +104,7 @@ class MMBNBattleAttack
 		
 	public:
 		MMBNBattleAttack();
-		MMBNBattleAttack(std::string file, std::string attack_info_file);
+		MMBNBattleAttack(const std::string& path, const std::string& file, bool reverse);
 		~MMBNBattleAttack();
 		
 		const std::string GetName() const;

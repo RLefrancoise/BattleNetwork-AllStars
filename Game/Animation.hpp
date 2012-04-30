@@ -23,6 +23,8 @@ class Animation
 		void SetPosition(float x, float y);
 		void Display(float offX = 0, float offY = 0);
 
+		const Vector2f& GetPosition() const;
+		
 		void Start();
 		void Update();
 		void Pause();

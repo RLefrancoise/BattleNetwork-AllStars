@@ -12,6 +12,7 @@
 #include "Animation.hpp"
 #include "Utils.h"
 #include "MMBNBattleActor.h"
+#include "MMBNBattleAttack.h"
 #include "MMBNBattleChip.h"
 #include "MMBNString.h"
 
@@ -32,6 +33,9 @@ class MMBNPanelGrid
 		Vector2i GetActorPanel(MMBNBattleActor* actor);
 		void	MoveActor(MMBNBattleActor* actor, int offX, int offY);
 
+		void	PutProjectileOnPanel(BattleProjectilePtr proj, unsigned int x, unsigned int y);
+		Vector2i GetProjectilePanel(BattleProjectilePtr proj);
+		
 		GameSystem::PanelType GetPanelType(unsigned int x, unsigned int y);
 		GameSystem::PanelTeam GetPanelTeam(unsigned int x, unsigned int y);
 
@@ -81,10 +85,13 @@ class MMBNPanelGrid
 
 		MMBNBattleActor* m_actor				;
 		std::vector<MMBNBattleActor*> m_enemies	;
+		std::vector<BattleProjectilePtr> m_projectiles;
 		std::vector<MMBNBattleIA*> m_ia			;
 		
 		bool	m_actor_is_dead				;
 		bool 	m_can_attack				;
+		
+		void AddProjectile(BattleProjectilePtr proj);
 		
 		MMBNBattleActor* GetEnemyOnPanel(unsigned int x, unsigned int y);
 		

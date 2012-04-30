@@ -91,6 +91,7 @@ class MMBNBattleActor : public Displayable
 
 		void Attack(MMBNBattleActor* mmbnba)				;
 		void SkillAttack(MMBNBattleActor* target, const MMBNBattleAttackPtr& skill);
+		void DamageLife(int damage)							;
 		bool IsDead()										;
 
 		IAConfig* GetIAConfig()								;

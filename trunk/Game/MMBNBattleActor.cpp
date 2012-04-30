@@ -181,9 +181,10 @@ void MMBNBattleActor::InitializeIASkills()
 	while(getline(in_skills, line))
 	{
 		vector<string> v = StringUtils::Split(line, " \r\n");
-		MMBNBattleAttackPtr ba( new MMBNBattleAttack(string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/") + v.at(0) + string(".txt")
-								, string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/attack_info.txt")) 
-								);
+		MMBNBattleAttackPtr ba( new MMBNBattleAttack(string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/")
+								, v.at(0) + string(".txt")
+								, true
+								));
 		
 		ba->GetAnimation()->Reverse();
 		
@@ -530,6 +531,12 @@ void MMBNBattleActor::SkillAttack(MMBNBattleActor* target, const MMBNBattleAttac
 {
 	target->m_hp -= skill->GetPower();
 	if(target->m_hp < 0) target->m_hp = 0;
+}
+
+void MMBNBattleActor::DamageLife(int damage)
+{
+	this->m_hp -= damage;
+	if(this->m_hp < 0) this->m_hp = 0;
 }
 
 bool MMBNBattleActor::IsDead()

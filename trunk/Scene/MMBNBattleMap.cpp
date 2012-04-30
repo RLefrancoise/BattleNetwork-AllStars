@@ -1,5 +1,6 @@
 #include "MMBNBattleMap.h"
 #include "GameBattle.h"
+#include "Variables.h"
 
 using namespace std;
 
@@ -174,7 +175,15 @@ void MMBNPanelGrid::Display()
 				if(v.x == i && v.y == j) (*it)->Display();
 			}
 		}
-		
+	
+	//=======================================
+	// PROJECTILES
+	//=======================================
+	for(unsigned int i = 0 ; i < m_projectiles.size() ; ++i)
+	{
+		m_projectiles[i]->Display();
+	}
+	
 	//display life of enemies
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 	{
@@ -233,6 +242,22 @@ void MMBNPanelGrid::MoveActor(MMBNBattleActor* actor, int offX, int offY)
 {
 	PutActorOnPanel(actor, GetActorPanel(actor).x + offX, GetActorPanel(actor).y + offY);
 }
+
+
+void MMBNPanelGrid::PutProjectileOnPanel(BattleProjectilePtr proj, unsigned int x, unsigned int y)
+{
+	proj->SetPosition( (x * m_x_inc) + m_x_map + m_x_inc / 2, (y * m_y_inc) + m_y_map + m_y_inc / 2);
+}
+
+Vector2i MMBNPanelGrid::GetProjectilePanel(BattleProjectilePtr proj)
+{
+	Vector2i v;
+	v.x = (proj->GetPosition().x - m_x_map) / m_x_inc;
+	v.y = (proj->GetPosition().y - m_y_map) / m_y_inc;
+	return v;
+}
+
+
 
 inline GameSystem::PanelType MMBNPanelGrid::GetPanelType(unsigned int x, unsigned int y)
 {
@@ -387,6 +412,38 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 				break;
 			
 		}
+	}
+	
+	//projectiles
+	for(unsigned int i = 0 ; i < m_projectiles.size() ; ++i)
+	{
+		//move projectile if needed (behaviour needs to be choosed here)
+		m_projectiles[i]->Move(-1 * m_projectiles[i]->GetVelocity() / Variables::GetFPS(), 0); //change here, just for testing now
+		
+		Vector2i proj_pos = GetProjectilePanel(m_projectiles[i]);
+		//projectile outside grid, delete it
+		if( !IsInsideGrid(proj_pos.x, proj_pos.y) )
+		{
+			m_projectiles.erase(m_projectiles.begin() + i);
+			i--;
+			continue;
+		}
+		
+		//damage actor ? (look for teams here)
+		Vector2i proj_actor = GetActorPanel(m_actor);
+		if( (proj_pos.x == proj_actor.x) && (proj_pos.y == proj_actor.y) )
+		{
+			if(m_actor->GetState() != MMBNBattleActor::BATTLE_DAMAGED)
+			{
+				m_actor->SetState(MMBNBattleActor::BATTLE_DAMAGED);
+				m_actor->DamageLife(m_projectiles[i]->GetDamage());
+				m_projectiles.erase(m_projectiles.begin() + i);
+				i--;
+			}
+		}
+		//damage enemies ? (to be done)
+		
+		
 	}
 	
 	//impact anims
@@ -574,6 +631,38 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 {	
 	Vector2i pos = GetActorPanel(target);
 	
+	if(skill->UseProjectile())
+	{
+		//launcher in standing anim
+		if(launcher->GetState() == MMBNBattleActor::BATTLE_STANDING)
+			launcher->SetState(MMBNBattleActor::BATTLE_SKILL);
+			
+		//launcher in skill anim
+		if(launcher->GetState() == MMBNBattleActor::BATTLE_SKILL)
+		{
+			//
+			map<unsigned int, vector<BattleProjectilePtr> > projectiles = skill->GetProjectilesMap();
+			map<unsigned int, vector<BattleProjectilePtr> >::iterator it;
+			for(it = projectiles.begin() ; it != projectiles.end() ; ++it)
+			{
+				//current frame is a trigger for a projectile ?
+				unsigned int proj_trigger = it->first;
+				if(launcher->GetCurrentAnim()->GetCurrentFrame() == proj_trigger)
+				{
+					vector<BattleProjectilePtr> v = it->second;
+					for(unsigned int i = 0 ; i < v.size() ; i++)
+					{
+						AddProjectile(v[i]); //add the projectile to the list
+						//need to change here, place the projectile according to settings
+						Vector2i launcher_pos = GetActorPanel(launcher);
+						PutProjectileOnPanel(m_projectiles.back(), launcher_pos.x - 1, launcher_pos.y);
+					}
+				}
+				
+			}
+		}
+	}
+	
 	vector<Vector2i> range = GetTargetedPanels(launcher, skill->GetAttackInfo());
 	
 	if(IsInRange(pos, range))
@@ -624,6 +713,17 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 	}
 	
 	return false;
+}
+
+void MMBNPanelGrid::AddProjectile(BattleProjectilePtr proj)
+{
+	bool proj_found = false;
+	for(unsigned int i = 0 ; !proj_found && (i < m_projectiles.size()) ; ++i)
+	{
+		if(m_projectiles[i].get() == proj.get()) proj_found = true;
+	}
+	
+	if(!proj_found) m_projectiles.push_back(proj);
 }
 
 ///////////////////////////////////////////////////////

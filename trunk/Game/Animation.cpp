@@ -80,6 +80,11 @@ void Animation::SetPosition(float x, float y)
 		m_sprites[i].SetPosition(x, y);
 }
 
+const Vector2f& Animation::GetPosition() const
+{
+	return m_sprites[0].GetPosition();
+}
+
 void Animation::Display(float offX, float offY)
 {
 	m_sprites[m_currentFrame].Display(offX, offY);

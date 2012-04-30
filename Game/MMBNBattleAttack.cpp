@@ -221,10 +221,10 @@ BattleProjectile::BattleProjectile()
 	owner = NULL;
 }
 
-BattleProjectile::BattleProjectile(const string& name, const string& anim, bool reverse, unsigned int velocity, GameSystem::ProjectileMovingType mt, const vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, MMBNBattleActor* owner)
+BattleProjectile::BattleProjectile(const string& name, const string& anim, bool reverse, bool loop, unsigned int velocity, GameSystem::ProjectileMovingType mt, const vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, const Vector2f& display_offset, MMBNBattleActor* owner, const map<unsigned int, vector<Vector2i> >& rpf)
 {
 	this->name = name;
-	this->animation = Animation::Load(string("Battle/Animations/Projectiles/") + anim, reverse, true);
+	this->animation = Animation::Load(string("Battle/Animations/Projectiles/") + anim, reverse, loop);
 	this->reverse = reverse;
 	this->velocity = velocity;
 	this->moving_type = mt;
@@ -233,7 +233,25 @@ BattleProjectile::BattleProjectile(const string& name, const string& anim, bool 
 		
 	this->damage = damage;
 	this->trigger = trigger;
+	this->display_offset.x = display_offset.x;
+	this->display_offset.y = display_offset.y;
 	this->owner = owner;
+	if(!rpf.empty())
+	{
+		this->range_per_frame.insert(rpf.begin(), rpf.end());
+	}
+	else
+	{
+		for(unsigned int i = 0 ; i < this->animation->GetFramesNumber() ; ++i)
+		{
+			pair<unsigned int, vector<Vector2i> > p;
+			p.first = i;
+			vector<Vector2i> v;
+			v.push_back(Vector2i(0,0));
+			p.second = v;
+			this->range_per_frame.insert(p);
+		}
+	}
 	
 }
 
@@ -268,6 +286,9 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 	std::vector<unsigned int> hit_frames;
 	unsigned int damage;
 	unsigned int trigger;
+	Vector2f display_offset;
+	bool loop = false;
+	map<unsigned int, vector<Vector2i> > range_per_frame;
 	
 	string line;
 	while(getline(in_info, line))
@@ -320,6 +341,18 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 				istringstream iss(v.at(1));
 				iss >> trigger;
 			}
+			else if(line.find("offset_x") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				istringstream iss(v.at(1));
+				iss >> display_offset.x;
+			}
+			else if(line.find("offset_y") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				istringstream iss(v.at(1));
+				iss >> display_offset.y;
+			}
 			else if(line.find("hit") == 0)
 			{
 				vector<string> v = StringUtils::Split(line, " \r\n");
@@ -331,13 +364,50 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 					hit_frames.push_back(hit);
 				}
 			}
+			else if(line.find("loop") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				if(v.at(1).compare("true") == 0)
+					loop = true;
+				else
+					loop = false;
+			}
+			else if(line.find("range_per_frame") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				unsigned int frame;
+				istringstream iss(v.at(1));
+				iss >> frame;
+				
+				for(unsigned int i = 2 ; i < v.size() ; ++i)
+				{
+					int x_range = 0, y_range = 0;
+					vector<string> v_range = StringUtils::Split(v.at(i), ",");
+					istringstream iss_range(v_range.at(0) + " " + v_range.at(1));
+					iss_range >> x_range;
+					iss_range >> y_range;
+					
+					Vector2i range;
+					if(reverse)
+					{
+						range.x = -1 * x_range;
+						range.y = y_range;
+					}
+					else
+					{
+						range.x = x_range;
+						range.y = y_range;
+					}
+					range_per_frame[frame - 1].push_back(range); //frame start at 1 in the .txt, but 0 inside the map
+				}
+			}
 		}
 		
 	}
 
 	in_info.close();
 	
-	BattleProjectilePtr bpp(new BattleProjectile(name, anim, reverse, velocity, mt, hit_frames, trigger, damage, owner));
+	BattleProjectilePtr bpp(new BattleProjectile(name, anim, reverse, loop, velocity, mt, hit_frames, trigger, damage, display_offset, owner, range_per_frame));
 	
 	#ifdef _DEBUG
 		ostringstream oss(ostringstream::out);
@@ -350,6 +420,15 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 		oss << "hit_frames ";
 		for(unsigned int i = 0 ; i < bpp->hitting_frames.size() ; i ++)
 			oss << bpp->hitting_frames.at(i) << " ";
+		oss << "\r\n";
+		map<unsigned int, vector<Vector2i> >::iterator it;
+		for(it = range_per_frame.begin() ; it != range_per_frame.end() ; ++it)
+		{
+			oss << "range_per_frame " << (it->first + 1) << " ";
+			for(unsigned int i = 0 ; i < it->second.size() ; ++i)
+				oss << it->second[i].x << "," << it->second[i].y << " ";
+			oss << "\r\n";
+		}
 		oss << "\r\n";
 		LOG(oss.str())
 		LOG("Battle projectile loaded")
@@ -369,7 +448,7 @@ AnimationPtr BattleProjectile::GetAnimation() const
 	return animation;
 }
 
-const unsigned int BattleProjectile::GetVelocity() const
+unsigned int BattleProjectile::GetVelocity() const
 {
 	return velocity;
 }
@@ -379,17 +458,17 @@ const GameSystem::ProjectileMovingType& BattleProjectile::GetMovingType() const
 	return moving_type;
 }
 
-const vector<unsigned int> BattleProjectile::GetHitFrames() const
+const vector<unsigned int>& BattleProjectile::GetHitFrames() const
 {
 	return hitting_frames;
 }
 
-const unsigned int BattleProjectile::GetDamage() const
+unsigned int BattleProjectile::GetDamage() const
 {
 	return damage;
 }
 
-const unsigned int BattleProjectile::GetTrigger() const
+unsigned int BattleProjectile::GetTrigger() const
 {
 	return trigger;
 }
@@ -399,11 +478,38 @@ const MMBNBattleActor* BattleProjectile::GetOwner() const
 	return owner;
 }
 
+const vector<Vector2i>& BattleProjectile::GetCurrentRange() const
+{
+	map<unsigned int, vector<Vector2i> >::const_iterator it;
+	if( ( it = range_per_frame.find(animation->GetCurrentFrame()) ) == range_per_frame.end())
+	{
+		LOG("ERROR : {BattleProjectile : GetCurrentRange} No range defined for this frame !")
+		oslQuit();
+	}
+	
+	return it->second;
+}
+
+void BattleProjectile::ResetAnim()
+{
+	animation->Stop();
+}
+
+bool BattleProjectile::CanDamage()
+{
+	bool is_damaging_frame = false;
+	
+	for(unsigned int i = 0 ; !is_damaging_frame && (i < hitting_frames.size()) ; ++i)
+		if(animation->GetCurrentFrame() == hitting_frames[i])
+			is_damaging_frame = true;
+			
+	return is_damaging_frame;
+}
 
 void BattleProjectile::Display(float offX, float offY)
 {
 	animation->Update();
-	animation->Display(offX, offY);
+	animation->Display(offX + display_offset.x, offY + display_offset.y);
 }
 
 void BattleProjectile::Move(float x, float y)

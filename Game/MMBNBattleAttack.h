@@ -65,10 +65,12 @@ class BattleProjectile : public Displayable
 		std::vector<unsigned int> hitting_frames;
 		unsigned int trigger;
 		unsigned int damage;
+		Vector2f display_offset;
 		MMBNBattleActor* owner;
+		std::map<unsigned int, std::vector<Vector2i> > range_per_frame;
 		
 		BattleProjectile();
-		BattleProjectile(const std::string& name, const std::string& anim, bool reverse, unsigned int velocity, GameSystem::ProjectileMovingType mt, const std::vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, MMBNBattleActor* owner);
+		BattleProjectile(const std::string& name, const std::string& anim, bool reverse, bool loop, unsigned int velocity, GameSystem::ProjectileMovingType mt, const std::vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, const Vector2f& display_offset, MMBNBattleActor* owner, const std::map<unsigned int, std::vector<Vector2i> >& rpf);
 		
 	public:
 		
@@ -77,12 +79,16 @@ class BattleProjectile : public Displayable
 		
 		const std::string& GetName() const;
 		AnimationPtr GetAnimation() const;
-		const unsigned int GetVelocity() const;
+		unsigned int GetVelocity() const;
 		const GameSystem::ProjectileMovingType& GetMovingType() const;
-		const std::vector<unsigned int> GetHitFrames() const;
-		const unsigned int GetDamage() const;
-		const unsigned int GetTrigger() const;
+		const std::vector<unsigned int>& GetHitFrames() const;
+		unsigned int GetDamage() const;
+		unsigned int GetTrigger() const;
 		const MMBNBattleActor* GetOwner() const;
+		const std::vector<Vector2i>& GetCurrentRange() const;
+		
+		void ResetAnim()									;
+		bool CanDamage()									;
 		
 		void Display(float offX = 0, float offY = 0)		;
 		void Move(float x, float y)							;

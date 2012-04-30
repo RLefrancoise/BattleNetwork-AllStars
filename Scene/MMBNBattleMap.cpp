@@ -159,30 +159,54 @@ void MMBNPanelGrid::Display()
 
 
 	//======================================
-	// ACTORS
+	// ACTORS & PROJECTILES
 	//======================================
 	vector<MMBNBattleActor*>::iterator it;
 	
+	//get targeted panels
+	m_targeted_panels.clear();
+	for(unsigned int k = 0 ; k < m_projectiles.size() ; ++k)
+	{
+		vector<Vector2i> color_panels;
+		GetProjectileRangePanels(m_projectiles[k], color_panels);
+		for(unsigned int c = 0 ; c < color_panels.size() ; ++c)
+			AddPanelToTargetedPanels(color_panels[c]);
+	}
+	
+	// display elements
 	for(unsigned int i = 0 ; i < m_width ; i++)
 		for(unsigned int j = 0 ; j < m_height ; j++)
 		{
-			Vector2i v = GetActorPanel(m_actor);
+			Vector2i v;
+			
+			//targeted panels
+			for(unsigned t = 0 ; t < m_targeted_panels.size() ; ++t)
+			{
+				if(m_targeted_panels[t].x == i && m_targeted_panels[t].y == j)
+					ColorPanel(i, j, RGB(255,230,0), 2);
+			}
+			
+			//actor
+			v = GetActorPanel(m_actor);
 			if(v.x == i && v.y == j) m_actor->Display();
 			
+			//enemies
 			for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
 			{
 				v = GetActorPanel(*it);
 				if(v.x == i && v.y == j) (*it)->Display();
 			}
+			
+			//projectiles
+			for(unsigned int k = 0 ; k < m_projectiles.size() ; ++k)
+			{
+				v = GetProjectilePanel(m_projectiles[k]);
+				if(v.x == i && v.y == j)
+				{
+					m_projectiles[k]->Display();
+				}
+			}
 		}
-	
-	//=======================================
-	// PROJECTILES
-	//=======================================
-	for(unsigned int i = 0 ; i < m_projectiles.size() ; ++i)
-	{
-		m_projectiles[i]->Display();
-	}
 	
 	//display life of enemies
 	for(it = m_enemies.begin() ; it != m_enemies.end() ; it++)
@@ -417,8 +441,17 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 	//projectiles
 	for(unsigned int i = 0 ; i < m_projectiles.size() ; ++i)
 	{
+		//anim of projectile is over ? => delete it
+		if(m_projectiles[i]->GetAnimation()->IsOver())
+		{
+			m_projectiles.erase(m_projectiles.begin() + i);
+			i--;
+			continue;
+		}
+		
 		//move projectile if needed (behaviour needs to be choosed here)
-		m_projectiles[i]->Move(-1 * m_projectiles[i]->GetVelocity() / Variables::GetFPS(), 0); //change here, just for testing now
+		int move = (m_projectiles[i]->GetVelocity() / Variables::GetFPS()) * -1;
+		m_projectiles[i]->Move(move, 0); //change here, just for testing now
 		
 		Vector2i proj_pos = GetProjectilePanel(m_projectiles[i]);
 		//projectile outside grid, delete it
@@ -429,20 +462,26 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 			continue;
 		}
 		
-		//damage actor ? (look for teams here)
-		Vector2i proj_actor = GetActorPanel(m_actor);
-		if( (proj_pos.x == proj_actor.x) && (proj_pos.y == proj_actor.y) )
+		//DAMAGE
+		if(m_projectiles[i]->CanDamage())
 		{
-			if(m_actor->GetState() != MMBNBattleActor::BATTLE_DAMAGED)
+			//damage actor ? (look for teams here)
+			Vector2i proj_actor = GetActorPanel(m_actor);
+			
+			if(IsInProjectileRange(m_projectiles[i], proj_actor.x, proj_actor.y))
+			//if( (proj_pos.x == proj_actor.x) && (proj_pos.y == proj_actor.y) )
 			{
-				m_actor->SetState(MMBNBattleActor::BATTLE_DAMAGED);
-				m_actor->DamageLife(m_projectiles[i]->GetDamage());
-				m_projectiles.erase(m_projectiles.begin() + i);
-				i--;
+				if(m_actor->GetState() != MMBNBattleActor::BATTLE_DAMAGED)
+				{
+					m_actor->SetState(MMBNBattleActor::BATTLE_DAMAGED);
+					m_actor->DamageLife(m_projectiles[i]->GetDamage());
+					m_projectiles.erase(m_projectiles.begin() + i);
+					i--;
+				}
 			}
+			//damage enemies ? (to be done)
+
 		}
-		//damage enemies ? (to be done)
-		
 		
 	}
 	
@@ -723,7 +762,61 @@ void MMBNPanelGrid::AddProjectile(BattleProjectilePtr proj)
 		if(m_projectiles[i].get() == proj.get()) proj_found = true;
 	}
 	
-	if(!proj_found) m_projectiles.push_back(proj);
+	if(!proj_found)
+	{
+		m_projectiles.push_back(proj);
+		m_projectiles.back()->ResetAnim();
+	}
+}
+
+void MMBNPanelGrid::ColorPanel(unsigned int x, unsigned int y, OSL_COLOR color, int border)
+{
+	unsigned int _x = m_x_map + (x * m_x_inc);
+	unsigned int _y = m_y_map + (y * m_y_inc);
+	oslDrawFillRect(_x + border, _y + border, _x + m_x_inc - border, _y + m_y_inc - border, color);
+}
+
+bool MMBNPanelGrid::IsInProjectileRange(BattleProjectilePtr proj, unsigned int posx, unsigned int posy)
+{
+	vector<Vector2i> targeted_panels;
+	GetProjectileRangePanels(proj, targeted_panels);
+	
+	for(unsigned int i = 0 ; i < targeted_panels.size() ; ++i)
+		if( (targeted_panels[i].x == posx) && (targeted_panels[i].y == posy) )
+			return true;
+	
+	return false;
+}
+
+void MMBNPanelGrid::GetProjectileRangePanels(BattleProjectilePtr proj, std::vector<Vector2i>& targeted_panels)
+{
+	const vector<Vector2i>& range = proj->GetCurrentRange();
+	Vector2i proj_pos = GetProjectilePanel(proj);
+	
+	targeted_panels.clear();
+	
+	for(unsigned int i = 0 ; i < range.size() ; ++i)
+	{
+		int final_x = proj_pos.x + range[i].x;
+		int final_y = proj_pos.y + range[i].y;
+		
+		if( !IsInsideGrid(final_x, final_y) ) continue;
+		
+		targeted_panels.push_back(Vector2i(final_x, final_y));
+	}
+}
+
+void MMBNPanelGrid::AddPanelToTargetedPanels(Vector2i& v)
+{
+	bool found = false;
+	
+	for(unsigned int i = 0 ; !found && i < m_targeted_panels.size() ; ++i)
+		if( (m_targeted_panels[i].x == v.x) && (m_targeted_panels[i].y == v.y) )
+			found = true;
+			
+	if(!found)
+		m_targeted_panels.push_back(v);
+			
 }
 
 ///////////////////////////////////////////////////////

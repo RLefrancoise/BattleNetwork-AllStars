@@ -88,15 +88,23 @@ class MMBNPanelGrid
 		std::vector<BattleProjectilePtr> m_projectiles;
 		std::vector<MMBNBattleIA*> m_ia			;
 		
+		std::vector<Vector2i>	m_targeted_panels;
+		
 		bool	m_actor_is_dead				;
 		bool 	m_can_attack				;
 		
-		void AddProjectile(BattleProjectilePtr proj);
+		void 					AddProjectile(BattleProjectilePtr proj)												;
 		
-		MMBNBattleActor* GetEnemyOnPanel(unsigned int x, unsigned int y);
+		MMBNBattleActor* 		GetEnemyOnPanel(unsigned int x, unsigned int y)										;
 		
-		std::vector<Vector2i> 	GetTargetedPanels(MMBNBattleActor* launcher, const AttackInfoPtr& attack_info);
-		bool					IsInRange(Vector2i &target, std::vector<Vector2i> &range);
+		std::vector<Vector2i> 	GetTargetedPanels(MMBNBattleActor* launcher, const AttackInfoPtr& attack_info)		;
+		bool					IsInRange(Vector2i &target, std::vector<Vector2i> &range)							;
+		
+		void					ColorPanel(unsigned int x, unsigned int y, OSL_COLOR color, int border = 0)			;
+		bool					IsInProjectileRange(BattleProjectilePtr proj, unsigned int posx, unsigned int posy)	;
+		void					GetProjectileRangePanels(BattleProjectilePtr proj, std::vector<Vector2i>& targeted_panels);
+		
+		void					AddPanelToTargetedPanels(Vector2i& v)												;
 
 	
 };

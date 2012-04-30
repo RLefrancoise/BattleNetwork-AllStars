@@ -143,6 +143,11 @@ unsigned int Animation::GetCurrentFrame()
 	return m_currentFrame;
 }
 
+unsigned int Animation::GetFramesNumber()
+{
+	return m_sprites.size();
+}
+
 void Animation::Reverse()
 {
 	vector<ExtendedSprite>::iterator it;

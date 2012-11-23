@@ -321,7 +321,7 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 			else if(line.find("moving") == 0)
 			{
 				vector<string> v = StringUtils::Split(line, " \r\n");
-				mt = GameSystem::STRAIGHT_PROJECTILE_MOVING_TYPE; //a changer ici
+				mt = GameSystem::GetProjectileMovingOfString(v.at(1));
 			}
 			else if(line.find("damage") == 0)
 			{
@@ -536,7 +536,7 @@ MMBNBattleAttack::MMBNBattleAttack()
 
 }
 
-MMBNBattleAttack::MMBNBattleAttack(const string& path, const string& file, bool reverse)
+MMBNBattleAttack::MMBNBattleAttack(const string& path, const string& file, bool reverse, MMBNBattleActor* owner)
 {
 	#ifdef _DEBUG
 		LOG("Init battle attack from file " + path + file)
@@ -621,7 +621,7 @@ MMBNBattleAttack::MMBNBattleAttack(const string& path, const string& file, bool 
 		for(unsigned int i = 0 ; i < this->projectiles_number ; ++i)
 		{
 			pair<unsigned int, BattleProjectilePtr> p;
-			BattleProjectilePtr bpp = BattleProjectile::Load(i + 1, path + "projectiles.txt", reverse, NULL);
+			BattleProjectilePtr bpp = BattleProjectile::Load(i + 1, path + "projectiles.txt", reverse, owner);
 			this->projectiles_map[bpp->GetTrigger()].push_back(bpp);
 		}
 		#ifdef _DEBUG

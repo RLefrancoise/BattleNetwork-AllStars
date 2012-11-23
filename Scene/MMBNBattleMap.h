@@ -105,6 +105,8 @@ class MMBNPanelGrid
 		void					GetProjectileRangePanels(BattleProjectilePtr proj, std::vector<Vector2i>& targeted_panels);
 		
 		void					AddPanelToTargetedPanels(Vector2i& v)												;
+		
+		void					ProjectilesMoving(BattleProjectilePtr proj)											;
 
 	
 };

@@ -4,6 +4,7 @@
 
 using namespace std;
 
+//maps
 map<string, GameSystem::ChipElement>	GameSystem::ELEMENT_STRING_MAP			;
 map<string, GameSystem::DamageType>		GameSystem::DAMAGE_STRING_MAP			;
 map<string, GameSystem::TargetType>		GameSystem::TARGET_STRING_MAP			;
@@ -11,11 +12,14 @@ map<string, GameSystem::ChipType>		GameSystem::CHIPTYPE_STRING_MAP			;
 
 map<string, GameSystem::PanelTeam> 		GameSystem::PANELTEAM_STRING_MAP		;
 
+map<string, GameSystem::ProjectileMovingType> GameSystem::PROJECTILE_MOVING_MAP;
+
+//pictures
 OSL_IMAGE* GameSystem::m_controller_pics[CONTROLLER_NB];
 OSL_IMAGE* GameSystem::m_chip_pics[CHIP_TYPE_NB];
 OSL_IMAGE* GameSystem::m_element_pics[CHIP_ELEMENT_NB];
 
-
+//fonts
 MMBNFont* GameSystem::m_actor_life_font;
 MMBNFont* GameSystem::m_battle_chip_name_font;
 MMBNFont* GameSystem::m_battle_chip_power_font;
@@ -24,6 +28,7 @@ MMBNFont* GameSystem::m_battle_enemy_name_font;
 MMBNFont* GameSystem::m_enemy_life_font;
 MMBNFont* GameSystem::m_custom_window_letter_font;
 
+//others
 vector<AnimationPtr> GameSystem::LOADING_ANIMATIONS;
 
 vector<string> 					GameSystem::ACTORS_NAMES	;
@@ -70,7 +75,11 @@ void GameSystem::Initialize()
 	PANELTEAM_STRING_MAP["player"]	= GameSystem::PLAYER			;
 	PANELTEAM_STRING_MAP["enemy"]	= GameSystem::ENEMY				;
 	
-	
+	//PROJECTILES MOVING TYPE
+	PROJECTILE_MOVING_MAP["straight"] 		= GameSystem::STRAIGHT_PROJECTILE_MOVING_TYPE				;
+	PROJECTILE_MOVING_MAP["follow_actor"] 	= GameSystem::FOLLOW_ACTOR_PROJECTILE_MOVING_TYPE			;
+	PROJECTILE_MOVING_MAP["follow_enemy"] 	= GameSystem::FOLLOW_ENEMY_PROJECTILE_MOVING_TYPE			;
+	PROJECTILE_MOVING_MAP["none"] 			= GameSystem::NONE_PROJECTILE_MOVING_TYPE					;
 	
 	//========================
 	// PICTURES
@@ -208,6 +217,10 @@ GameSystem::PanelTeam 	GameSystem::GetPanelTeamOfString(string p)
 	return PANELTEAM_STRING_MAP[p];
 }
 
+GameSystem::ProjectileMovingType GameSystem::GetProjectileMovingOfString(string p)
+{
+	return PROJECTILE_MOVING_MAP[p];
+}
 
 /*void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)
 {

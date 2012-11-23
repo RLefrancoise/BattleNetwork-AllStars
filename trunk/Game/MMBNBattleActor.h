@@ -97,6 +97,8 @@ class MMBNBattleActor : public Displayable
 		IAConfig* GetIAConfig()								;
 		
 		BattleActorInfo* GetInfo()							;
+		
+		bool IsIA()	const									;
 
 	protected:
 

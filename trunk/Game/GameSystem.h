@@ -138,6 +138,8 @@ class GameSystem
 		
 		static GameSystem::PanelTeam 	GetPanelTeamOfString(std::string p)		;
 		
+		static GameSystem::ProjectileMovingType GetProjectileMovingOfString(std::string p);
+		
 		/*static void InitAttackInfo(std::string file, AttackInfo* ai)			;
 		static void InitBattleAttack(std::string file, BattleAttack* ba)		;*/
 		
@@ -183,6 +185,8 @@ class GameSystem
 		static std::map<std::string, GameSystem::ChipType> 		CHIPTYPE_STRING_MAP		;
 		
 		static std::map<std::string, GameSystem::PanelTeam> 	PANELTEAM_STRING_MAP	;
+		
+		static std::map<std::string, GameSystem::ProjectileMovingType> PROJECTILE_MOVING_MAP;
 		
 		//========================
 		// PICTURES

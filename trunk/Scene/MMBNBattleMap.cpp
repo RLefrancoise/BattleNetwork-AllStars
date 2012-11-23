@@ -180,7 +180,7 @@ void MMBNPanelGrid::Display()
 			Vector2i v;
 			
 			//targeted panels
-			for(unsigned t = 0 ; t < m_targeted_panels.size() ; ++t)
+			for(unsigned int t = 0 ; t < m_targeted_panels.size() ; ++t)
 			{
 				if(m_targeted_panels[t].x == i && m_targeted_panels[t].y == j)
 					ColorPanel(i, j, RGB(255,230,0), 2);
@@ -450,8 +450,10 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 		}
 		
 		//move projectile if needed (behaviour needs to be choosed here)
-		int move = (m_projectiles[i]->GetVelocity() / Variables::GetFPS()) * -1;
-		m_projectiles[i]->Move(move, 0); //change here, just for testing now
+		ProjectilesMoving(m_projectiles[i]);
+		
+		//int move = (m_projectiles[i]->GetVelocity() / Variables::GetFPS()) * -1;
+		//m_projectiles[i]->Move(move, 0); //change here, just for testing now
 		
 		Vector2i proj_pos = GetProjectilePanel(m_projectiles[i]);
 		//projectile outside grid, delete it
@@ -510,6 +512,37 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 	
 	//actor
 	ActorHandle(k);
+}
+
+void MMBNPanelGrid::ProjectilesMoving(BattleProjectilePtr proj)
+{
+	GameSystem::ProjectileMovingType mt = proj->GetMovingType();
+	switch(mt)
+	{
+		case GameSystem::STRAIGHT_PROJECTILE_MOVING_TYPE:
+		{
+			int move;
+			
+			//is in actor team
+			if(!proj->GetOwner()->IsIA())
+				move = (proj->GetVelocity() / Variables::GetFPS());
+				
+			//is in IA team
+			else
+				move = (proj->GetVelocity() / Variables::GetFPS()) * -1;
+			
+			proj->Move(move, 0); //change here, just for testing now
+			break;
+		}
+		case GameSystem::NONE_PROJECTILE_MOVING_TYPE:
+		{
+			proj->Move(0, 0); //strange display bug if no move here...
+		}
+		default:
+			break;
+	}
+	
+	
 }
 
 inline bool MMBNPanelGrid::BattleIsOver()

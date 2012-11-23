@@ -184,6 +184,7 @@ void MMBNBattleActor::InitializeIASkills()
 		MMBNBattleAttackPtr ba( new MMBNBattleAttack(string("Actors/") + m_name + string("/Battle/IA/Skills/") + v.at(0) + string("/")
 								, v.at(0) + string(".txt")
 								, true
+								, this
 								));
 		
 		ba->GetAnimation()->Reverse();
@@ -514,6 +515,11 @@ int MMBNBattleActor::GetSpd() const
 IAConfig* MMBNBattleActor::GetIAConfig()
 {
 	return &m_ia_config;
+}
+
+bool MMBNBattleActor::IsIA() const
+{
+	return m_is_ia;
 }
 
 MMBNBattleActor::BattleActorInfo* MMBNBattleActor::GetInfo()

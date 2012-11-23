@@ -110,7 +110,7 @@ class MMBNBattleAttack
 		
 	public:
 		MMBNBattleAttack();
-		MMBNBattleAttack(const std::string& path, const std::string& file, bool reverse);
+		MMBNBattleAttack(const std::string& path, const std::string& file, bool reverse, MMBNBattleActor* owner);
 		~MMBNBattleAttack();
 		
 		const std::string GetName() const;

@@ -221,13 +221,16 @@ BattleProjectile::BattleProjectile()
 	owner = NULL;
 }
 
-BattleProjectile::BattleProjectile(const string& name, const string& anim, bool reverse, bool loop, unsigned int velocity, GameSystem::ProjectileMovingType mt, const vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, const Vector2f& display_offset, MMBNBattleActor* owner, const map<unsigned int, vector<Vector2i> >& rpf)
+BattleProjectile::BattleProjectile(const string& name, const string& anim, bool reverse, bool loop, unsigned int velocity, GameSystem::ProjectileMovingType mt, GameSystem::ProjectilePositionType pt, int relative_x, int relative_y, const vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, const Vector2f& display_offset, MMBNBattleActor* owner, const map<unsigned int, vector<Vector2i> >& rpf, bool vanish_after_hit)
 {
 	this->name = name;
 	this->animation = Animation::Load(string("Battle/Animations/Projectiles/") + anim, reverse, loop);
 	this->reverse = reverse;
 	this->velocity = velocity;
 	this->moving_type = mt;
+	this->position_type = pt;
+	this->relative_x = relative_x;
+	this->relative_y = relative_y;
 	for(unsigned int i = 0 ; i < hit_frames.size() ; i++)
 		this->hitting_frames.push_back(hit_frames[i]);
 		
@@ -252,6 +255,8 @@ BattleProjectile::BattleProjectile(const string& name, const string& anim, bool 
 			this->range_per_frame.insert(p);
 		}
 	}
+	
+	this->vanish_after_hit = vanish_after_hit;
 	
 }
 
@@ -282,13 +287,17 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 	string name;
 	string anim;
 	unsigned int velocity;
-	GameSystem::ProjectileMovingType mt;
+	GameSystem::ProjectileMovingType mt = GameSystem::NONE_PROJECTILE_MOVING_TYPE;
+	GameSystem::ProjectilePositionType pt = GameSystem::RELATIVE_TO_OWNER_PROJECTILE_POSITION_TYPE;
+	int relative_x = 1; //in front of owner by default
+	int relative_y = 0; //in front of owner by default
 	std::vector<unsigned int> hit_frames;
 	unsigned int damage;
 	unsigned int trigger;
 	Vector2f display_offset;
 	bool loop = false;
 	map<unsigned int, vector<Vector2i> > range_per_frame;
+	bool vanish_after_hit = true;
 	
 	string line;
 	while(getline(in_info, line))
@@ -322,6 +331,14 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 			{
 				vector<string> v = StringUtils::Split(line, " \r\n");
 				mt = GameSystem::GetProjectileMovingOfString(v.at(1));
+			}
+			else if(line.find("position") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				pt = GameSystem::GetProjectilePositionOfString(v.at(1));
+				istringstream iss(v.at(2) + " " + v.at(3));
+				iss >> relative_x;
+				iss >> relative_y;
 			}
 			else if(line.find("damage") == 0)
 			{
@@ -401,13 +418,22 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 					range_per_frame[frame - 1].push_back(range); //frame start at 1 in the .txt, but 0 inside the map
 				}
 			}
+			//vanish after hit
+			else if(line.find("vanish_after_hit") == 0)
+			{
+				vector<string> v = StringUtils::Split(line, " \r\n");
+				if(v.at(1).compare("true") == 0)
+					vanish_after_hit = true;
+				else
+					vanish_after_hit = false;
+			}
 		}
 		
 	}
 
 	in_info.close();
 	
-	BattleProjectilePtr bpp(new BattleProjectile(name, anim, reverse, loop, velocity, mt, hit_frames, trigger, damage, display_offset, owner, range_per_frame));
+	BattleProjectilePtr bpp(new BattleProjectile(name, anim, reverse, loop, velocity, mt, pt, relative_x, relative_y, hit_frames, trigger, damage, display_offset, owner, range_per_frame, vanish_after_hit));
 	
 	#ifdef _DEBUG
 		ostringstream oss(ostringstream::out);
@@ -417,6 +443,7 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 		oss << "damage " << bpp->damage << "\r\n";
 		oss << "trigger " << bpp->trigger << "\r\n";
 		oss << "moving_type " << bpp->moving_type << "\r\n";
+		oss << "position " << bpp->position_type << " " << bpp->relative_x << " " << bpp->relative_y << "\r\n";
 		oss << "hit_frames ";
 		for(unsigned int i = 0 ; i < bpp->hitting_frames.size() ; i ++)
 			oss << bpp->hitting_frames.at(i) << " ";
@@ -430,6 +457,7 @@ BattleProjectilePtr BattleProjectile::Load(unsigned int proj_nb, const string& f
 			oss << "\r\n";
 		}
 		oss << "\r\n";
+		oss << "vanish_after_hit " << bpp->vanish_after_hit << "\r\n";
 		LOG(oss.str())
 		LOG("Battle projectile loaded")
 	#endif
@@ -458,6 +486,21 @@ const GameSystem::ProjectileMovingType& BattleProjectile::GetMovingType() const
 	return moving_type;
 }
 
+const GameSystem::ProjectilePositionType& BattleProjectile::GetPositionType() const
+{
+	return position_type;
+}
+
+int BattleProjectile::GetRelativeX() const
+{
+	return relative_x;
+}
+
+int BattleProjectile::GetRelativeY()
+{
+	return relative_y;
+}
+		
 const vector<unsigned int>& BattleProjectile::GetHitFrames() const
 {
 	return hitting_frames;
@@ -478,16 +521,23 @@ const MMBNBattleActor* BattleProjectile::GetOwner() const
 	return owner;
 }
 
-const vector<Vector2i>& BattleProjectile::GetCurrentRange() const
+vector<Vector2i> BattleProjectile::GetCurrentRange() const
 {
 	map<unsigned int, vector<Vector2i> >::const_iterator it;
 	if( ( it = range_per_frame.find(animation->GetCurrentFrame()) ) == range_per_frame.end())
 	{
-		LOG("ERROR : {BattleProjectile : GetCurrentRange} No range defined for this frame !")
-		oslQuit();
+		//LOG("ERROR : {BattleProjectile : GetCurrentRange} No range defined for this frame !")
+		//oslQuit();
+		vector<Vector2i> v;
+		return v;
 	}
 	
 	return it->second;
+}
+
+bool BattleProjectile::IsVanishingAfterHit() const
+{
+	return vanish_after_hit;
 }
 
 void BattleProjectile::ResetAnim()
@@ -500,7 +550,7 @@ bool BattleProjectile::CanDamage()
 	bool is_damaging_frame = false;
 	
 	for(unsigned int i = 0 ; !is_damaging_frame && (i < hitting_frames.size()) ; ++i)
-		if(animation->GetCurrentFrame() == hitting_frames[i])
+		if(animation->GetCurrentFrame() + 1 == hitting_frames[i]) // 0 in anim class, 1 in txt files
 			is_damaging_frame = true;
 			
 	return is_damaging_frame;

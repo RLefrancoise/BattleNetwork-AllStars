@@ -98,7 +98,8 @@ void MMBNCharacterSelect::Initialize()
 	
 	int begin_x = 240 - (CHARA_PER_LINE * CHARA_ICON_SIZE) / 2;
 	//int begin_y = 136 - ( ( m_chara_nb % CHARA_PER_LINE) * CHARA_ICON_SIZE ) / 2;
-	int begin_y = 136 - ( ( m_chara_nb % CHARA_PER_LINE) * CHARA_ICON_SIZE ) / 2;
+	//int begin_y = 136 - ( ( m_chara_nb / CHARA_PER_LINE) * CHARA_ICON_SIZE ) / 2;
+	int begin_y = 60;
 	
 	#ifdef _DEBUG
 	ostringstream oss(ostringstream::out);
@@ -272,7 +273,7 @@ void MMBNCharacterSelect::Display()
 		MMBNString s;
 		s.SetFont(GameSystem::GetBattleFont());
 		s = csi_a->GetName();
-		s.SetPosition(75 - (s.GetStringWidth() / 2), 260 - s.GetStringHeight() / 2);
+		s.SetPosition(75 - (s.GetStringWidth() / 2), 245 - s.GetStringHeight() / 2);
 		s.Display();
 	}
 	//---current enemy body---
@@ -286,7 +287,7 @@ void MMBNCharacterSelect::Display()
 		MMBNString s;
 		s.SetFont(GameSystem::GetBattleFont());
 		s = csi_e->GetName();
-		s.SetPosition(405 - (s.GetStringWidth() / 2), 260 - s.GetStringHeight() / 2);
+		s.SetPosition(405 - (s.GetStringWidth() / 2), 245 - s.GetStringHeight() / 2);
 		s.Display();
 	}
 	

@@ -84,7 +84,7 @@ void SndManager::PlayBGM(std::string name, int voice , bool loop)
 
 	if(m_bgmTab[voice]) oslDeleteSound(m_bgmTab[voice]);
 
-	m_bgmTab[voice] = oslLoadSoundFile((string("Audio/BGM/") + name).c_str(), OSL_FMT_NONE);
+	m_bgmTab[voice] = oslLoadSoundFile((string("Audio/BGM/") + name).c_str(), OSL_FMT_STREAM);
 	if(!m_bgmTab[voice])
 	{
 		LOG("Can't load sound Audio/BGM/" + name)

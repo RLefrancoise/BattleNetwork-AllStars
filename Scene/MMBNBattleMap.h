@@ -93,7 +93,7 @@ class MMBNPanelGrid
 		bool	m_actor_is_dead				;
 		bool 	m_can_attack				;
 		
-		void 					AddProjectile(BattleProjectilePtr proj)												;
+		bool 					AddProjectile(BattleProjectilePtr proj)												;
 		
 		MMBNBattleActor* 		GetEnemyOnPanel(unsigned int x, unsigned int y)										;
 		

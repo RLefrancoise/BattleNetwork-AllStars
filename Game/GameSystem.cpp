@@ -13,6 +13,7 @@ map<string, GameSystem::ChipType>		GameSystem::CHIPTYPE_STRING_MAP			;
 map<string, GameSystem::PanelTeam> 		GameSystem::PANELTEAM_STRING_MAP		;
 
 map<string, GameSystem::ProjectileMovingType> GameSystem::PROJECTILE_MOVING_MAP;
+//map<string, GameSystem::ProjectilePositionType> GameSystem::PROJECTILE_POSITION_MAP;
 
 //pictures
 OSL_IMAGE* GameSystem::m_controller_pics[CONTROLLER_NB];
@@ -80,6 +81,11 @@ void GameSystem::Initialize()
 	PROJECTILE_MOVING_MAP["follow_actor"] 	= GameSystem::FOLLOW_ACTOR_PROJECTILE_MOVING_TYPE			;
 	PROJECTILE_MOVING_MAP["follow_enemy"] 	= GameSystem::FOLLOW_ENEMY_PROJECTILE_MOVING_TYPE			;
 	PROJECTILE_MOVING_MAP["none"] 			= GameSystem::NONE_PROJECTILE_MOVING_TYPE					;
+	
+	//PROJECTILES POSITION TYPE
+	//PROJECTILE_POSITION_MAP["relative_to_owner"] 			= GameSystem::RELATIVE_TO_OWNER_PROJECTILE_POSITION_TYPE			;
+	//PROJECTILE_POSITION_MAP["relative_to_closest_enemy"] 	= GameSystem::RELATIVE_TO_CLOSEST_ENEMY_PROJECTILE_POSITION_TYPE	;
+	//PROJECTILE_POSITION_MAP["relative_to_farest_enemy"] 	= GameSystem::RELATIVE_TO_FAREST_ENEMY_PROJECTILE_POSITION_TYPE		;
 	
 	//========================
 	// PICTURES
@@ -220,6 +226,18 @@ GameSystem::PanelTeam 	GameSystem::GetPanelTeamOfString(string p)
 GameSystem::ProjectileMovingType GameSystem::GetProjectileMovingOfString(string p)
 {
 	return PROJECTILE_MOVING_MAP[p];
+}
+
+GameSystem::ProjectilePositionType GameSystem::GetProjectilePositionOfString(string p)
+{
+	if(p == "relative_to_owner")
+		return GameSystem::RELATIVE_TO_OWNER_PROJECTILE_POSITION_TYPE;
+	if(p == "relative_to_closest_enemy")
+		return GameSystem::RELATIVE_TO_CLOSEST_ENEMY_PROJECTILE_POSITION_TYPE;
+	if(p == "relative_to_farest_enemy")
+		return GameSystem::RELATIVE_TO_FAREST_ENEMY_PROJECTILE_POSITION_TYPE;
+		
+	return GameSystem::RELATIVE_TO_OWNER_PROJECTILE_POSITION_TYPE;
 }
 
 /*void GameSystem::InitAttackInfo(std::string file, AttackInfo* ai)

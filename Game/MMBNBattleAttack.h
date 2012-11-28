@@ -62,15 +62,19 @@ class BattleProjectile : public Displayable
 		bool reverse;
 		unsigned int velocity;
 		GameSystem::ProjectileMovingType moving_type;
+		GameSystem::ProjectilePositionType position_type;
+		int relative_x;
+		int relative_y;
 		std::vector<unsigned int> hitting_frames;
 		unsigned int trigger;
 		unsigned int damage;
 		Vector2f display_offset;
 		MMBNBattleActor* owner;
 		std::map<unsigned int, std::vector<Vector2i> > range_per_frame;
+		bool vanish_after_hit;
 		
 		BattleProjectile();
-		BattleProjectile(const std::string& name, const std::string& anim, bool reverse, bool loop, unsigned int velocity, GameSystem::ProjectileMovingType mt, const std::vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, const Vector2f& display_offset, MMBNBattleActor* owner, const std::map<unsigned int, std::vector<Vector2i> >& rpf);
+		BattleProjectile(const std::string& name, const std::string& anim, bool reverse, bool loop, unsigned int velocity, GameSystem::ProjectileMovingType mt, GameSystem::ProjectilePositionType pt, int relative_x, int relative_y, const std::vector<unsigned int>& hit_frames, unsigned int trigger, unsigned int damage, const Vector2f& display_offset, MMBNBattleActor* owner, const std::map<unsigned int, std::vector<Vector2i> >& rpf, bool vanish_after_hit);
 		
 	public:
 		
@@ -81,11 +85,15 @@ class BattleProjectile : public Displayable
 		AnimationPtr GetAnimation() const;
 		unsigned int GetVelocity() const;
 		const GameSystem::ProjectileMovingType& GetMovingType() const;
+		const GameSystem::ProjectilePositionType& GetPositionType() const;
+		int GetRelativeX() const;
+		int GetRelativeY();
 		const std::vector<unsigned int>& GetHitFrames() const;
 		unsigned int GetDamage() const;
 		unsigned int GetTrigger() const;
 		const MMBNBattleActor* GetOwner() const;
-		const std::vector<Vector2i>& GetCurrentRange() const;
+		std::vector<Vector2i> GetCurrentRange() const;
+		bool IsVanishingAfterHit() const					;
 		
 		void ResetAnim()									;
 		bool CanDamage()									;

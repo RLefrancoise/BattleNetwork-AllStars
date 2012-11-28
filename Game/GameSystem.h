@@ -85,13 +85,20 @@ class GameSystem
 			PANELS_TEAM_NB
 		} PanelTeam;
 		
-		enum ProjectileMovingType
+		typedef enum
 		{
 			STRAIGHT_PROJECTILE_MOVING_TYPE,
 			FOLLOW_ACTOR_PROJECTILE_MOVING_TYPE,
 			FOLLOW_ENEMY_PROJECTILE_MOVING_TYPE,
 			NONE_PROJECTILE_MOVING_TYPE
-		};
+		} ProjectileMovingType;
+		
+		typedef enum
+		{
+			RELATIVE_TO_OWNER_PROJECTILE_POSITION_TYPE,
+			RELATIVE_TO_CLOSEST_ENEMY_PROJECTILE_POSITION_TYPE,
+			RELATIVE_TO_FAREST_ENEMY_PROJECTILE_POSITION_TYPE
+		} ProjectilePositionType;
 		
 		/*struct AttackInfo
 		{
@@ -139,6 +146,7 @@ class GameSystem
 		static GameSystem::PanelTeam 	GetPanelTeamOfString(std::string p)		;
 		
 		static GameSystem::ProjectileMovingType GetProjectileMovingOfString(std::string p);
+		static GameSystem::ProjectilePositionType GetProjectilePositionOfString(std::string p);
 		
 		/*static void InitAttackInfo(std::string file, AttackInfo* ai)			;
 		static void InitBattleAttack(std::string file, BattleAttack* ba)		;*/
@@ -187,6 +195,7 @@ class GameSystem
 		static std::map<std::string, GameSystem::PanelTeam> 	PANELTEAM_STRING_MAP	;
 		
 		static std::map<std::string, GameSystem::ProjectileMovingType> PROJECTILE_MOVING_MAP;
+		//static std::map<std::string, GameSystem::ProjectilePositonType> PROJECTILE_POSITION_MAP;
 		
 		//========================
 		// PICTURES

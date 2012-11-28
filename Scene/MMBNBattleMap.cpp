@@ -154,7 +154,12 @@ void MMBNPanelGrid::Display()
 				m_panel_animations[(*m_panels)[i][j]]->Display();
 			}
 			
-			
+			//targeted panels
+			for(unsigned int t = 0 ; t < m_targeted_panels.size() ; ++t)
+			{
+				if(m_targeted_panels[t].x == i && m_targeted_panels[t].y == j)
+					ColorPanel(i, j, RGB(255,230,0), 2);
+			}
 		}
 
 
@@ -180,11 +185,11 @@ void MMBNPanelGrid::Display()
 			Vector2i v;
 			
 			//targeted panels
-			for(unsigned int t = 0 ; t < m_targeted_panels.size() ; ++t)
+			/*for(unsigned int t = 0 ; t < m_targeted_panels.size() ; ++t)
 			{
 				if(m_targeted_panels[t].x == i && m_targeted_panels[t].y == j)
 					ColorPanel(i, j, RGB(255,230,0), 2);
-			}
+			}*/
 			
 			//actor
 			v = GetActorPanel(m_actor);
@@ -477,8 +482,11 @@ void MMBNPanelGrid::Update(OSL_CONTROLLER* k)
 				{
 					m_actor->SetState(MMBNBattleActor::BATTLE_DAMAGED);
 					m_actor->DamageLife(m_projectiles[i]->GetDamage());
-					m_projectiles.erase(m_projectiles.begin() + i);
-					i--;
+					if(m_projectiles[i]->IsVanishingAfterHit()) //remove projectile if it has to disappear after hitting
+					{
+						m_projectiles.erase(m_projectiles.begin() + i);
+						i--;
+					}
 				}
 			}
 			//damage enemies ? (to be done)
@@ -531,7 +539,7 @@ void MMBNPanelGrid::ProjectilesMoving(BattleProjectilePtr proj)
 			else
 				move = (proj->GetVelocity() / Variables::GetFPS()) * -1;
 			
-			proj->Move(move, 0); //change here, just for testing now
+			proj->Move(move, 0);
 			break;
 		}
 		case GameSystem::NONE_PROJECTILE_MOVING_TYPE:
@@ -666,7 +674,7 @@ bool MMBNPanelGrid::AttackActor(MMBNBattleActor* launcher, MMBNBattleActor* targ
 		if(launcher->GetState() == MMBNBattleActor::BATTLE_ATTACK)
 		{
 			//if the current attack anim frame is a damaging one
-			if( launcher->GetCurrentAnim()->GetCurrentFrame() == launcher->GetInfo()->attack_frame )
+			if( launcher->GetCurrentAnim()->GetCurrentFrame() == launcher->GetInfo()->attack_frame ) // 0 in animation class, but 1 in txt file
 			{
 				//if enemy dead do nothing
 				if( target->IsDead() ) return true;
@@ -719,15 +727,43 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 			{
 				//current frame is a trigger for a projectile ?
 				unsigned int proj_trigger = it->first;
-				if(launcher->GetCurrentAnim()->GetCurrentFrame() == proj_trigger)
+				if(launcher->GetCurrentAnim()->GetCurrentFrame() + 1 == proj_trigger) // 0 in animation class, but 1 in txt file
 				{
 					vector<BattleProjectilePtr> v = it->second;
 					for(unsigned int i = 0 ; i < v.size() ; i++)
 					{
-						AddProjectile(v[i]); //add the projectile to the list
-						//need to change here, place the projectile according to settings
-						Vector2i launcher_pos = GetActorPanel(launcher);
-						PutProjectileOnPanel(m_projectiles.back(), launcher_pos.x - 1, launcher_pos.y);
+						if(AddProjectile(v[i])) //add the projectile to the list, no need to set the position if already on the grid
+							continue;
+							
+						switch(v[i]->GetPositionType())
+						{
+							case GameSystem::RELATIVE_TO_OWNER_PROJECTILE_POSITION_TYPE:
+							{
+								Vector2i launcher_pos = GetActorPanel(launcher);
+								if(launcher->GetDirection() == MMBNBattleActor::RIGHT)
+									PutProjectileOnPanel(v[i], launcher_pos.x + v[i]->GetRelativeX(), launcher_pos.y + v[i]->GetRelativeY());
+								else
+									PutProjectileOnPanel(v[i], launcher_pos.x - v[i]->GetRelativeX(), launcher_pos.y + v[i]->GetRelativeY());
+							}
+							break;
+							
+							case GameSystem::RELATIVE_TO_CLOSEST_ENEMY_PROJECTILE_POSITION_TYPE:
+							{
+								//get closest enemy : TODO may need change here !!!!
+								Vector2i target_pos = GetActorPanel(target);
+								PutProjectileOnPanel(v[i], target_pos.x + v[i]->GetRelativeX(), target_pos.y + v[i]->GetRelativeY());
+							}
+							break;
+							
+							case GameSystem::RELATIVE_TO_FAREST_ENEMY_PROJECTILE_POSITION_TYPE:
+							{
+								//get closest enemy : TODO may need change here !!!!
+								Vector2i target_pos = GetActorPanel(target);
+								PutProjectileOnPanel(v[i], target_pos.x + v[i]->GetRelativeX(), target_pos.y + v[i]->GetRelativeY());
+							}
+							break;
+						}
+						
 					}
 				}
 				
@@ -750,7 +786,7 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 			bool is_hit_frame = false;
 			for(unsigned int i = 0 ; !is_hit_frame && (i < skill->GetAttackInfo()->GetHitFrames().size()) ; ++i)
 			{
-				if(launcher->GetCurrentAnim()->GetCurrentFrame() == skill->GetAttackInfo()->GetHitFrames()[i])
+				if(launcher->GetCurrentAnim()->GetCurrentFrame() + 1 == skill->GetAttackInfo()->GetHitFrames()[i]) // 0 in animation class, but 1 in txt file
 					is_hit_frame = true;
 			}
 			
@@ -787,7 +823,7 @@ bool MMBNPanelGrid::UseSkillOnActor(MMBNBattleActor* launcher, MMBNBattleActor* 
 	return false;
 }
 
-void MMBNPanelGrid::AddProjectile(BattleProjectilePtr proj)
+bool MMBNPanelGrid::AddProjectile(BattleProjectilePtr proj)
 {
 	bool proj_found = false;
 	for(unsigned int i = 0 ; !proj_found && (i < m_projectiles.size()) ; ++i)
@@ -800,6 +836,8 @@ void MMBNPanelGrid::AddProjectile(BattleProjectilePtr proj)
 		m_projectiles.push_back(proj);
 		m_projectiles.back()->ResetAnim();
 	}
+	
+	return proj_found;
 }
 
 void MMBNPanelGrid::ColorPanel(unsigned int x, unsigned int y, OSL_COLOR color, int border)

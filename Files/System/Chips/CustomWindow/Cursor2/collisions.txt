@@ -1,0 +1,4 @@
+Frame 1
+hotPoint 12 11
+Frame 2
+hotPoint 14 13

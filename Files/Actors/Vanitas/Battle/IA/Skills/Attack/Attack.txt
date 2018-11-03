@@ -1,0 +1,5 @@
+name Attack
+power 10
+use_projectile false
+animation Vanitas_Attack
+projectiles_number 0

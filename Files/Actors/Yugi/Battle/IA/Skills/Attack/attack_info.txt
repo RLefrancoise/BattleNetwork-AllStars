@@ -1,0 +1,5 @@
+target_type none
+target_teams player enemy
+pierce false
+stagger true
+range 2,0

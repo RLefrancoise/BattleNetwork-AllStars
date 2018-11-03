@@ -1,0 +1,9 @@
+name:DrkSword:
+desc:USE LARGE|SWORD AND|SLICE:
+type:dark:
+element:sword:
+power:400:
+letter:D:
+damage:fixed:
+target:enemy:
+pause:false:

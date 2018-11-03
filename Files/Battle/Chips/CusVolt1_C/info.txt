@@ -1,0 +1,9 @@
+name:CusVolt1:
+desc:Consumes|Custom|Gauge:
+type:giga:
+element:thunder:
+power:10:
+letter:C:
+damage:current_hp:
+target:enemy:
+pause:false:

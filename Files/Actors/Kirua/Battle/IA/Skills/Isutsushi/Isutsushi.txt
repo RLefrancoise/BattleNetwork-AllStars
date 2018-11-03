@@ -1,0 +1,5 @@
+name Isutsushi
+power 60
+use_projectile false
+animation Killua_Isutsushi
+projectiles_number 0

@@ -1,0 +1,4 @@
+﻿[MAPINFO]
+tileset=Map/CentralArea/tileset.png
+width=30
+height=25

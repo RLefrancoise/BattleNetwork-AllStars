@@ -1,0 +1,5 @@
+name Proj1
+power 40
+use_projectile true
+animation Bass_Proj1
+projectiles_number 1

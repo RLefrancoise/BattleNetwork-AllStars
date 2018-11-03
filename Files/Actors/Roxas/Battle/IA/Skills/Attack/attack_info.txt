@@ -1,0 +1,6 @@
+target_type user
+range 1,0
+target_teams player enemy
+pierce false
+stagger true
+hit_frames 4

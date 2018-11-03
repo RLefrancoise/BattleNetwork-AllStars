@@ -1,0 +1,12 @@
+Frame 1
+hotPoint 15 51
+Frame 2
+hotPoint 15 49
+Frame 3
+hotPoint 15 49
+Frame 4
+hotPoint 15 49
+Frame 5
+hotPoint 15 49
+Frame 6
+hotPoint 15 49

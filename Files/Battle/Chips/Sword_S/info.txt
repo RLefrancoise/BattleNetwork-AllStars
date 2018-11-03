@@ -1,0 +1,9 @@
+name:Sword:
+desc:Cuts enmy|in front!|Range=1:
+type:mega:
+element:sword:
+power:80:
+letter:S:
+damage:fixed:
+target:enemy:
+pause:false:

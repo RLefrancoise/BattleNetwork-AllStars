@@ -1,0 +1,2 @@
+sprites=3
+delays=50,300,50

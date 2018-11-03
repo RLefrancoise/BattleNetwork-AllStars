@@ -1,0 +1,3 @@
+moving_time 1200
+attack_time 2000
+wait_after_attack_time 600

@@ -1,0 +1,5 @@
+name Attack
+power 10
+use_projectile false
+animation DarkRoxas_Attack
+projectiles_number 0

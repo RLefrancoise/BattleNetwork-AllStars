@@ -1,0 +1,2 @@
+sprites=1
+delays=1575

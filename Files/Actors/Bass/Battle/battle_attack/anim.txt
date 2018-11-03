@@ -1,0 +1,2 @@
+sprites=4
+delays=35,35,35,35

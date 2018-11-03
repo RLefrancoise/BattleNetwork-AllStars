@@ -1,0 +1,2 @@
+sprites=4
+delays=75,100,75,75

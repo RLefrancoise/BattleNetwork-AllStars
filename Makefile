@@ -27,12 +27,12 @@ LIBS=$(STDLIBS) $(YOURLIBS)
 EXTRA_TARGETS = EBOOT.PBP
 
 # TODO: change the title of your project
-PSP_EBOOT_TITLE = KH_PSP
+PSP_EBOOT_TITLE = Battle Network : All Stars
 
 # TODO: replace with your icon
 PSP_EBOOT_ICON = ICON0.png
 
-PSP_EBOOT_UNKPNG    = PIC0.png
+PSP_EBOOT_UNKPNG    = 
 
 PSP_EBOOT_PIC1    = PIC1.png
 

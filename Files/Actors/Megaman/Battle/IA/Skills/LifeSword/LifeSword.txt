@@ -1,0 +1,5 @@
+name LifeSword
+power 40
+use_projectile false
+animation Megaman_LifeSword
+projectiles_number 0

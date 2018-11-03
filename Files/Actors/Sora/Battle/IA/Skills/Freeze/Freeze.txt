@@ -1,0 +1,5 @@
+name Freeze
+power 40
+use_projectile true
+animation Sora_Freeze
+projectiles_number 1

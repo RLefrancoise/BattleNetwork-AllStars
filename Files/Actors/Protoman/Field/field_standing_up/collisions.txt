@@ -1,0 +1,2 @@
+Frame 1
+hotPoint 10 38

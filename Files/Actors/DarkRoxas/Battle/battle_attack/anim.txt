@@ -1,0 +1,2 @@
+sprites=3
+delays=80,80,80

@@ -1,0 +1,5 @@
+name Attack
+power 10
+use_projectile true
+animation Yugi_Attack
+projectiles_number 1

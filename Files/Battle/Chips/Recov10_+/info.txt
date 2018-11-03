@@ -1,0 +1,9 @@
+name:Recov10:
+desc:Recovers|10HP:
+type:normal:
+element:heal:
+power:10:
+letter:*:
+damage:heal:
+target:user:
+pause:false:

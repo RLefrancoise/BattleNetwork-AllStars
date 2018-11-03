@@ -1,0 +1,12 @@
+PROJ 1
+name Proj1
+anim Bass_Proj1
+moving straight
+damage 40
+velocity 500
+hit 1 2
+trigger 3
+offset_x 0
+offset_y 0
+loop true
+ENDPROJ

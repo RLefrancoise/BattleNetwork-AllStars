@@ -1,0 +1,12 @@
+PROJ 1
+name Freeze
+anim Freeze
+moving straight
+damage 20
+velocity 240
+hit 1 2 3 4 5 6 7 8
+trigger 3
+offset_x 0
+offset_y -10
+loop true
+ENDPROJ

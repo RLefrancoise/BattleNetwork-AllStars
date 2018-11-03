@@ -1,0 +1,16 @@
+PROJ 1
+name Janken_Chi
+anim Janken_Chi
+moving none
+damage 40
+velocity 0
+hit 1
+trigger 7
+offset_x 0
+offset_y -10
+loop false
+range_per_frame 1 0,0 1,0 2,0
+range_per_frame 2 0,0 1,0 2,0
+range_per_frame 3 0,0 1,0 2,0
+range_per_frame 4 0,0 1,0 2,0
+ENDPROJ

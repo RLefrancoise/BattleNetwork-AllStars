@@ -1,0 +1,5 @@
+name Narukami
+power 40
+use_projectile true
+animation Killua_Narukami
+projectiles_number 1

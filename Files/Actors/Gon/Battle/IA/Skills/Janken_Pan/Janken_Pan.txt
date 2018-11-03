@@ -1,0 +1,5 @@
+name Janken_Pan
+power 40
+use_projectile true
+animation Gon_Janken_Pan
+projectiles_number 1

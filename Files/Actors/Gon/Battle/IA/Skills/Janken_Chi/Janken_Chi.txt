@@ -1,0 +1,5 @@
+name Janken_Chi
+power 40
+use_projectile true
+animation Gon_Janken_Chi
+projectiles_number 1

@@ -1,0 +1,5 @@
+name Thunder
+power 40
+use_projectile true
+animation Sora_Thunder
+projectiles_number 1

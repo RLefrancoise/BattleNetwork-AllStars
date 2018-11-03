@@ -1,0 +1,10 @@
+MMBN6 - Battle Field|Battle_Field:
+MMBN6 - Digital Strider|Digital_Strider:
+MMBN6 - Title Screen|Title_Screen:
+KH2 - Darkness of the Unknown|KH2_Darkness_of_the_Unknown:
+KH2 - Dearly Beloved|Dearly_Beloved:
+KH2 - Roxas Theme|Roxas_Theme:
+KH2 - The 13th Dilemma|KH2_The_13th_Dilemma:
+KH2 - The 13th Struggle|KH2_The_13th_Struggle:
+HxH - Ore to Asohanai|HxH_Ore_to_Asohanai_(Kirua's_Theme):
+HxH - Mujakina Chousensha|HxH_Mujakina_Chousensha_(Gon's_Theme):

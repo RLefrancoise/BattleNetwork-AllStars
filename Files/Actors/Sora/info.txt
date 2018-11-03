@@ -1,0 +1,4 @@
+attack_frame 4
+attack_range 1,0
+attack_power 10
+attack_stagger true

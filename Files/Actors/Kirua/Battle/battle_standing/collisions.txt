@@ -1,0 +1,18 @@
+Frame 1
+DEFENSE 3,3,13,45
+hotPoint 9 46
+Frame 2
+hotPoint 9 46
+DEFENSE 3,3,13,45
+Frame 3
+hotPoint 9 45
+DEFENSE 3,3,13,45
+Frame 4
+hotPoint 9 44
+DEFENSE 3,3,13,45
+Frame 5
+hotPoint 9 45
+DEFENSE 3,3,13,45
+Frame 6
+hotPoint 9 46
+DEFENSE 3,3,13,45

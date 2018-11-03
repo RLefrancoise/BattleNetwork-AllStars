@@ -1,0 +1,5 @@
+name Faith
+power 20
+use_projectile true
+animation Ventus_Faith
+projectiles_number 1

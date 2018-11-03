@@ -1,0 +1,5 @@
+name Forward_Yoyo
+power 40
+use_projectile false
+animation Killua_Forward_Yoyo
+projectiles_number 0

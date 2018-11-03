@@ -1,0 +1,70 @@
+Frame 1
+hotPoint 38 52
+Frame 2
+hotPoint 37 51
+Frame 3
+hotPoint 38 52
+Frame 4
+hotPoint 38 52
+Frame 5
+hotPoint 38 52
+Frame 6
+hotPoint 37 51
+Frame 7
+hotPoint 38 52
+Frame 8
+hotPoint 38 52
+Frame 9
+hotPoint 38 52
+Frame 10
+hotPoint 37 51
+Frame 11
+hotPoint 38 52
+Frame 12
+hotPoint 38 52
+Frame 13
+hotPoint 38 52
+Frame 14
+hotPoint 37 51
+Frame 15
+hotPoint 38 52
+Frame 16
+hotPoint 38 52
+Frame 17
+hotPoint 38 52
+Frame 18
+hotPoint 38 52
+Frame 19
+hotPoint 38 52
+Frame 20
+hotPoint 52 55
+Frame 21
+hotPoint 54 52
+Frame 22
+hotPoint 28 52
+Frame 23
+hotPoint 27 56
+Frame 24
+hotPoint 34 68
+Frame 25
+hotPoint 52 55
+Frame 26
+hotPoint 54 52
+Frame 27
+hotPoint 28 52
+Frame 28
+hotPoint 27 56
+Frame 29
+hotPoint 34 68
+Frame 30
+hotPoint 38 52
+Frame 31
+hotPoint 45 52
+Frame 32
+hotPoint 24 52
+Frame 33
+hotPoint 24 52
+Frame 34
+hotPoint 27 56
+Frame 35
+hotPoint 31 61
